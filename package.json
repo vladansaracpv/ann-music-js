@@ -1,0 +1,19 @@
+{
+  "name": "ann-music-js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./src/app.ts",
+  "scripts": {
+    "start": "npm run build:live",
+    "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./src/app.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^1.18.4",
+    "play": "^0.5.0",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.0.3"
+  }
+}
