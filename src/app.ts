@@ -2,42 +2,31 @@ const terminals = ['w', 'h', 'q'];
 const Tokens = ['W', 'H', 'Q'];
 
 const rules = {
-    'W': ['H-H', 'w'],
+    'W': ['w', 'H-H'],
     'H': ['Q-Q', 'h'],
     'Q': ['q']
 };
 
-interface data {
-    'sentence': string;
-    'parse': string[]
-};
+let list = [];
 
-export class BST {
-    data: data
-    left: BST
-    right: BST
+// export class BST {
+//     data: data
+//     left: BST
+//     right: BST
 
-    constructor(data)  {
-        this.data = data
+//     constructor(data)  {
+//         this.data = data
 
-        if (this.data.parse.length === 0) {
-            console.log(this.data.sentence);
-        }
+//         if (this.data.parse.length === 0) {
+//             console.log(this.data.sentence);
+//         }
 
-        // this.left = 
-    }
+//         // this.left = 
+//     }
 
     
-}
+// }
 
-const W = (data) => {
-    const sentence = data.sentence;
-
-}
-
-const H = (data) => {
-
-}
 
 const node = (data) => {
     // data = 'qq,H-H-H-W-W'   sentence = 'qq', tokens = 'H'
@@ -49,16 +38,12 @@ const node = (data) => {
 
     console.log('sentence: ', sentence, ' tokens: ', tokens);
     if(tokens.length == 0) {
-        // console.log('Sentence: ', sentence);
-        // return;
+        list.push(sentence);
     }
     const next = tokens.shift();
-    // console.log('next: ', next);
 
     if (terminals.indexOf(next) > -1) {
         sentence = sentence + next;
-        // const parse = 
-        // console.log('inside: sentence ', sentence, ' next: ', next);
         node(sentence + ',' + tokens.join('-'));
     }
     const _rules = rules[next];
@@ -74,3 +59,4 @@ const node = (data) => {
 
 node(',W');
 
+console.log(list);
