@@ -1,62 +1,64 @@
 const terminals = ['w', 'h', 'q'];
 const Tokens = ['W', 'H', 'Q'];
 
-const rules = {
-    'W': ['w', 'H-H'],
-    'H': ['Q-Q', 'h'],
-    'Q': ['q']
-};
-
-let list = [];
-
-// export class BST {
-//     data: data
-//     left: BST
-//     right: BST
-
-//     constructor(data)  {
-//         this.data = data
-
-//         if (this.data.parse.length === 0) {
-//             console.log(this.data.sentence);
-//         }
-
-//         // this.left = 
-//     }
-
+namespace Beat {
     
-// }
+    class Note {
+        duration: number;
+        rules: string[];
 
-
-const node = (data) => {
-    // data = 'qq,H-H-H-W-W'   sentence = 'qq', tokens = 'H'
-    let sentence = data.split(',')[0];
-    let tokens = data.split(',')[1] || [];
-    if (tokens && tokens.length > 0) {
-        tokens = tokens.split('-');
+        constructor(duration, rules) {
+            this.duration = duration;
+            this.rules = rules;
+        }
     }
 
-    console.log('sentence: ', sentence, ' tokens: ', tokens);
-    if(tokens.length == 0) {
-        list.push(sentence);
+    class Data {
+        sentence: string;
+        parse: string;
+    
+        constructor(sentence, parse) {
+            this.sentence = sentence;
+            this.parse = parse;
+        }
+    };
+    
+    class Node {
+        data: Data;
+        left: null;
+        right: null;
+    
+        constructor(data: Data) {
+            this.data = data;
+        }
+    
+        print = () => console.log(`Generated: ${this.data.sentence}, Parsing: ${this.data.parse}`);
     }
-    const next = tokens.shift();
+    
+    class Parser {
+        root: Node;
+    
+        grammar = {
+            'W': ['w', 'HH'],
+            'H': ['h', 'QQ'],
+            'Q': ['q']
+        };
+        
+        durations = {
+            'w': 4,
+            'h': 2,
+            'q': 1
+        }
+    
+        list: string[];
+    
+        constructor(root: Node) {
+    
+        }
+    }
+    
+    const data = new Data('gen', 'pasr');
+    const node = new Node(data);
+    node.print();
 
-    if (terminals.indexOf(next) > -1) {
-        sentence = sentence + next;
-        node(sentence + ',' + tokens.join('-'));
-    }
-    const _rules = rules[next];
-    // console.log('Next rules: ', _rules);
-    for(const rule in _rules) {
-        tokens.unshift(_rules[rule]);
-        // console.log('tttokens: ', tokens);
-        const parse = tokens.join('-');
-        // console.log('parse: ', parse);
-        node(sentence + ',' + parse);
-    }
 }
-
-node(',W');
-
-console.log(list);
