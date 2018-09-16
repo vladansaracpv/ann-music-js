@@ -5,15 +5,31 @@
   "main": "./src/app.ts",
   "scripts": {
     "start": "npm run build:live",
-    "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./src/app.ts"
+    "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./src/app.ts",
+    "test": "mocha -r ts-node/register src/**/*.spec.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/chai": "^4.1.4",
+    "@types/mocha": "^5.2.5",
+    "@types/ramda": "github:types/npm-ramda#dist",
+    "chai": "^4.1.2",
+    "eslint": "^5.5.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "mocha": "^5.2.0",
     "nodemon": "^1.18.4",
     "play": "^0.5.0",
     "ts-node": "^7.0.1",
-    "typescript": "^3.0.3"
+    "tslint-config-airbnb": "^5.11.0",
+    "tslint-config-prettier": "^1.15.0",
+    "tslint-config-standard": "^8.0.1",
+    "typescript": "^2.6.2"
+  },
+  "dependencies": {
+    "ramda": "^0.25.0",
+    "tslint": "^5.11.0"
   }
 }

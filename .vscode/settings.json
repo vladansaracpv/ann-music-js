@@ -2,6 +2,9 @@
     "cSpell.words": [
         "CDEFGAB",
         "INOTE",
-        "enharmonic"
-    ]
+        "enharmonic",
+        "halfsteps"
+    ],
+    "eslint.enable": false,
+    "prettier.singleQuote": true,
 }

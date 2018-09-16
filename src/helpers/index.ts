@@ -1,8 +1,15 @@
-export const compose = (...fns) =>
-  fns.reduceRight((prevFn, nextFn) =>
-    (...args) => nextFn(prevFn(...args)),
-    value => value
-  );
 
+// tslint:disable-next-line:no-null-keyword
+export const compose = (...fns) => (...args) => fns.reduceRight((res, fn) => [fn.call(null, ...res)], args)[0];
 
-export default compose;
+export const curry = (fn) => {
+  const arity = fn.length;
+
+  return function $curry(...args) {
+    if (args.length < arity) {
+      return $curry.bind(null, ...args);
+    }
+
+    return fn.call(null, ...args);
+  };
+};
