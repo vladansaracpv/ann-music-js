@@ -24,6 +24,7 @@ namespace ERROR {
 const dict = ERROR.errorDict;
 
 namespace LETTER {
+    const lORs = (isStep) => isStep ? 'step' : 'letter';
     const idLetter = (letter, isStep) => letter;
     const fromName = (name, isStep) => firstLetter(name);
     const fromPc = (pc, isStep) => firstLetter(pc);
@@ -31,9 +32,9 @@ namespace LETTER {
     const fromMidi = (midi, isStep) => fromChroma(midi % 12, isStep);
     const fromFreq = (freq, isStep) => compose(fromMidi, MIDI.FACTORY('freq'))(freq);
     const fromStep = (step, isStep) => T.LETTERS[step];
-    const fromAcc = (acc, isStep) => ERROR.NO_FACT_FOR_PARAM(dict(`${isStep ? 'step' : 'letter'} <= accidental`, acc));
-    const fromAlt = (alt, isStep) => ERROR.NO_FACT_FOR_PARAM(dict(`${isStep ? 'step' : 'letter'} <= alteration`, alt));
-    const fromOct = (oct, isStep) => ERROR.NO_FACT_FOR_PARAM(dict(`${isStep ? 'step' : 'letter'} <= octave`, oct));
+    const fromAcc = (acc, isStep) => ERROR.NO_FACT_FOR_PARAM(dict(`${lORs(isStep)} <= accidental`, acc));
+    const fromAlt = (alt, isStep) => ERROR.NO_FACT_FOR_PARAM(dict(`${lORs(isStep)} <= alteration`, alt));
+    const fromOct = (oct, isStep) => ERROR.NO_FACT_FOR_PARAM(dict(`${lORs(isStep)} <= octave`, oct));
 
     export const FROM = {
       letter:     idLetter,
@@ -57,6 +58,7 @@ namespace STEP {
 }
 
 namespace ACCIDENTAL {
+    const accORalt = (isAlt) => isAlt ? 'alteration' : 'accidental';
     const fromName = (name, isAlt) => name.length === 1 ? '' : name.substring(1);
     const idAccidental = (acc, isAlt) => acc;
     const fromPc = (pc, isAlt) => fromName(pc, isAlt);
@@ -64,9 +66,9 @@ namespace ACCIDENTAL {
     const fromChroma = (chroma, isAlt) => compose(fromName, PC.FACTORY('chroma'))(chroma);
     const fromMidi = (midi, isAlt) => compose(fromPc, PC.FACTORY('midi'))(midi);
     const fromFreq = (freq, isAlt) => compose(fromMidi, MIDI.FACTORY('freq'))(freq);
-    const fromLetter = (letter, isAlt) => ERROR.NO_FACT_FOR_PARAM(dict(`${ isAlt ? 'accidental' : 'alteration' } <= letter`, letter));
-    const fromStep = (step, isAlt) => ERROR.NO_FACT_FOR_PARAM(dict(`${ isAlt ? 'accidental' : 'alteration' } <= step`, step));
-    const fromOct = (oct, isAlt) => ERROR.NO_FACT_FOR_PARAM(dict(`${ isAlt ? 'accidental' : 'alteration' } <= octave`, oct));
+    const fromLetter = (letter, isAlt) => ERROR.NO_FACT_FOR_PARAM(dict(`${ accORalt(isAlt) } <= letter`, letter));
+    const fromStep = (step, isAlt) => ERROR.NO_FACT_FOR_PARAM(dict(`${ accORalt(isAlt) } <= step`, step));
+    const fromOct = (oct, isAlt) => ERROR.NO_FACT_FOR_PARAM(dict(`${ accORalt(isAlt) } <= octave`, oct));
 
     export const FROM = {
       accidental: idAccidental,
@@ -90,16 +92,17 @@ namespace ALTERATION {
 }
 
 namespace PC {
+    const pORc = (isChroma) => isChroma ? 'chroma' : 'pc';
     const fromName = (name, isChroma) => property('pc', name);
     const idPc = (pc, isChroma) => pc;
     const fromChroma = (chroma, isChroma) => T.SHARPS[chroma];
     const fromMidi = (midi, isChroma) => fromChroma(midi % 12, isChroma);
     const fromFreq = (freq, isChroma) => compose(fromMidi, MIDI.FACTORY('freq'));
-    const fromLetter = (letter, isChroma) => ERROR.NEED_MORE_ARGS(dict('pc <= letter', letter, '[ accidental | alteration ]'));
-    const fromStep = (step, isChroma) => ERROR.NEED_MORE_ARGS(dict('pc <= step', step, '[ accidental | alteration ]'));
-    const fromAcc = (acc, isChroma) => ERROR.NEED_MORE_ARGS(dict('pc <= octave', acc, '[ letter | step ]'));
-    const fromAlt = (alt, isChroma) => ERROR.NEED_MORE_ARGS(dict('pc <= octave', alt, '[ letter | step ]'));
-    const fromOct = (oct, isChroma) => ERROR.NO_FACT_FOR_PARAM(dict('pc <= octave', oct));
+    const fromLetter = (letter, isChroma) => ERROR.NEED_MORE_ARGS(dict(` ${ pORc(isChroma) } <= letter`, letter, '[ accidental | alteration ]'));
+    const fromStep = (step, isChroma) => ERROR.NEED_MORE_ARGS(dict(` ${ pORc(isChroma) } <= step`, step, '[ accidental | alteration ]'));
+    const fromAcc = (acc, isChroma) => ERROR.NEED_MORE_ARGS(dict(` ${ pORc(isChroma) } <= octave`, acc, '[ letter | step ]'));
+    const fromAlt = (alt, isChroma) => ERROR.NEED_MORE_ARGS(dict(` ${ pORc(isChroma) } <= octave`, alt, '[ letter | step ]'));
+    const fromOct = (oct, isChroma) => ERROR.NO_FACT_FOR_PARAM(dict(` ${ pORc(isChroma) } <= octave`, oct));
 
     export const FROM = {
       pc:         idPc,
@@ -123,19 +126,20 @@ namespace CHROMA {
 }
 
 namespace MIDI {
+    const mORf = isFreq => isFreq ? 'frequency' : 'midi';
     const fromName = (name, isFreq) => property('midi', name);
     const idMidi = (midi, isFreq) => midi;
     const fromFreq = (freq, isFreq, tuning = 440) => {
       return Math.ceil(12 * Math.log2(freq | tuning) + 69);
     };
 
-    const fromLetter = (letter, isFreq) => ERROR.NEED_MORE_ARGS(dict(`${ isFreq ? 'frequency' : 'midi' } <= letter`, letter, '[ alteration | accidental, octave ]'));
-    const fromStep = (step, isFreq) => ERROR.NEED_MORE_ARGS(dict(`${ isFreq ? 'frequency' : 'midi' } <= step`, step, '[ alteration | accidental, octave ]'));
-    const fromAccidental = (acc, isFreq) => ERROR.NEED_MORE_ARGS(dict(`${ isFreq ? 'frequency' : 'midi' } <= accidental`, acc, '[ letter | step, octave ]'));
-    const fromAlteration = (alt, isFreq) => ERROR.NEED_MORE_ARGS(dict(`${ isFreq ? 'frequency' : 'midi' } <= alteration`, alt, '[ letter | step, octave ]'));
-    const fromPc = (pc, isFreq) => ERROR.NEED_MORE_ARGS(dict(`${ isFreq ? 'frequency' : 'midi' } <= pc`, pc, '[ octave ]'));
-    const fromChroma = (chroma, isFreq) => ERROR.NEED_MORE_ARGS(dict(`${ isFreq ? 'frequency' : 'midi' } <= chroma`, chroma, '[ octave ]'));
-    const fromOctave = (oct, isFreq) => ERROR.NEED_MORE_ARGS(dict(`${ isFreq ? 'frequency' : 'midi' } <= octave`, oct, '[ letter | step, alteration | accidental  ]'));
+    const fromLetter = (letter, isFreq) => ERROR.NEED_MORE_ARGS(dict(`${ mORf(isFreq) } <= letter`, letter, '[ alteration | accidental, octave ]'));
+    const fromStep = (step, isFreq) => ERROR.NEED_MORE_ARGS(dict(`${ mORf(isFreq) } <= step`, step, '[ alteration | accidental, octave ]'));
+    const fromAccidental = (acc, isFreq) => ERROR.NEED_MORE_ARGS(dict(`${ mORf(isFreq) } <= accidental`, acc, '[ letter | step, octave ]'));
+    const fromAlteration = (alt, isFreq) => ERROR.NEED_MORE_ARGS(dict(`${ mORf(isFreq) } <= alteration`, alt, '[ letter | step, octave ]'));
+    const fromPc = (pc, isFreq) => ERROR.NEED_MORE_ARGS(dict(`${ mORf(isFreq) } <= pc`, pc, '[ octave ]'));
+    const fromChroma = (chroma, isFreq) => ERROR.NEED_MORE_ARGS(dict(`${ mORf(isFreq) } <= chroma`, chroma, '[ octave ]'));
+    const fromOctave = (oct, isFreq) => ERROR.NEED_MORE_ARGS(dict(`${ mORf(isFreq) } <= octave`, oct, '[ letter|step, alteration|accidental ]'));
 
     export const FROM = {
       midi:       idMidi,
@@ -188,7 +192,7 @@ namespace OCTAVE {
 
     export const FACTORY = curry((fromProp, withValue) => FROM[fromProp](withValue));
 }
-'Try with params: [ alteration | accidental, octave] included'
+
 namespace NAME {
     const idName = name => name;
     const fromMidi = (midi) => {
