@@ -29,7 +29,6 @@ export namespace Validator {
 
   export const isName = (name) => {
     const { letter, accidental, octave, rest } = parseNote(name);
-    console.log(letter, accidental, octave, rest);
     return allTrue(isLetter(letter), isAccidental(accidental), isOctave(octave));
   };
 

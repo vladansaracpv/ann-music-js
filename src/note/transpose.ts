@@ -39,3 +39,23 @@ export const transposeBy = (note, amount) => {
   const k = parseTransAmount(amountVal[1] || '');
   return transposeBySemitone(note, n * k);
 };
+
+const midi = property('midi');
+
+export const add = a => b => a + b;
+export const next = (x, n = 1) => compose(fromMidi, compose(add(n), midi))(x);
+export const prev = (x, n = 1) => next(x, -n);
+
+
+/*
+  create := prop(N) => N
+  create => f(N) => N
+
+  create:
+    Note.property => Note
+    transform(Note) => Note
+    create('Note').from('Note').with('chroma', 5)
+    create('Note').from('Note').that('a => a.chroma === 5')
+    create('Note').from('C#2 - 3').down('3 step')
+    create('Note').from('C#m chord')
+ */

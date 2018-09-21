@@ -12,6 +12,7 @@ export const KEYS = [
   'midi',
   'frequency'
 ];
+
 // Regular expression for parsing notes. Note => [letter, accidental, octave, rest]
 export const REGEX = /^([a-gA-G]?)(#{1,}|b{1,}|x{1,}|)(-?\d*)\s*(.*)$/;
 
@@ -41,3 +42,25 @@ export const FLATS = ALL_NOTES.filter(x => SHARPS_ONLY.indexOf(x) === -1);
 
 // Natural notes positions in C chromatic scale
 export const SEMI = [0, 2, 4, 5, 7, 9, 11];
+
+/**
+ *  Parse note from string
+ *
+ *  @function
+ *
+ *  @param {string} note        Note string
+ *
+ *  @return {object}            Object of { letter, accidental, octave, rest }
+ *
+ */
+export const parse = (note: string = ''): any => {
+
+  const props = REGEX.exec(note);
+  if (!props) return undefined;
+  return {
+    letter: props[1].toUpperCase(),
+    accidental: props[2].replace(/x/g, '##'),
+    octave: props[3],
+    rest: props[4]
+  };
+};

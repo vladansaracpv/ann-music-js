@@ -1,5 +1,4 @@
 
-// tslint:disable-next-line:no-null-keyword
 export const compose = (...fns) => (...args) => fns.reduceRight((res, fn) => [fn.call(null, ...res)], args)[0];
 
 export const curry = (fn) => {
@@ -13,3 +12,5 @@ export const curry = (fn) => {
     return fn.call(null, ...args);
   };
 };
+
+export const firstLetter = n => n[0];
