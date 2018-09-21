@@ -127,7 +127,11 @@ namespace MIDI {
     const fromFreq = (freq, tuning = 440) => {
       return Math.ceil(12 * Math.log2(freq / tuning) + 69);
     };
-    // and([or(['alteration', 'accidental']), or(['octave'])], true) <=> '(alteration | accidental) & (octave)'
+    /*
+     * and([or(['alteration', 'accidental']), or(['octave'])], true) <=> '(alteration | accidental) & (octave)'
+     * ERROR.NEED_MORE_ARGS(dict('midi', 'accidental', acc, and([or(['letter', 'step']), or(['octave'])], true))) =>
+     * ERROR.NEED_MORE_ARGS('midi => accidental', '(letter|step) & (octave)')
+     */
     const fromLetter = letter => ERROR.NEED_MORE_ARGS(dict('midi', 'letter', letter, and([or(['alteration', 'accidental']), or(['octave'])], true)));
     const fromStep = step => ERROR.NEED_MORE_ARGS(dict('midi', 'step', step, and([or(['alteration', 'accidental']), or(['octave'])], true)));
     const fromAccidental = acc => ERROR.NEED_MORE_ARGS(dict('midi', 'accidental', acc, and([or(['letter', 'step']), or(['octave'])], true)));
