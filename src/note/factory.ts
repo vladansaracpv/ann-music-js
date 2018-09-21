@@ -23,204 +23,204 @@ namespace ERROR {
 const dict = ERROR.errorDict;
 
 namespace LETTER {
-    const letterFromLetter = letter => letter;
-    const letterFromName = name => firstLetter(name);
-    const letterFromPc = pc => firstLetter(pc);
-    const letterFromChroma = chroma => compose(letterFromPc, PC.FACTORY('chroma'))(chroma);
-    const letterFromMidi = midi => letterFromChroma(midi % 12);
-    const letterFromFreq = freq => compose(letterFromMidi, MIDI.FACTORY('freq'))(freq);
-    const letterFromStep = step => T.LETTERS[step];
-    const letterFromAcc = acc => ERROR.NO_FACT_FOR_PARAM(dict('letter', 'accidental', acc));
-    const letterFromAlt = alt => ERROR.NO_FACT_FOR_PARAM(dict('letter', 'alteration', alt));
-    const letterFromOct = oct => ERROR.NO_FACT_FOR_PARAM(dict('letter', 'octave', oct));
+    const fromLetter = letter => letter;
+    const fromName = name => firstLetter(name);
+    const fromPc = pc => firstLetter(pc);
+    const fromChroma = chroma => compose(fromPc, PC.FACTORY('chroma'))(chroma);
+    const fromMidi = midi => fromChroma(midi % 12);
+    const fromFreq = freq => compose(fromMidi, MIDI.FACTORY('freq'))(freq);
+    const fromStep = step => T.LETTERS[step];
+    const fromAcc = acc => ERROR.NO_FACT_FOR_PARAM(dict('letter', 'accidental', acc));
+    const fromAlt = alt => ERROR.NO_FACT_FOR_PARAM(dict('letter', 'alteration', alt));
+    const fromOct = oct => ERROR.NO_FACT_FOR_PARAM(dict('letter', 'octave', oct));
 
-    export const FACTORY_DICT = {
-      letter:     letterFromLetter,
-      name:       letterFromName,
-      pc:         letterFromPc,
-      step:       letterFromStep,
-      chroma:     letterFromChroma,
-      midi:       letterFromMidi,
-      frequency:  letterFromFreq,
-      accidental: letterFromAcc,
-      alteration: letterFromAlt,
-      octave:     letterFromOct
+    export const FROM = {
+      letter:     fromLetter,
+      name:       fromName,
+      pc:         fromPc,
+      step:       fromStep,
+      chroma:     fromChroma,
+      midi:       fromMidi,
+      frequency:  fromFreq,
+      accidental: fromAcc,
+      alteration: fromAlt,
+      octave:     fromOct
     };
 
-    export const FACTORY = curry((fromProp, withValue) => FACTORY_DICT[fromProp](withValue));
+    export const FACTORY = curry((fromProp, withValue) => FROM[fromProp](withValue));
 }
 
 namespace STEP {
-    const stepFromLetter = letter => T.LETTERS.indexOf(letter);
-    export const FACTORY = curry((fromProp, withValue) => compose(stepFromLetter, LETTER.FACTORY)(fromProp, withValue));
+    const fromLetter = letter => T.LETTERS.indexOf(letter);
+    export const FACTORY = curry((fromProp, withValue) => compose(fromLetter, LETTER.FACTORY)(fromProp, withValue));
 }
 
 namespace ACCIDENTAL {
-    const accFromName = name => name.length === 1 ? '' : name.substring(1);
-    const idAcc = acc => acc;
-    const accFromPc = pc => accFromName(pc);
-    const accFromAlt = alt => alt < 0 ? 'b'.repeat(alt) : '#'.repeat(alt);
-    const accFromChroma = chroma => compose(accFromName, PC.FACTORY('chroma'))(chroma);
-    const accFromMidi = midi => compose(accFromPc, PC.FACTORY('midi'))(midi);
-    const accFromFreq = freq => compose(accFromMidi, MIDI.FACTORY('freq'))(freq);
-    const accFromLetter = letter => ERROR.NO_FACT_FOR_PARAM(dict('accidental', 'letter', letter));
-    const accFromStep = step => ERROR.NO_FACT_FOR_PARAM(dict('accidental', 'step', step));
-    const accFromOct = oct => ERROR.NO_FACT_FOR_PARAM(dict('accidental', 'octave', oct));
+    const fromName = name => name.length === 1 ? '' : name.substring(1);
+    const idAccidental = acc => acc;
+    const fromPc = pc => fromName(pc);
+    const fromAlt = alt => alt < 0 ? 'b'.repeat(alt) : '#'.repeat(alt);
+    const fromChroma = chroma => compose(fromName, PC.FACTORY('chroma'))(chroma);
+    const fromMidi = midi => compose(fromPc, PC.FACTORY('midi'))(midi);
+    const fromFreq = freq => compose(fromMidi, MIDI.FACTORY('freq'))(freq);
+    const fromLetter = letter => ERROR.NO_FACT_FOR_PARAM(dict('accidental', 'letter', letter));
+    const fromStep = step => ERROR.NO_FACT_FOR_PARAM(dict('accidental', 'step', step));
+    const fromOct = oct => ERROR.NO_FACT_FOR_PARAM(dict('accidental', 'octave', oct));
 
-    export const FACTORY_DICT = {
-      accidental: idAcc,
-      name:       accFromName,
-      pc:         accFromPc,
-      alteration: accFromAlt,
-      chroma:     accFromChroma,
-      midi:       accFromMidi,
-      frequency:  accFromFreq,
-      letter:     accFromLetter,
-      step:       accFromStep,
-      octave:     accFromOct,
+    export const FROM = {
+      accidental: idAccidental,
+      name:       fromName,
+      pc:         fromPc,
+      alteration: fromAlt,
+      chroma:     fromChroma,
+      midi:       fromMidi,
+      frequency:  fromFreq,
+      letter:     fromLetter,
+      step:       fromStep,
+      octave:     fromOct,
     };
 
-    export const FACTORY = curry((fromProp, withValue) => FACTORY_DICT[fromProp](withValue));
+    export const FACTORY = curry((fromProp, withValue) => FROM[fromProp](withValue));
 }
 
 namespace ALTERATION {
-  const altFromAcc = acc =>  firstLetter(`${acc} `) === '#' ? acc.length : -acc.length;
-  export const FACTORY = curry((fromProp, withValue) => compose(altFromAcc, ACCIDENTAL.FACTORY)(fromProp, withValue));
+  const fromAccidental = acc =>  firstLetter(`${acc} `) === '#' ? acc.length : -acc.length;
+  export const FACTORY = curry((fromProp, withValue) => compose(fromAccidental, ACCIDENTAL.FACTORY)(fromProp, withValue));
 }
 
 namespace PC {
-    const pcFromName = name => property('pc', name);
+    const fromName = name => property('pc', name);
     const idPc = pc => pc;
-    const pcFromChroma = chroma => T.SHARPS[chroma];
-    const pcFromMidi = midi => pcFromChroma(midi % 12);
-    const pcFromFreq = freq => compose(pcFromMidi, MIDI.FACTORY('freq'));
-    const pcFromLetter = letter => ERROR.NEED_MORE_ARGS(dict('pc', 'letter', letter, or(['accidental', 'alteration'])));
-    const pcFromStep = step => ERROR.NEED_MORE_ARGS(dict('pc', 'step', step, or(['accidental', 'alteration'])));
-    const pcFromAcc = acc => ERROR.NEED_MORE_ARGS(dict('pc', 'octave', acc, or(['letter', 'step'])));
-    const pcFromAlt = alt => ERROR.NEED_MORE_ARGS(dict('pc', 'octave', alt, or(['letter', 'step'])));
-    const pcFromOct = oct => ERROR.NO_FACT_FOR_PARAM(dict('pc', 'octave', oct));
+    const fromChroma = chroma => T.SHARPS[chroma];
+    const fromMidi = midi => fromChroma(midi % 12);
+    const fromFreq = freq => compose(fromMidi, MIDI.FACTORY('freq'));
+    const fromLetter = letter => ERROR.NEED_MORE_ARGS(dict('pc', 'letter', letter, or(['accidental', 'alteration'])));
+    const fromStep = step => ERROR.NEED_MORE_ARGS(dict('pc', 'step', step, or(['accidental', 'alteration'])));
+    const fromAcc = acc => ERROR.NEED_MORE_ARGS(dict('pc', 'octave', acc, or(['letter', 'step'])));
+    const fromAlt = alt => ERROR.NEED_MORE_ARGS(dict('pc', 'octave', alt, or(['letter', 'step'])));
+    const fromOct = oct => ERROR.NO_FACT_FOR_PARAM(dict('pc', 'octave', oct));
 
-    export const FACTORY_DICT = {
+    export const FROM = {
       pc:         idPc,
-      name:       pcFromName,
-      chroma:     pcFromChroma,
-      midi:       pcFromMidi,
-      frequency:  pcFromFreq,
-      letter:     pcFromLetter,
-      step:       pcFromStep,
-      accidental: pcFromAcc,
-      alteration: pcFromAlt,
-      octave:     pcFromOct
+      name:       fromName,
+      chroma:     fromChroma,
+      midi:       fromMidi,
+      frequency:  fromFreq,
+      letter:     fromLetter,
+      step:       fromStep,
+      accidental: fromAcc,
+      alteration: fromAlt,
+      octave:     fromOct
     };
 
-    export const FACTORY = curry((fromProp, withValue) => FACTORY_DICT[fromProp](withValue));
+    export const FACTORY = curry((fromProp, withValue) => FROM[fromProp](withValue));
 }
 
 namespace CHROMA {
-  const chromaFromPc = pc => pc.indexOf('#') > 0 ? T.SHARPS.indexOf(pc) : T.FLATS.indexOf(pc);
-  export const FACTORY = curry((fromProp, withValue) => compose(chromaFromPc, PC.FACTORY)(fromProp, withValue));
+  const fromPc = pc => pc.indexOf('#') > 0 ? T.SHARPS.indexOf(pc) : T.FLATS.indexOf(pc);
+  export const FACTORY = curry((fromProp, withValue) => compose(fromPc, PC.FACTORY)(fromProp, withValue));
 }
 
 namespace MIDI {
-    const midiFromName = name => property('midi', name);
+    const fromName = name => property('midi', name);
     const idMidi = midi => midi;
-    const midiFromFreq = (freq, tuning = 440) => {
+    const fromFreq = (freq, tuning = 440) => {
       return Math.ceil(12 * Math.log2(freq / tuning) + 69);
     };
-    const midiFromLetter = letter => ERROR.NEED_MORE_ARGS(dict('midi', 'letter', letter, and([or(['alteration', 'accidental']), or(['octave'])], true)));
-    const midiFromStep = step => ERROR.NEED_MORE_ARGS(dict('midi', 'step', step, and([or(['alteration', 'accidental']), or(['octave'])], true)));
-    const midiFromAccidental = acc => ERROR.NEED_MORE_ARGS(dict('midi', 'accidental', acc, and([or(['letter', 'step']), or(['octave'])], true)));
-    const midiFromAlteration = alt => ERROR.NEED_MORE_ARGS(dict('midi', 'alteration', alt, and([or(['letter', 'step']), or(['octave'])], true)));
-    const midiFromPc = pc => ERROR.NEED_MORE_ARGS(dict('midi', 'pc', pc, and(['octave'])));
-    const midiFromChroma = chroma => ERROR.NEED_MORE_ARGS(dict('midi', 'chroma', chroma, and(['octave'])));
-    const midiFromOctave = oct => ERROR.NEED_MORE_ARGS(dict('midi', 'octave', oct, and([or(['letter', 'step']), or(['alteration', 'accidental'])], true)));
+    const fromLetter = letter => ERROR.NEED_MORE_ARGS(dict('midi', 'letter', letter, and([or(['alteration', 'accidental']), or(['octave'])], true)));
+    const fromStep = step => ERROR.NEED_MORE_ARGS(dict('midi', 'step', step, and([or(['alteration', 'accidental']), or(['octave'])], true)));
+    const fromAccidental = acc => ERROR.NEED_MORE_ARGS(dict('midi', 'accidental', acc, and([or(['letter', 'step']), or(['octave'])], true)));
+    const fromAlteration = alt => ERROR.NEED_MORE_ARGS(dict('midi', 'alteration', alt, and([or(['letter', 'step']), or(['octave'])], true)));
+    const fromPc = pc => ERROR.NEED_MORE_ARGS(dict('midi', 'pc', pc, and(['octave'])));
+    const fromChroma = chroma => ERROR.NEED_MORE_ARGS(dict('midi', 'chroma', chroma, and(['octave'])));
+    const fromOctave = oct => ERROR.NEED_MORE_ARGS(dict('midi', 'octave', oct, and([or(['letter', 'step']), or(['alteration', 'accidental'])], true)));
 
-    export const FACTORY_DICT = {
+    export const FROM = {
       midi:       idMidi,
-      frequency:  midiFromFreq,
-      name:       midiFromName,
-      letter:     midiFromLetter,
-      step:       midiFromStep,
-      accidental: midiFromAccidental,
-      alteration: midiFromAlteration,
-      pc:         midiFromPc,
-      chroma:     midiFromChroma,
-      octave:     midiFromOctave
+      frequency:  fromFreq,
+      name:       fromName,
+      letter:     fromLetter,
+      step:       fromStep,
+      accidental: fromAccidental,
+      alteration: fromAlteration,
+      pc:         fromPc,
+      chroma:     fromChroma,
+      octave:     fromOctave
     };
 
-    export const FACTORY = curry((fromProp, withValue) => FACTORY_DICT[fromProp](withValue));
+    export const FACTORY = curry((fromProp, withValue) => FROM[fromProp](withValue));
 }
 
 namespace FREQUENCY {
-    const freqFromMidi = (midi: number, tuning = 440): number => {
+    const fromMidi = (midi: number, tuning = 440): number => {
       return 2 ** ((midi - 69) / 12) * tuning;
     };
 
-    export const FACTORY = curry((fromProp, withValue) => compose(freqFromMidi, MIDI.FACTORY)(fromProp, withValue));
+    export const FACTORY = curry((fromProp, withValue) => compose(fromMidi, MIDI.FACTORY)(fromProp, withValue));
 }
 
 namespace OCTAVE {
-    const octFromName = name => property('octave', name);
-    const idOct = octave => octave;
-    const octFromMidi = midi => Math.floor(midi / 12) - 1;
-    const octFromFreq = freq => compose(octFromMidi, MIDI.FACTORY('freq'))(freq);
-    const octFromLetter = letter => ERROR.NO_FACT_FOR_PARAM(dict('octave', 'letter', letter));
-    const octFromAcc = acc => ERROR.NO_FACT_FOR_PARAM(dict('octave', 'accidental', acc));
-    const octFromPc = pc => ERROR.NO_FACT_FOR_PARAM(dict('octave', 'pc', pc));
-    const octFromStep = step => ERROR.NO_FACT_FOR_PARAM(dict('octave', 'step', step));
-    const octFromAlt = alt => ERROR.NO_FACT_FOR_PARAM(dict('octave', 'alteration', alt));
-    const octFromChroma = chroma => ERROR.NO_FACT_FOR_PARAM(dict('octave', 'chroma', chroma));
+    const fromName = name => property('octave', name);
+    const idOctave = octave => octave;
+    const fromMidi = midi => Math.floor(midi / 12) - 1;
+    const fromFreq = freq => compose(fromMidi, MIDI.FACTORY('freq'))(freq);
+    const fromLetter = letter => ERROR.NO_FACT_FOR_PARAM(dict('octave', 'letter', letter));
+    const fromAcc = acc => ERROR.NO_FACT_FOR_PARAM(dict('octave', 'accidental', acc));
+    const fromPc = pc => ERROR.NO_FACT_FOR_PARAM(dict('octave', 'pc', pc));
+    const fromStep = step => ERROR.NO_FACT_FOR_PARAM(dict('octave', 'step', step));
+    const fromAlt = alt => ERROR.NO_FACT_FOR_PARAM(dict('octave', 'alteration', alt));
+    const fromChroma = chroma => ERROR.NO_FACT_FOR_PARAM(dict('octave', 'chroma', chroma));
 
-    export const FACTORY_DICT = {
-      octave:     idOct,
-      name:       octFromName,
-      midi:       octFromMidi,
-      frequency:  octFromFreq,
-      letter:     octFromLetter,
-      accidental: octFromAcc,
-      pc:         octFromPc,
-      step:       octFromStep,
-      alteration: octFromAlt,
-      chroma:     octFromChroma,
+    export const FROM = {
+      octave:     idOctave,
+      name:       fromName,
+      midi:       fromMidi,
+      frequency:  fromFreq,
+      letter:     fromLetter,
+      accidental: fromAcc,
+      pc:         fromPc,
+      step:       fromStep,
+      alteration: fromAlt,
+      chroma:     fromChroma,
     };
 
-    export const FACTORY = curry((fromProp, withValue) => FACTORY_DICT[fromProp](withValue));
+    export const FACTORY = curry((fromProp, withValue) => FROM[fromProp](withValue));
 }
 
 namespace NAME {
     const idName = name => name;
-    const nameFromMidi = (midi) => {
+    const fromMidi = (midi) => {
       const midiValue = Math.round(midi);
       const pc = T.SHARPS[midi % 12];
       const o = Math.floor(midi / 12) - 1;
       return pc + o;
     };
-    const nameFromFreq = freq => compose(nameFromMidi, MIDI.FACTORY('freq'))(freq);
-    const nameFromLetter = letter => false;
-    const nameFromAcc = acc => false;
-    const nameFromOct = oct => false;
-    const nameFromPc = pc => false;
-    const nameFromStep = step => false;
-    const nameFromAlt = alt => false;
-    const nameFromChroma = chroma => false;
+    const fromFreq = freq => compose(fromMidi, MIDI.FACTORY('freq'))(freq);
+    const fromLetter = letter => false;
+    const fromAcc = acc => false;
+    const fromOct = oct => false;
+    const fromPc = pc => false;
+    const fromStep = step => false;
+    const fromAlt = alt => false;
+    const fromChroma = chroma => false;
 
-    export const FACTORY_DICT = {
+    export const FROM = {
       name:       idName,
-      midi:       nameFromMidi,
-      frequency:  nameFromFreq,
-      letter:     nameFromLetter,
-      accidental: nameFromAcc,
-      octave:     nameFromOct,
-      pc:         nameFromPc,
-      step:       nameFromStep,
-      alteration: nameFromAlt,
-      chroma:     nameFromChroma,
+      midi:       fromMidi,
+      frequency:  fromFreq,
+      letter:     fromLetter,
+      accidental: fromAcc,
+      octave:     fromOct,
+      pc:         fromPc,
+      step:       fromStep,
+      alteration: fromAlt,
+      chroma:     fromChroma,
     };
 
-    export const FACTORY = curry((fromProp, withValue) => FACTORY_DICT[fromProp](withValue));
+    export const FACTORY = curry((fromProp, withValue) => FROM[fromProp](withValue));
 }
 
-export const PROP_FACT_DICT = {
+const PROP_FACTORY_DICT = {
   name:       NAME.FACTORY,
   letter:     LETTER.FACTORY,
   accidental: ACCIDENTAL.FACTORY,
@@ -233,7 +233,7 @@ export const PROP_FACT_DICT = {
   frequency:  FREQUENCY.FACTORY
 };
 
-export const NOTE_PROP_FACTORY = curry((whatProp, fromProp, withValue) =>
-             PROP_FACT_DICT[whatProp](fromProp, withValue));
+export const PROP_FACTORY = curry((whatProp, fromProp, withValue) =>
+             PROP_FACTORY_DICT[whatProp](fromProp, withValue));
 
-const prop = NOTE_PROP_FACTORY('midi', 'alteration', 'c');
+console.log('PC creates: ', PC.FROM);
