@@ -1,31 +1,60 @@
-const t = ['w', 'h', 'q'];
-const T = ['W', 'H', 'Q'];
+namespace Beat {
 
-const rules = {
-    'W': ['H-H', 'w'],
-    'H': ['Q-Q', 'h'],
-    'Q': ['q']
-};
+    class Grammar {
+        terminals = ['w', 'h', 'q'];
+        Tokens = ['W', 'H', 'Q'];
+        durations = {
+            'w': 4,
+            'h': 2,
+            'q': 1
+        }
+        rules = {
+            'W': ['w', 'HH'],
+            'H': ['h', 'QQ'],
+            'Q': ['q']
+        };
+        
+    }
+    
+    class Note {
+        duration: number;
+        rules: string[];
 
-export class BST {
-    data: string
-    left: BST
-    right: BST
-
-    constructor(data)  {
-        this.data = data
+        constructor(duration, rules) {
+            this.duration = duration;
+            this.rules = rules;
+        }
     }
 
+    class Data {
+        sentence: string;
+        parse: string;
     
-}
-
-const W = (sentence) => {
-    const l = '' + H(sentence)+H(sentence);
-    const r = 'w';
+        constructor(sentence, parse) {
+            this.sentence = sentence;
+            this.parse = parse;
+        }
+    };
     
-}
-
-const H = (sentence) => {
-    const l = 'q-q'+sentence;
-    const r = 'h'+sentence;
+    class Node {
+        data: Data;
+        left: null;
+        right: null;
+    
+        constructor(data: Data) {
+            this.data = data;
+        }
+    
+        print = () => console.log(`Generated: ${this.data.sentence}, Parsing: ${this.data.parse}`);
+    }
+    
+    class Parser {
+        root: Node;
+        list: string[];
+    
+        constructor(root: Node) {
+    
+        }
+    }
+    
 }
