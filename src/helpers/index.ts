@@ -14,3 +14,15 @@ export const curry = (fn) => {
 };
 
 export const firstLetter = n => n[0];
+
+export const withTick = arr => arr.map(el => `'${el}'`);
+
+export const or = (args, hasTick = false) => {
+  const argsWithTick = hasTick ? args : withTick(args);
+  return argsWithTick.join(' OR ');
+};
+
+export const and = (args, hasTick = false) => {
+  const argsWithTick = hasTick ? args : withTick(args);
+  return `[ ${argsWithTick.join(', ')} ]`;
+};
