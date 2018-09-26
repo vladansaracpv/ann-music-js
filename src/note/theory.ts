@@ -15,6 +15,34 @@ export class Theory {
     'frequency'
   ];
 
+
+
+  static EMPTY_NOTE = {
+    name: undefined,
+    letter: undefined,
+    accidental: undefined,
+    octave: undefined,
+    pc: undefined,
+    step: undefined,
+    alteration: undefined,
+    chroma: undefined,
+    midi: undefined,
+    frequency: undefined
+  };
+
+  static NO_NOTE = Object.freeze({
+    name: undefined,
+    letter: undefined,
+    accidental: undefined,
+    octave: undefined,
+    pc: undefined,
+    step: undefined,
+    alteration: undefined,
+    chroma: undefined,
+    midi: undefined,
+    frequency: undefined
+  });
+
   // Regular expression for parsing notes. Note => [letter, accidental, octave, rest]
   static REGEX = /^([a-gA-G]?)(#{1,}|b{1,}|x{1,}|)(-?\d*)\s*(.*)$/;
 

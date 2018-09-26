@@ -1,278 +1,101 @@
-import { error } from '../error';
-import { compose, curry, either } from '../helpers';
+import { compose, curry, either, glue } from '../helpers';
 import { Theory } from './theory';
 import { Validator } from './validator';
-import { transposeBy } from './transpose';
 import { FREQUENCY, MIDI, NAME } from './factory';
 
+export class Properties {
 
-export const EMPTY_NOTE = {
-  name: undefined,
-  letter: undefined,
-  accidental: undefined,
-  octave: undefined,
-  pc: undefined,
-  step: undefined,
-  alteration: undefined,
-  chroma: undefined,
-  midi: undefined,
-  frequency: undefined
-};
+  /**
+   *  Create note object by parsing note string
+   *
+   *  @function
+   *
+   *  @param {string} note        Note string
+   *
+   *  @return {object}            Note object
+   *
+   */
+  static props = (name): any => {
 
-export const NO_NOTE = Object.freeze({
-  name: undefined,
-  letter: undefined,
-  accidental: undefined,
-  octave: undefined,
-  pc: undefined,
-  step: undefined,
-  alteration: undefined,
-  chroma: undefined,
-  midi: undefined,
-  frequency: undefined
-});
+    const tokens = Theory.parse(name);
+    if (!tokens) return Theory.EMPTY_NOTE;
 
-export const isCharRepeated = (str: string, chr: string): boolean => {
-  const len = str.length;
-  return str === chr.repeat(len);
-};
+    const { letter, accidental, octave, rest } = tokens;
+    if (letter === '' || rest !== '') return Theory.EMPTY_NOTE;
 
-/**
- *  Calculate Note.name from @pc and @octave
- *
- *  @function
- *
- *  @param {string} pc            Note' pitch class.
- *  @param {number} [octave]      Octave if provided.
- *
- *  @return {string}              Note.name
- *
- */
-export const setName = (pc: string, octave?: string): string => {
-  return pc + (octave ? Number.parseInt(octave) : '');
-};
+    const note = Theory.EMPTY_NOTE;
+    note.letter = letter.toUpperCase();
+    note.accidental = accidental;
+    note.octave = octave ? Number.parseInt(octave) : 4;
+    note.pc = glue(note.letter, note.accidental);
+    note.name = glue(note.pc, note.octave);
+    note.step = Theory.LETTERS.indexOf(letter);
+    note.alteration = note.accidental.indexOf('b') > -1 ? -accidental.length : accidental.length;
+    note.chroma = (Theory.SEMI[note.step] + note.alteration + 120) % 12;
+    note.midi = Theory.SEMI[note.step] + note.alteration + 12 * (note.octave + 1);
+    note.frequency = note.midi ? FREQUENCY.fromMidi(note.midi) : undefined;
 
+    return note;
+  };
 
-/**
- *  Calculate Note.letter
- *
- *  @function
- *
- *  @param {string} letter        Note' pitch class.
- *
- *  @return {string}              Note.letter
- *
- */
-export const setLetter = (letter: string): string => letter.toUpperCase();
+  /**
+   *  Create note object by parsing note string
+   *
+   *  @function
+   *
+   *  @param {string} property    Note property
+   *  @param {string} note        Note string
+   *
+   *  @return {any}               Note property
+   *
+   */
+  static property = curry((name, note) => Properties.props(note)[name]);
 
+  /**
+   *  Return note in simplified notation if possible.
+   *
+   *  @function
+   *
+   *  @param {string}  note               Note frequency
+   *  @param {boolean} [sameAcc = true]   Should the note be created with sharps
+   *
+   *  @return {any}                       Note object
+   *
+   */
+  static simplify = (note: string, sameAcc = true): any => {
 
-/**
- *  Calculate Note.pc from @letter and @accidental
- *
- *  @function
- *
- *  @param {string} letter        Note letter
- *  @param {string} [accidentals] Note accidental
- *
- *  @return {string}              Note.pc
- *
- */
-export const setPc = (letter: string, accidentals?: string): string => {
-  return letter.toUpperCase() + (accidentals || '');
-};
+    const ifMidi = Validator.isMidi(Properties.property('midi', note));
+
+    const nameFromMidi = compose(NAME.fromMidi, Properties.property('midi'))(note);
+    const nameFromPc = compose(Properties.property('pc'), NAME.fromMidi, Properties.property('chroma'))(note);
 
 
-/**
- *  Calculate Note.octave from @octave string.
- *
- *  @function
- *
- *  @param {string} octave        Note octave string
- *
- *  @return {number}              Note.octave
- *
- */
-export const setOctave = (octave: string): number => {
-  if (!octave) return undefined;
-  return Number.parseInt(octave);
-};
+    return either(nameFromMidi, nameFromPc, ifMidi);
 
+  };
 
-/**
- *  Calculate Note.step from @letter
- *
- *  @function
- *
- *  @param {string} letter        Note letter
- *
- *  @return {number}              Note.step
- *
- */
-export const setStep = (letter: string): number => {
-  if (!Validator.isLetter(letter)) return undefined;
-  return Theory.LETTERS.indexOf(letter);
-};
+  /**
+   *  Return enharmonic note of given note
+   *
+   *  @function
+   *
+   *  @param {string}  note               Note string
+   *
+   *  @return {string}                    Note object
+   *
+   */
+  static enharmonic = (note: string): string => Properties.simplify(note, false);
 
+}
 
-/**
- *  Calculate Note.step from @letter
- *
- *  @function
- *
- *  @param {string} accidental    Note accidental
- *
- *  @return {number}              Note.alteration
- *
- */
-export const setAlteration = (accidental: string): number => {
-  if (!Validator.isAccidental(accidental)) return undefined;
-  if (accidental.length === 0) return 0;
-  return accidental[0] === '#'
-         ? accidental.length
-         : accidental.length;
-};
-
-
-/**
- *  Calculate Note.chroma value
- *
- *  @function
- *
- *  @param {number} step          Note accidental
- *  @param {number} alteration    Note.alteration
- *
- *  @return {number}              Note.chroma
- *
- */
-export const setChroma = (step: number, alteration: number): number => {
-  return (Theory.SEMI[step] + alteration + 120) % 12;
-};
-
-
-/**
- *  Calculate Note.midi value
- *
- *  @function
- *
- *  @param {number} octave        Note octave
- *  @param {number} step          Note.step
- *
- *  @return {number}              Note.midi
- *
- */
-export const setMidi = (octave: number, step: number, alteration: number): number => {
-
-  if (!octave) return undefined;
-  return Theory.SEMI[step] + alteration + 12 * (octave + 1);
-
-};
-
-
-/**
- *  Calculate Note.frequency
- *
- *  @function
- *
- *  @param {number} midi        Note midi
- *
- *  @return {number}            Note frequency
- *
- */
-export const setFrequency = (midi: number): number => {
-  return midi ? FREQUENCY.fromMidi(midi) : undefined;
-};
-
-
-/**
- *  Create note object by parsing note string
- *
- *  @function
- *
- *  @param {string} note        Note string
- *
- *  @return {object}            Note object
- *
- */
-export const NOTE = (name): any => {
-
-  const { letter, accidental, octave, rest } = Theory.parse(name);
-  if (letter === '' || rest !== '') return EMPTY_NOTE;
-
-  const note = EMPTY_NOTE;
-  note.letter = setLetter(letter);
-  note.accidental = accidental;
-  note.octave = setOctave(octave);
-  note.pc = setPc(note.letter, note.accidental);
-  note.name = setName(note.pc, note.octave);
-  note.step = setStep(note.letter);
-  note.alteration = setAlteration(note.accidental);
-  note.chroma = setChroma(note.step, note.alteration);
-  note.midi = setMidi(note.octave, note.step, note.alteration);
-  note.frequency = setFrequency(note.midi);
-
-  return note;
-};
-
-
-/**
- *  Create note object by parsing note string
- *
- *  @function
- *
- *  @param {string} property    Note property
- *  @param {string} note        Note string
- *
- *  @return {any}               Note property
- *
- */
-export const property = curry((name, note) => NOTE(note)[name]);
-
-// // Getters for note properties
-// export const name = note => NOTE(note).name;
-// export const letter = note => NOTE(note).letter;
-// export const accidental = note => NOTE(note).accidental;
-// export const octave = note => NOTE(note).octave;
-// export const pc = note => NOTE(note).pc;
-// export const step = note => NOTE(note).step;
-// export const alteration = note => NOTE(note).alteration;
-// export const chroma = note => NOTE(note).chroma;
-// export const midi = note => NOTE(note).midi;
-// export const frequency = note => NOTE(note).frequency;
-
-
-/**
- *  Return note in simplified notation if possible.
- *
- *  @function
- *
- *  @param {string}  note               Note frequency
- *  @param {boolean} [sameAcc = true]   Should the note be created with sharps
- *
- *  @return {any}                       Note object
- *
- */
-export const simplify = (note: string, sameAcc = true): any => {
-
-  const ifMidi = Validator.isMidi(property('midi', note));
-
-  const nameFromMidi = compose(NAME.fromMidi, property('midi'))(note);
-  const nameFromPc = compose(property('pc'), NAME.fromMidi, property('chroma'))(note);
-
-
-  return either(nameFromMidi, nameFromPc, ifMidi);
-
-};
-
-
-/**
- *  Return enharmonic note of given note
- *
- *  @function
- *
- *  @param {string}  note               Note string
- *
- *  @return {string}                    Note object
- *
- */
-export const enharmonic = (note: string): string => simplify(note, false);
-
+  // Getters for note properties
+export const name = note => Properties.props(note).name;
+export const letter = note => Properties.props(note).letter;
+export const accidental = note => Properties.props(note).accidental;
+export const octave = note => Properties.props(note).octave;
+export const pc = note => Properties.props(note).pc;
+export const step = note => Properties.props(note).step;
+export const alteration = note => Properties.props(note).alteration;
+export const chroma = note => Properties.props(note).chroma;
+export const midi = note => Properties.props(note).midi;
+export const frequency = note => Properties.props(note).frequency;

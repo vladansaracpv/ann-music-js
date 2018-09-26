@@ -19,7 +19,7 @@ export const withTick = arr => arr.map(el => `'${el}'`);
 
 export const or = (args, hasTick = false) => {
   const argsWithTick = hasTick ? args : withTick(args);
-  return argsWithTick.join(' OR ');
+  return argsWithTick.join(' / ');
 };
 
 export const and = (args, hasTick = false) => {
@@ -41,3 +41,7 @@ export const somethingTrue = (...args) => args.reduce((acc, x) => acc || x);
 export const flatten = X => [...[].concat(...[X])];
 export const add = a => b => a + b;
 export const add2 = (a, b) => a + b;
+export const id = x => x;
+export const diff = ([a, b]) => a - b;
+export const diff2 = (a, b) => a - b;
+export const glue = (...args) => args.reduce((acc, el) => acc.toString() + el.toString());

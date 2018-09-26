@@ -1,24 +1,7 @@
 import { Theory as T } from './theory';
 import { compose, curry, firstLetter, and, or, withTick } from '../helpers';
-import { property } from './properties';
-
-
-export class ERROR {
-
-  static NEED_MORE_ARGS = curry((dict: any) => {
-    console.log(`Couldn't create property: '${dict.forProp.toUpperCase()}' just from ${dict.fromProp}: '${dict.withValue}'. Try with ${dict.need} included.`);
-    return undefined;
-  });
-
-  static NO_FACT_FOR_PARAM = curry((dict: any) => {
-    console.log(`Couldn't create property: ${dict.forProp} from ${dict.fromProp}: '${dict.withValue}'`);
-    return undefined;
-  });
-
-  static errorDict = (prop, from, value, needed?) => {
-    return { forProp: prop, fromProp: from, withValue: value, need: needed };
-  };
-}
+import { name, midi, octave, chroma, frequency } from './properties';
+import { FactoryError as ERROR } from '../error';
 
 const dict = ERROR.errorDict;
 
@@ -30,9 +13,9 @@ export class LETTER {
   static fromMidi = midi => LETTER.fromChroma(midi % 12);
   static fromFreq = freq => compose(LETTER.fromMidi, MIDI.FACTORY('freq'))(freq);
   static fromStep = step => T.LETTERS[step];
-  static fromAcc = acc => ERROR.NO_FACT_FOR_PARAM(dict('letter', 'accidental', acc));
-  static fromAlt = alt => ERROR.NO_FACT_FOR_PARAM(dict('letter', 'alteration', alt));
-  static fromOct = oct => ERROR.NO_FACT_FOR_PARAM(dict('letter', 'octave', oct));
+  static fromAcc = acc => ERROR.NO_FACT_FOR_PARAM('letter', 'accidental', acc);
+  static fromAlt = alt => ERROR.NO_FACT_FOR_PARAM('letter', 'alteration', alt);
+  static fromOct = oct => ERROR.NO_FACT_FOR_PARAM('letter', 'octave', oct);
 
   static FROM = {
     letter:     LETTER.fromLetter,
@@ -52,23 +35,46 @@ export class LETTER {
 
 export class STEP {
   static fromLetter = letter => T.LETTERS.indexOf(letter);
-  static FACTORY = curry((fromProp, withValue) => compose(STEP.fromLetter, LETTER.FACTORY)(fromProp, withValue));
+  static fromName = name => compose(STEP.fromLetter, firstLetter)(name);
+  static fromPc = pc => compose(STEP.fromLetter, firstLetter)(pc);
+  static fromChroma = chroma => compose(STEP.fromPc, PC.FACTORY('chroma'))(chroma);
+  static fromMidi = midi => STEP.fromChroma(midi % 12);
+  static fromFreq = freq => compose(STEP.fromMidi, MIDI.FACTORY('freq'))(freq);
+  static fromStep = step => T.LETTERS[step];
+  static fromAcc = acc => ERROR.NO_FACT_FOR_PARAM('step', 'accidental', acc);
+  static fromAlt = alt => ERROR.NO_FACT_FOR_PARAM('step', 'alteration', alt);
+  static fromOct = oct => ERROR.NO_FACT_FOR_PARAM('step', 'octave', oct);
+
+  static FROM = {
+    letter:     STEP.fromLetter,
+    name:       STEP.fromName,
+    pc:         STEP.fromPc,
+    step:       STEP.fromStep,
+    chroma:     STEP.fromChroma,
+    midi:       STEP.fromMidi,
+    frequency:  STEP.fromFreq,
+    accidental: STEP.fromAcc,
+    alteration: STEP.fromAlt,
+    octave:     STEP.fromOct
+  };
+
+  static FACTORY = curry((fromProp, withValue) => STEP.FROM[fromProp](withValue));
 }
 
 export class ACCIDENTAL {
   static fromName = name => name.length === 1 ? '' : name.substring(1);
-  static idAccidental = acc => acc;
+  static fromAccidental = acc => acc;
   static fromPc = pc => ACCIDENTAL.fromName(pc);
   static fromAlt = alt => alt < 0 ? 'b'.repeat(alt) : '#'.repeat(alt);
   static fromChroma = chroma => compose(ACCIDENTAL.fromName, PC.FACTORY('chroma'))(chroma);
   static fromMidi = midi => compose(ACCIDENTAL.fromPc, PC.FACTORY('midi'))(midi);
   static fromFreq = freq => compose(ACCIDENTAL.fromMidi, MIDI.FACTORY('freq'))(freq);
-  static fromLetter = letter => ERROR.NO_FACT_FOR_PARAM(dict('accidental', 'letter', letter));
-  static fromStep = step => ERROR.NO_FACT_FOR_PARAM(dict('accidental', 'step', step));
-  static fromOct = oct => ERROR.NO_FACT_FOR_PARAM(dict('accidental', 'octave', oct));
+  static fromLetter = letter => ERROR.NO_FACT_FOR_PARAM('accidental', 'letter', letter);
+  static fromStep = step => ERROR.NO_FACT_FOR_PARAM('accidental', 'step', step);
+  static fromOct = oct => ERROR.NO_FACT_FOR_PARAM('accidental', 'octave', oct);
 
   static FROM = {
-    accidental: ACCIDENTAL.idAccidental,
+    accidental: ACCIDENTAL.fromAccidental,
     name:       ACCIDENTAL.fromName,
     pc:         ACCIDENTAL.fromPc,
     alteration: ACCIDENTAL.fromAlt,
@@ -85,23 +91,46 @@ export class ACCIDENTAL {
 
 export class ALTERATION {
   static fromAccidental = acc =>  firstLetter(`${acc} `) === '#' ? acc.length : -acc.length;
-  static FACTORY = curry((fromProp, withValue) => compose(ALTERATION.fromAccidental, ACCIDENTAL.FACTORY)(fromProp, withValue));
+  static fromName = name => name.length === 1 ? 0 : ALTERATION.fromAccidental(name.substring(1));
+  static fromPc = pc => ALTERATION.fromName(pc);
+  static fromAlt = alt => alt;
+  static fromChroma = chroma => compose(ALTERATION.fromName, PC.FACTORY('chroma'))(chroma);
+  static fromMidi = midi => compose(ALTERATION.fromPc, PC.FACTORY('midi'))(midi);
+  static fromFreq = freq => compose(ALTERATION.fromMidi, MIDI.FACTORY('freq'))(freq);
+  static fromLetter = letter => ERROR.NO_FACT_FOR_PARAM('alteration', 'letter', letter);
+  static fromStep = step => ERROR.NO_FACT_FOR_PARAM('alteration', 'step', step);
+  static fromOct = oct => ERROR.NO_FACT_FOR_PARAM('alteration', 'octave', oct);
+
+  static FROM = {
+    accidental: ALTERATION.fromAccidental,
+    name:       ALTERATION.fromName,
+    pc:         ALTERATION.fromPc,
+    alteration: ALTERATION.fromAlt,
+    chroma:     ALTERATION.fromChroma,
+    midi:       ALTERATION.fromMidi,
+    frequency:  ALTERATION.fromFreq,
+    letter:     ALTERATION.fromLetter,
+    step:       ALTERATION.fromStep,
+    octave:     ALTERATION.fromOct,
+  };
+
+  static FACTORY = curry((fromProp, withValue) => ALTERATION.FROM[fromProp](withValue));
 }
 
 export class PC {
-  static fromName = name => property('pc', name);
-  static idPc = pc => pc;
+  static fromName = name => name(name);
+  static fromPc = pc => pc;
   static fromChroma = chroma => T.SHARPS[chroma];
   static fromMidi = midi => PC.fromChroma(midi % 12);
   static fromFreq = freq => compose(PC.fromMidi, MIDI.FACTORY('freq'));
-  static fromLetter = letter => ERROR.NEED_MORE_ARGS(dict('pc', 'letter', letter, or(['accidental', 'alteration'])));
-  static fromStep = step => ERROR.NEED_MORE_ARGS(dict('pc', 'step', step, or(['accidental', 'alteration'])));
-  static fromAcc = acc => ERROR.NEED_MORE_ARGS(dict('pc', 'octave', acc, or(['letter', 'step'])));
-  static fromAlt = alt => ERROR.NEED_MORE_ARGS(dict('pc', 'octave', alt, or(['letter', 'step'])));
-  static fromOct = oct => ERROR.NO_FACT_FOR_PARAM(dict('pc', 'octave', oct));
+  static fromLetter = letter => ERROR.NEED_MORE_ARGS('pc', 'letter', letter, or(['accidental', 'alteration']));
+  static fromStep = step => ERROR.NEED_MORE_ARGS('pc', 'step', step, or(['accidental', 'alteration']));
+  static fromAcc = acc => ERROR.NEED_MORE_ARGS('pc', 'octave', acc, or(['letter', 'step']));
+  static fromAlt = alt => ERROR.NEED_MORE_ARGS('pc', 'octave', alt, or(['letter', 'step']));
+  static fromOct = oct => ERROR.NO_FACT_FOR_PARAM('pc', 'octave', oct);
 
   static FROM = {
-    pc:         PC.idPc,
+    pc:         PC.fromPc,
     name:       PC.fromName,
     chroma:     PC.fromChroma,
     midi:       PC.fromMidi,
@@ -118,26 +147,49 @@ export class PC {
 
 export class CHROMA {
   static fromPc = pc => pc.indexOf('#') > 0 ? T.SHARPS.indexOf(pc) : T.FLATS.indexOf(pc);
-  static FACTORY = curry((fromProp, withValue) => compose(CHROMA.fromPc, PC.FACTORY)(fromProp, withValue));
+  static fromName = name => chroma(name);
+  static fromChroma = chroma => chroma;
+  static fromMidi = midi => CHROMA.fromChroma(midi % 12);
+  static fromFreq = freq => compose(CHROMA.fromMidi, MIDI.FACTORY('freq'));
+  static fromLetter = letter => ERROR.NEED_MORE_ARGS('chroma', 'letter', letter, or(['accidental', 'alteration']));
+  static fromStep = step => ERROR.NEED_MORE_ARGS('chroma', 'step', step, or(['accidental', 'alteration']));
+  static fromAcc = acc => ERROR.NEED_MORE_ARGS('chroma', 'octave', acc, or(['letter', 'step']));
+  static fromAlt = alt => ERROR.NEED_MORE_ARGS('chroma', 'octave', alt, or(['letter', 'step']));
+  static fromOct = oct => ERROR.NO_FACT_FOR_PARAM('chroma', 'octave', oct);
+
+  static FROM = {
+    pc:         CHROMA.fromPc,
+    name:       CHROMA.fromName,
+    chroma:     CHROMA.fromChroma,
+    midi:       CHROMA.fromMidi,
+    frequency:  CHROMA.fromFreq,
+    letter:     CHROMA.fromLetter,
+    step:       CHROMA.fromStep,
+    accidental: CHROMA.fromAcc,
+    alteration: CHROMA.fromAlt,
+    octave:     CHROMA.fromOct
+  };
+
+  static FACTORY = curry((fromProp, withValue) => PC.FROM[fromProp](withValue));
 }
 
 export class MIDI {
-  static fromName = name => property('midi', name);
-  static idMidi = midi => midi;
+  static fromName = name => midi(name);
+  static fromMidi = midi => midi;
   static fromFreq = (freq, tuning = 440) => {
     return Math.ceil(12 * Math.log2(freq / tuning) + 69);
   };
 
-  static fromLetter = letter => ERROR.NEED_MORE_ARGS(dict('midi', 'letter', letter, and([or(['alteration', 'accidental']), or(['octave'])], true)));
-  static fromStep = step => ERROR.NEED_MORE_ARGS(dict('midi', 'step', step, and([or(['alteration', 'accidental']), or(['octave'])], true)));
-  static fromAccidental = acc => ERROR.NEED_MORE_ARGS(dict('midi', 'accidental', acc, and([or(['letter', 'step']), or(['octave'])], true)));
-  static fromAlteration = alt => ERROR.NEED_MORE_ARGS(dict('midi', 'alteration', alt, and([or(['letter', 'step']), or(['octave'])], true)));
-  static fromPc = pc => ERROR.NEED_MORE_ARGS(dict('midi', 'pc', pc, and(['octave'])));
-  static fromChroma = chroma => ERROR.NEED_MORE_ARGS(dict('midi', 'chroma', chroma, and(['octave'])));
-  static fromOctave = oct => ERROR.NEED_MORE_ARGS(dict('midi', 'octave', oct, and([or(['letter', 'step']), or(['alteration', 'accidental'])], true)));
+  static fromLetter = letter => ERROR.NEED_MORE_ARGS('midi', 'letter', letter, and([or(['alteration', 'accidental']), or(['octave'])], true));
+  static fromStep = step => ERROR.NEED_MORE_ARGS('midi', 'step', step, and([or(['alteration', 'accidental']), or(['octave'])], true));
+  static fromAccidental = acc => ERROR.NEED_MORE_ARGS('midi', 'accidental', acc, and([or(['letter', 'step']), or(['octave'])], true));
+  static fromAlteration = alt => ERROR.NEED_MORE_ARGS('midi', 'alteration', alt, and([or(['letter', 'step']), or(['octave'])], true));
+  static fromPc = pc => ERROR.NEED_MORE_ARGS('midi', 'pc', pc, and(['octave']));
+  static fromChroma = chroma => ERROR.NEED_MORE_ARGS('midi', 'chroma', chroma, and(['octave']));
+  static fromOctave = oct => ERROR.NEED_MORE_ARGS('midi', 'octave', oct, and([or(['letter', 'step']), or(['alteration', 'accidental'])], true));
 
   static FROM = {
-    midi:       MIDI.idMidi,
+    midi:       MIDI.fromMidi,
     frequency:  MIDI.fromFreq,
     name:       MIDI.fromName,
     letter:     MIDI.fromLetter,
@@ -157,23 +209,46 @@ export class FREQUENCY {
     return 2 ** ((midi - 69) / 12) * tuning;
   };
 
-  static FACTORY = curry((fromProp, withValue) => compose(FREQUENCY.fromMidi, MIDI.FACTORY)(fromProp, withValue));
+  static fromName = name => frequency(name);
+  static fromFreq = (freq, tuning = 440) => freq;
+  static fromLetter = letter => ERROR.NEED_MORE_ARGS('frequency', 'letter', letter, and([or(['alteration', 'accidental']), or(['octave'])], true));
+  static fromStep = step => ERROR.NEED_MORE_ARGS('frequency', 'step', step, and([or(['alteration', 'accidental']), or(['octave'])], true));
+  static fromAccidental = acc => ERROR.NEED_MORE_ARGS('frequency', 'accidental', acc, and([or(['letter', 'step']), or(['octave'])], true));
+  static fromAlteration = alt => ERROR.NEED_MORE_ARGS('frequency', 'alteration', alt, and([or(['letter', 'step']), or(['octave'])], true));
+  static fromPc = pc => ERROR.NEED_MORE_ARGS('frequency', 'pc', pc, and(['octave']));
+  static fromChroma = chroma => ERROR.NEED_MORE_ARGS('frequency', 'chroma', chroma, and(['octave']));
+  static fromOctave = oct => ERROR.NEED_MORE_ARGS('frequency', 'octave', oct, and([or(['letter', 'step']), or(['alteration', 'accidental'])], true));
+
+  static FROM = {
+    midi:       FREQUENCY.fromMidi,
+    frequency:  FREQUENCY.fromFreq,
+    name:       FREQUENCY.fromName,
+    letter:     FREQUENCY.fromLetter,
+    step:       FREQUENCY.fromStep,
+    accidental: FREQUENCY.fromAccidental,
+    alteration: FREQUENCY.fromAlteration,
+    pc:         FREQUENCY.fromPc,
+    chroma:     FREQUENCY.fromChroma,
+    octave:     FREQUENCY.fromOctave
+  };
+
+  static FACTORY = curry((fromProp, withValue) => FREQUENCY.FROM[fromProp](withValue));
 }
 
 export class OCTAVE {
-  static fromName = name => property('octave', name);
-  static idOctave = octave => octave;
+  static fromName = name => octave(name);
+  static fromOctave = octave => octave;
   static fromMidi = midi => Math.floor(midi / 12) - 1;
   static fromFreq = freq => compose(OCTAVE.fromMidi, MIDI.FACTORY('freq'))(freq);
-  static fromLetter = letter => ERROR.NO_FACT_FOR_PARAM(dict('octave', 'letter', letter));
-  static fromAcc = acc => ERROR.NO_FACT_FOR_PARAM(dict('octave', 'accidental', acc));
-  static fromPc = pc => ERROR.NO_FACT_FOR_PARAM(dict('octave', 'pc', pc));
-  static fromStep = step => ERROR.NO_FACT_FOR_PARAM(dict('octave', 'step', step));
-  static fromAlt = alt => ERROR.NO_FACT_FOR_PARAM(dict('octave', 'alteration', alt));
-  static fromChroma = chroma => ERROR.NO_FACT_FOR_PARAM(dict('octave', 'chroma', chroma));
+  static fromLetter = letter => ERROR.NO_FACT_FOR_PARAM('octave', 'letter', letter);
+  static fromAcc = acc => ERROR.NO_FACT_FOR_PARAM('octave', 'accidental', acc);
+  static fromPc = pc => ERROR.NO_FACT_FOR_PARAM('octave', 'pc', pc);
+  static fromStep = step => ERROR.NO_FACT_FOR_PARAM('octave', 'step', step);
+  static fromAlt = alt => ERROR.NO_FACT_FOR_PARAM('octave', 'alteration', alt);
+  static fromChroma = chroma => ERROR.NO_FACT_FOR_PARAM('octave', 'chroma', chroma);
 
   static FROM = {
-    octave:     OCTAVE.idOctave,
+    octave:     OCTAVE.fromOctave,
     name:       OCTAVE.fromName,
     midi:       OCTAVE.fromMidi,
     frequency:  OCTAVE.fromFreq,
@@ -189,7 +264,7 @@ export class OCTAVE {
 }
 
 export class NAME {
-  static idName = name => name;
+  static fromName = name => name;
   static fromMidi = (midi) => {
     const midiValue = Math.round(midi);
     const pc = T.SHARPS[midi % 12];
@@ -206,7 +281,7 @@ export class NAME {
   static fromChroma = chroma => false;
 
   static FROM = {
-    name:       NAME.idName,
+    name:       NAME.fromName,
     midi:       NAME.fromMidi,
     frequency:  NAME.fromFreq,
     letter:     NAME.fromLetter,
@@ -237,3 +312,4 @@ export const PROP_FACTORY_DICT = {
 export const PROP_FACTORY = curry((whatProp, fromProp, withValue) => {
   return PROP_FACTORY_DICT[whatProp](fromProp, withValue);
 });
+

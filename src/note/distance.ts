@@ -1,14 +1,11 @@
-import { property } from './properties';
-import { compose, curry } from '../helpers';
+import { midi } from './properties';
+import { compose, curry, diff, diff2 } from '../helpers';
 import { NAME } from './factory';
 
-const midi = property('midi');
+export class Distance {
 
-export const metric = curry((fn, arr) => arr.map(fn));
-export const diff = ([a, b]) => a - b;
-export const add = a => b => a + b;
-export const distance = (a, b, fn = midi) => compose(Math.abs, diff, metric(fn))([a, b]);
-export const next = (x, n = 1) => compose(NAME.fromMidi, compose(add(n), midi))(x);
-export const prev = (x, n = 1) => next(x, -n);
-export const id = x => x;
+  static metric = curry((fn, arr) => arr.map(fn));
 
+  static distance = (a, b, fn = midi) => compose(Math.abs, diff, Distance.metric(fn))([a, b]);
+
+}

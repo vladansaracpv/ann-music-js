@@ -1,8 +1,6 @@
-import { property } from './properties';
+import { midi } from './properties';
 import { compose, add, add2, somethingTrue } from '../helpers';
 import { NAME } from './factory';
-
-const midi = property('midi');
 
 export class Transpose {
 
@@ -38,5 +36,3 @@ export class Transpose {
 
   static prev = (x, n = 1) => Transpose.next(x, -n);
 }
-
-console.log(Transpose.next('C4', 7));
