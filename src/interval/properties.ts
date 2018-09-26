@@ -2,21 +2,21 @@ import { Theory } from './theory';
 import { curry } from '../helpers/index';
 
 export class Properties {
-    
-  static properties = str => {
+
+  static properties = (str) => {
     const t = Theory.tokenize(str);
     if (!t) return Theory.NO_INTERVAL;
 
-    const p = { number: +t[0], quality: t[1] };
-    p['step'] = Theory.numToStep(p.number);
+    const p = { num: +t[0], quality: t[1] };
+    p['step'] = Theory.numToStep(p.num);
     p['type'] = Theory.TYPES[p['step']];
     if (p['type'] === 'M' && p.quality === 'P') return Theory.NO_INTERVAL;
-      
-    p['name'] = '' + p.number + p.quality;
-    p['direction'] = p.number < 0 ? -1 : 1;
-    p['simple'] = p.number === 8 || p.number === -8 ? p.number : p['direction'] * (p['step'] + 1);
+
+    p['name'] = `${p.num}${p.quality}`;
+    p['direction'] = p.num < 0 ? -1 : 1;
+    p['simple'] = p.num === 8 || p.num === -8 ? p.num : p['direction'] * (p['step'] + 1);
     p['alteration'] = Theory.qToAlt(p['type'], p.quality);
-    p['octave'] = Math.floor((Math.abs(p.number) - 1) / 7);
+    p['octave'] = Math.floor((Math.abs(p.num) - 1) / 7);
     p['semitones'] = p['direction'] * (Theory.SIZES[p['step']] + p['alteration'] + 12 * p['octave']);
     p['chroma'] = ((p['direction'] * (Theory.SIZES[p['step']] + p['alteration'])) % 12 + 12) % 12;
     return Object.freeze(p);
@@ -28,38 +28,40 @@ export class Properties {
     if (typeof str !== 'string') return Theory.NO_INTERVAL;
     return Properties.cache[str] || (Properties.cache[str] = Properties.properties(str));
   }
-    
+
   static property = curry((name, note) => Properties.props(note)[name]);
 
-  static ic = ivl => {
-    if (typeof ivl === 'string') ivl = Properties.props(ivl).chroma;
-    return typeof ivl === 'number' ? Theory.CLASSES[ivl % 12] : undefined;
+  static ic = (ivl) => {
+    let _ivl = ivl;
+    if (typeof ivl === 'string') _ivl = Properties.props(_ivl).chroma;
+    return typeof ivl === 'number' ? Theory.CLASSES[_ivl % 12] : undefined;
   };
 
-  static simplify = str => {
+  static simplify = (str) => {
     const p = Properties.props(str);
     if (p === Theory.NO_INTERVAL) return undefined;
     return p.simple + p.quality;
   };
 
-  static build = ({ number, step, alteration, octave = 1, direction } = {number, step, alteration, octave, direction}) => {
-    if (step !== undefined) number = step + 1 + 7 * octave;
-    if (number === undefined) return null;
-      
-    const d = direction < 0 ? "-" : "";
-    const type = Theory.TYPES[Theory.numToStep(number)];
-    return d + number + Theory.altToQ(type, alteration);
+  static build = ({ num, step, alteration, octave = 1, direction } = { num, step, alteration, octave, direction }) => {
+    let _num_ = num;
+    if (step !== undefined) _num_ = step + 1 + 7 * octave;
+    if (_num_ === undefined) return undefined;
+
+    const d = direction < 0 ? '-' : '';
+    const type = Theory.TYPES[Theory.numToStep(_num_)];
+    return d + _num_ + Theory.altToQ(type, alteration);
   };
-      
-  static invert = str => {
+
+  static invert = (str) => {
     const p = Properties.props(str);
     if (p === Theory.NO_INTERVAL) return undefined;
-    const step = (7 - p.step) % 7;
-    const alteration = p.type === "P" ? -p.alteration : -(p.alteration + 1);
-    return Properties.build({ number: undefined, step, alteration, octave: p.octave, direction: p.direction });
+    const _step = (7 - p.step) % 7;
+    const _alteration = p.type === 'P' ? -p.alteration : -(p.alteration + 1);
+    return Properties.build({ num: undefined,  step: _step, alteration: _alteration, octave: p.octave, direction: p.direction });
   };
-            
-  static fromSemitones = num => {
+
+  static fromSemitones = (num) => {
     const d = num < 0 ? -1 : 1;
     const n = Math.abs(num);
     const c = n % 12;
@@ -68,7 +70,7 @@ export class Properties {
   };
 }
 
-export const number = interval => Properties.props(interval).number;
+export const num = interval => Properties.props(interval).num;
 export const quality = interval => Properties.props(interval).quality;
 export const step = interval => Properties.props(interval).step;
 export const type = interval => Properties.props(interval).type;
@@ -80,4 +82,4 @@ export const alteration = interval => Properties.props(interval).alteration;
 export const semitones = interval => Properties.props(interval).semitones;
 export const chroma = interval => Properties.props(interval).chroma;
 
-console.log(Properties.invert('M3'));
+console.log(Properties.props('m9'));
