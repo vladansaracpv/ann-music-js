@@ -15,8 +15,6 @@ export class Theory {
     'frequency'
   ];
 
-
-
   static EMPTY_NOTE = {
     name: undefined,
     letter: undefined,

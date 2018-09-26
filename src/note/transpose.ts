@@ -5,11 +5,8 @@ import { NAME } from './factory';
 export class Transpose {
 
   static semitones = (note: string, semitones: number): string => compose(NAME.fromMidi, add2)(midi(note), semitones);
-
   static tones = (note: string, tones: number): string => Transpose.semitones(note, 2 * tones);
-
   static octaves = (note: string, octaves: number): string => Transpose.semitones(note, 12 * octaves);
-
   static parseAmount = (amount: string): number => {
 
     const OCTAVE_REGEX = /^(octaves|octave|oct|o)?$/;
@@ -24,15 +21,12 @@ export class Transpose {
     return 0;
 
   };
-
   static transpose = (note: string, amount: string): string => {
     const amountVal = amount.split(' ');
     const n = Number.parseInt(amountVal[0]);
     const k = Transpose.parseAmount(amountVal[1] || '');
     return Transpose.semitones(note, n * k);
   };
-
   static next = (x, n = 1) => compose(NAME.fromMidi, compose(add(n), midi))(x);
-
   static prev = (x, n = 1) => Transpose.next(x, -n);
 }

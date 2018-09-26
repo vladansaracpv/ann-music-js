@@ -296,7 +296,7 @@ export class NAME {
   static FACTORY = curry((fromProp, withValue) => NAME.FROM[fromProp](withValue));
 }
 
-export const PROP_FACTORY_DICT = {
+const NOTE_PROP_FACTORY_DICT = {
   name:       NAME.FACTORY,
   letter:     LETTER.FACTORY,
   accidental: ACCIDENTAL.FACTORY,
@@ -309,7 +309,7 @@ export const PROP_FACTORY_DICT = {
   frequency:  FREQUENCY.FACTORY
 };
 
-export const PROP_FACTORY = curry((whatProp, fromProp, withValue) => {
-  return PROP_FACTORY_DICT[whatProp](fromProp, withValue);
+export const NOTE_PROP_FACTORY = curry((whatProp, fromProp, withValue) => {
+  return NOTE_PROP_FACTORY_DICT[whatProp](fromProp, withValue);
 });
 
