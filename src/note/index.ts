@@ -3,6 +3,7 @@ import { Distance } from './distance';
 import { Operators } from './operators';
 import { Properties, midi, frequency } from './properties';
 import { Transpose } from './transpose';
+import { compose } from '../helpers';
 
 export class Note {
 
@@ -18,20 +19,33 @@ export class Note {
   frequency: number;
 
   constructor(name: string, from = 'name') {
-    const props = Properties.props(name);
-    Object.assign(this, props);
-    Object.freeze(this);
+    compose(Object.freeze, Object.assign)(this, Properties.props(name));
   }
 
-  distanceFrom(n: Note, fn = midi) {
-    return Distance.distance(this.name, n.name, fn);
-  }
+  distanceFrom = (n: Note, fn = midi) => Distance.distance(this.name, n.name, fn);
+
+  gt = (other, f = midi) => Operators.gt(this.name, other.name, f);
+
+  geq = (other, f = midi) => Operators.geq(this.name, other.name, f);
+    ​
+  eq = (other, f = midi) => Operators.eq(this.name, other.name, f);
+    ​
+  lt = (other, f = midi) => Operators.lt(this.name, other.name, f);
+    ​
+  leq = (other, f = midi) => Operators.leq(this.name, other.name, f);
+
+  inInterval = (a, b, f = midi) => Operators.inInterval(a.name, b.name, this.name, f);
+    ​
+  inSegment = (a, b, f = midi) => Operators.inSegment(a.name, b.name, this.name, f);
+
+  enharmonic = () => Properties.enharmonic(this.name);
 
 }
 
 const c = new Note('C#4');
-const d = new Note('A#4');
-console.log(c.distanceFrom(d));
+const d = new Note('D#4');
+const e = new Note('E#4');
+console.log(d.enharmonic());
 
 
   // private createNote(key: any, value): Note {
