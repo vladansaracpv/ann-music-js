@@ -5,6 +5,7 @@ import * as transpose from './note/transpose';
 import { Validator } from './note/validator';
 import * as helpers from './helpers';
 import * as factory from './note/factory';
+import { Note } from './note/index';
 
 distance;
 operators;
@@ -12,3 +13,4 @@ note;
 Validator;
 transpose;
 factory;
+Note;
