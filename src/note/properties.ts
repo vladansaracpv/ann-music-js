@@ -26,11 +26,11 @@ export class Properties {
     const note = Theory.EMPTY_NOTE;
     note.letter = letter.toUpperCase();
     note.accidental = accidental;
-    note.octave = octave ? Number.parseInt(octave) : 4;
+    note.octave = (octave ? Number.parseInt(octave) : 4);
     note.pc = glue(note.letter, note.accidental);
     note.name = glue(note.pc, note.octave);
     note.step = Theory.LETTERS.indexOf(letter);
-    note.alteration = note.accidental.indexOf('b') > -1 ? -accidental.length : accidental.length;
+    note.alteration = (note.accidental.indexOf('b') > -1 ? -accidental.length : accidental.length);
     note.chroma = (Theory.SEMI[note.step] + note.alteration + 120) % 12;
     note.midi = Theory.SEMI[note.step] + note.alteration + 12 * (note.octave + 1);
     note.frequency = note.midi ? FREQUENCY.fromMidi(note.midi) : undefined;
@@ -65,9 +65,11 @@ export class Properties {
   static simplify = (note: string, sameAcc = true): any => {
 
     const ifMidi = Validator.isMidi(Properties.property('midi', note));
-
-    const nameFromMidi = compose(NAME.fromMidi, Properties.property('midi'))(note);
-    const nameFromPc = compose(Properties.property('pc'), NAME.fromMidi, Properties.property('chroma'))(note);
+    const hasSharps = Properties.property('alteration', note) > -1;
+    const useSharps = (sameAcc ? hasSharps : !hasSharps);
+    const fromMidi = note => NAME.fromMidi(note, useSharps);
+    const nameFromMidi = compose(fromMidi, Properties.property('midi'))(note);
+    const nameFromPc = compose(Properties.property('pc'), fromMidi, Properties.property('chroma'))(note);
 
 
     return either(nameFromMidi, nameFromPc, ifMidi);

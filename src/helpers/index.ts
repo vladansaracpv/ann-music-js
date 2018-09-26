@@ -33,7 +33,7 @@ export const diff2 = (a, b) => a - b;
 // Transformation methods
 export const rest = (x, n = 1) => x.substring(n, x.length - 1);
 export const flatten = X => [...[].concat(...[X])];
-export const glue = (...args) => args.reduce((acc, el) => acc.toString() + el.toString());
+export const glue = (...args) => args.reduce((acc, el) => acc + el);
 export const id = x => x;
 export const firstLetter = n => n[0];
 export const withTick = arr => arr.map(el => `'${el}'`);

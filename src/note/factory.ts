@@ -2,6 +2,7 @@ import { Theory as T } from './theory';
 import { compose, curry, firstLetter, and, or, withTick } from '../helpers';
 import { name, midi, octave, chroma, frequency } from './properties';
 import { FactoryError as ERROR } from '../error';
+import { either } from '../helpers/index';
 
 const dict = ERROR.errorDict;
 
@@ -265,20 +266,21 @@ export class OCTAVE {
 
 export class NAME {
   static fromName = name => name;
-  static fromMidi = (midi) => {
-    const midiValue = Math.round(midi);
-    const pc = T.SHARPS[midi % 12];
-    const o = Math.floor(midi / 12) - 1;
+  static fromOct = oct => ERROR.NEED_MORE_ARGS('name', 'octave', oct, and(['pc'], true));
+  static fromMidi = (midi, useSharps = true) => {
+    const _midi_ = Math.round(midi) % 12;
+    const _midi = Math.round(midi) / 12;
+    const pc = either(T.SHARPS[_midi_], T.FLATS[_midi_], useSharps);
+    const o = Math.floor(_midi) - 1;
     return pc + o;
   };
   static fromFreq = freq => compose(NAME.fromMidi, MIDI.FACTORY('freq'))(freq);
-  static fromLetter = letter => false;
-  static fromAcc = acc => false;
-  static fromOct = oct => false;
-  static fromPc = pc => false;
-  static fromStep = step => false;
-  static fromAlt = alt => false;
-  static fromChroma = chroma => false;
+  static fromLetter = letter => ERROR.NEED_MORE_ARGS('name', 'letter', letter, and([or(['alteration', 'accidental']), or(['octave'])], true));
+  static fromStep = step => ERROR.NEED_MORE_ARGS('name', 'step', step, and([or(['alteration', 'accidental']), or(['octave'])], true));
+  static fromAcc = acc => ERROR.NEED_MORE_ARGS('name', 'accidental', acc, and([or(['letter', 'step']), or(['octave'])], true));
+  static fromAlt = alt => ERROR.NEED_MORE_ARGS('name', 'alteration', alt, and([or(['letter', 'step']), or(['octave'])], true));
+  static fromPc = pc => ERROR.NEED_MORE_ARGS('name', 'pc', pc, and(['octave'], true));
+  static fromChroma = chroma => ERROR.NEED_MORE_ARGS('name', 'chroma', chroma, and(['octave'], true));
 
   static FROM = {
     name:       NAME.fromName,
