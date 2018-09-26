@@ -21,7 +21,11 @@ export class Note {
   enharmonic: string;
 
   private constructor(name: string) {
-    compose(Object.freeze, Object.assign)(this, { enharmonic: Properties.enharmonic(name) }, Properties.props(name));
+    compose(Object.freeze, Object.assign)(
+      this,
+      { enharmonic: Properties.enharmonic(name) },
+      Properties.props(name)
+    );
   }
 
   static create(value: any, from = 'name') {
@@ -45,5 +49,4 @@ export class Note {
   prev = (n = 1) => Transpose.prev(this.name, n);
 }
 
-const d = Note.create(60, 'midi');
-console.log(d);
+const d = Note.create(61, 'midi');

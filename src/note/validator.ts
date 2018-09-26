@@ -27,7 +27,7 @@ export class Validator {
     return '#b'.indexOf(accidental[0]) > -1;
   };
   static isOctave = octave => allTrue(!isEmpty(octave), isInt(+octave));
-  static isPc = pc => pc.length === 1 ? Validator.isLetter(pc) : allTrue(Validator.isLetter(pc[0]), Validator.isAccidental(rest(pc)));
+  static isPc = pc => (pc.length === 1 ? Validator.isLetter(pc) : allTrue(Validator.isLetter(pc[0]), Validator.isAccidental(pc.substring(1))));
   static isStep = step => isInt(step) && inside(0, 6, step);
   static isAlteration = alteration => isInt(alteration);
   static isChroma = chroma => isInt(chroma) && inside(0, 11, chroma);
