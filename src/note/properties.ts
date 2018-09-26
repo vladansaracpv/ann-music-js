@@ -86,17 +86,16 @@ export class Properties {
    */
   static enharmonic = (note: string): string => Properties.simplify(note, false);
 
-    // Getters for note properties
-  static _name = note => Properties.props(note).name;
-  static letter = note => Properties.props(note).letter;
-  static accidental = note => Properties.props(note).accidental;
-  static octave = note => Properties.props(note).octave;
-  static pc = note => Properties.props(note).pc;
-  static step = note => Properties.props(note).step;
-  static alteration = note => Properties.props(note).alteration;
-  static chroma = note => Properties.props(note).chroma;
-  static midi = note => Properties.props(note).midi;
-  static frequency = note => Properties.props(note).frequency;
 }
 
-
+  // Getters for note properties
+export const name = note => Properties.props(note).name;
+export const letter = note => Properties.props(note).letter;
+export const accidental = note => Properties.props(note).accidental;
+export const octave = note => Properties.props(note).octave;
+export const pc = note => Properties.props(note).pc;
+export const step = note => Properties.props(note).step;
+export const alteration = note => Properties.props(note).alteration;
+export const chroma = note => Properties.props(note).chroma;
+export const midi = note => Properties.props(note).midi;
+export const frequency = note => Properties.props(note).frequency;

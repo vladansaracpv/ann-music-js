@@ -1,7 +1,7 @@
 import { Theory } from './theory';
 import { Distance } from './distance';
 import { Operators } from './operators';
-import { Properties } from './properties';
+import { Properties, midi, frequency } from './properties';
 import { Transpose } from './transpose';
 
 export class Note {
@@ -17,20 +17,28 @@ export class Note {
   midi: number;
   frequency: number;
 
-  private createNote(key: any, value): Note {
-    const note = key === 'name' ? new Note(value) : new Note(this.name);
-    note[key] = value;
-    return note;
-  }
-
   constructor(name: string, from = 'name') {
     const props = Properties.props(name);
     Object.assign(this, props);
     Object.freeze(this);
   }
 
+  distanceFrom(n: Note, fn = midi) {
+    return Distance.distance(this.name, n.name, fn);
+  }
+
 }
 
+const c = new Note('C#4');
+const d = new Note('A#4');
+console.log(c.distanceFrom(d));
+
+
+  // private createNote(key: any, value): Note {
+  //   const note = key === 'name' ? new Note(value) : new Note(this.name);
+  //   note[key] = value;
+  //   return note;
+  // }
 
   // Name
   // get name(): string { return this._name; }
