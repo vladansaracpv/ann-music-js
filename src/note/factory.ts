@@ -237,4 +237,3 @@ export const PROP_FACTORY_DICT = {
 export const PROP_FACTORY = curry((whatProp, fromProp, withValue) => {
   return PROP_FACTORY_DICT[whatProp](fromProp, withValue);
 });
-
