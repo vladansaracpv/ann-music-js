@@ -17,6 +17,21 @@ export class Note {
   midi: number;
   frequency: number;
 
+  private createNote(key: any, value): Note {
+    const note = key === 'name' ? new Note(value) : new Note(this.name);
+    note[key] = value;
+    return note;
+  }
+
+  constructor(name: string, from = 'name') {
+    const props = Properties.props(name);
+    Object.assign(this, props);
+    Object.freeze(this);
+  }
+
+}
+
+
   // Name
   // get name(): string { return this._name; }
   // set name(name: string) { this.createNote('_name', name); }
@@ -56,17 +71,3 @@ export class Note {
   // Frequency
   // get frequency(): number { return this._frequency; }
   // set frequency(frequency: number) { this.createNote('_frequency', frequency); }
-
-  private createNote(key: any, value): Note {
-    const note = key === 'name' ? new Note(value) : new Note(this.name);
-    note[key] = value;
-    return note;
-  }
-
-  constructor(name: string, from = 'name') {
-    const props = Properties.props(name);
-    Object.assign(this, props);
-    Object.freeze(this);
-  }
-
-}
