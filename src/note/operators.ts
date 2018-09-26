@@ -1,4 +1,4 @@
-import { property, fromMidi } from './properties';
+import { property } from './properties';
 import { compose, curry } from '../helpers';
 
 export const midi = property('midi');
@@ -24,6 +24,5 @@ export const inInterval = curry((x, y, n, f = midi): any => lt(x, n, f) && lt(n,
 // x <= n <= y
 export const inSegment = curry((x, y, n, f = midi): any => leq(x, n, f) && leq(n, y, f));
 
-export const flatten = X => [...[].concat(...[X])];
 
 

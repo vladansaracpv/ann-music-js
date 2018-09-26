@@ -1,73 +1,47 @@
-import { LETTERS, REGEX, KEYS } from '../note/theory';
+import { Theory } from './theory';
+import {
+  isMember,
+  isInt,
+  isNum,
+  allTrue,
+  inside,
+  rest,
+  isEmpty,
+  madeOfChar
+}
+from '../helpers';
 
-export namespace Validator {
+export class Validator {
 
-  export const madeOfChar = el => el[0].repeat(el.length) === el;
-  export const isMember = (X: string | string[], k) => !isEmpty(k) && X.indexOf(k) > -1;
-  export const inside = (a, b, x) => a <= x && x <= b;
-  export const isInt = x => Number.isInteger(x);
-  export const isNum = x => typeof(x) === 'number';
-  export const isEmpty = x => x.length === 0;
-  export const rest = (x, n = 1) => x.substring(n, x.length - 1);
-  export const allTrue = (...args) => args.reduce((acc, x) => acc && x);
+  static isKey = key => isMember(Theory.KEYS, key);
 
-  // Function to parse note from note string
-  export const parseNote = (note = '') => {
-
-    const props = REGEX.exec(note);
-    if (!props) return undefined;
-    return {
-      letter: props[1].toUpperCase(),
-      accidental: props[2].replace(/x/g, '##'),
-      octave: props[3] && isInt(props[3]) ? isInt(props[3]) : 4,
-      rest: props[4]
-    };
+  static isName = (name) => {
+    const tokens = Theory.parse(name);
+    if (!tokens) return false;
+    const { letter, accidental, octave, rest } = tokens;
+    return allTrue(Validator.isLetter(letter), Validator.isAccidental(accidental), Validator.isOctave(octave));
   };
 
-  export const isKey = key => isMember(KEYS, key);
+  static isLetter = letter => isMember(Theory.LETTERS, letter);
 
-
-  export const isName = (name) => {
-    const { letter, accidental, octave, rest } = parseNote(name);
-    return allTrue(isLetter(letter), isAccidental(accidental), isOctave(octave));
-  };
-
-
-  export const isLetter = letter => isMember(LETTERS, letter);
-
-
-  export const isAccidental = (accidental) => {
+  static isAccidental = (accidental) => {
     if (isEmpty(accidental)) return true;
     if (!madeOfChar(accidental)) return false;
     return '#b'.indexOf(accidental[0]) > -1;
   };
 
+  static isOctave = octave => allTrue(!isEmpty(octave), isInt(+octave));
 
-  export const isOctave = octave => isInt(octave);
+  static isPc = pc => pc.length === 1 ? Validator.isLetter(pc) : allTrue(Validator.isLetter(pc[0]), Validator.isAccidental(rest(pc)));
 
+  static isStep = step => isInt(step) && inside(0, 6, step);
 
-  export const isPc = (pc) => {
+  static isAlteration = alteration => isInt(alteration);
 
-    if (pc.length === 1) return isLetter(pc);
+  static isChroma = chroma => isInt(chroma) && inside(0, 11, chroma);
 
-    return isLetter(pc[0]) && isAccidental(rest(pc));
-  };
+  static isMidi = midi => isInt(midi);
 
+  static isFrequency = freq => isNum(freq);
 
-  export const isStep = step => isInt(step) && inside(0, 6, step);
-
-
-  export const isAlteration = alteration => isInt(alteration);
-
-
-  export const isChroma = chroma => isInt(chroma) && inside(0, 11, chroma);
-
-
-  export const isMidi = midi => isInt(midi);
-
-
-  export const isFrequency = freq => isNum(freq);
-
-  // const a = parseNote('C#4');
 }
-// console.log(Validator.isName('V#'));

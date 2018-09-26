@@ -1,8 +1,9 @@
 import { error } from '../error';
-import { compose, curry } from '../helpers';
-import { KEYS, LETTERS, SEMI, SHARPS, FLATS, REGEX } from './theory';
+import { compose, curry, either } from '../helpers';
+import { Theory } from './theory';
 import { Validator } from './validator';
 import { transposeBy } from './transpose';
+import { FREQUENCY, MIDI, NAME } from './factory';
 
 
 export const EMPTY_NOTE = {
@@ -35,42 +36,6 @@ export const isCharRepeated = (str: string, chr: string): boolean => {
   const len = str.length;
   return str === chr.repeat(len);
 };
-
-/**
- *  Calculate note's frequency from note's MIDI number.
- *
- *  @function
- *
- *  @param {number} midi            MIDI value.
- *  @param {number} [tuning = 440]  Tuning to be used.
- *
- *  @return {number}                Frequency for given @midi number.
- *
- */
-export const midiToFreq = (midi: number, tuning: number = 440): number => {
-  return 2 ** ((midi - 69) / 12) * tuning;
-};
-
-
-/**
- *  Calculate note's MIDI number from note's frequency.
- *
- *  @function
- *
- *  @param {number} freq            Note frequency.
- *  @param {number} [tuning = 440]  Tuning to be used.
- *
- *  @return {number}                MIDI number for given @freq value.
- *
- */
-export const freqToMidi = (freq: number, tuning: number = 440): number => {
-
-  if (!Validator.isFrequency(freq)) return undefined;
-
-  return Math.ceil(12 * Math.log2(freq / tuning) + 69);
-
-};
-
 
 /**
  *  Calculate Note.name from @pc and @octave
@@ -145,7 +110,7 @@ export const setOctave = (octave: string): number => {
  */
 export const setStep = (letter: string): number => {
   if (!Validator.isLetter(letter)) return undefined;
-  return LETTERS.indexOf(letter);
+  return Theory.LETTERS.indexOf(letter);
 };
 
 
@@ -161,7 +126,7 @@ export const setStep = (letter: string): number => {
  */
 export const setAlteration = (accidental: string): number => {
   if (!Validator.isAccidental(accidental)) return undefined;
-  if (accidental.length ===0) return 0;
+  if (accidental.length === 0) return 0;
   return accidental[0] === '#'
          ? accidental.length
          : accidental.length;
@@ -180,7 +145,7 @@ export const setAlteration = (accidental: string): number => {
  *
  */
 export const setChroma = (step: number, alteration: number): number => {
-  return (SEMI[step] + alteration + 120) % 12;
+  return (Theory.SEMI[step] + alteration + 120) % 12;
 };
 
 
@@ -198,7 +163,7 @@ export const setChroma = (step: number, alteration: number): number => {
 export const setMidi = (octave: number, step: number, alteration: number): number => {
 
   if (!octave) return undefined;
-  return SEMI[step] + alteration + 12 * (octave + 1);
+  return Theory.SEMI[step] + alteration + 12 * (octave + 1);
 
 };
 
@@ -214,30 +179,7 @@ export const setMidi = (octave: number, step: number, alteration: number): numbe
  *
  */
 export const setFrequency = (midi: number): number => {
-  return midi ? midiToFreq(midi) : undefined;
-};
-
-
-/**
- *  Parse note from string
- *
- *  @function
- *
- *  @param {string} note        Note string
- *
- *  @return {object}            Object of { letter, accidental, octave, rest }
- *
- */
-export const parse = (note: string = ''): any => {
-
-  const props = REGEX.exec(note);
-  if (!props) return undefined;
-  return {
-    letter: props[1].toUpperCase(),
-    accidental: props[2].replace(/x/g, '##'),
-    octave: props[3],
-    rest: props[4]
-  };
+  return midi ? FREQUENCY.fromMidi(midi) : undefined;
 };
 
 
@@ -253,7 +195,7 @@ export const parse = (note: string = ''): any => {
  */
 export const NOTE = (name): any => {
 
-  const { letter, accidental, octave, rest } = parse(name);
+  const { letter, accidental, octave, rest } = Theory.parse(name);
   if (letter === '' || rest !== '') return EMPTY_NOTE;
 
   const note = EMPTY_NOTE;
@@ -299,42 +241,6 @@ export const property = curry((name, note) => NOTE(note)[name]);
 
 
 /**
- *  Create note object from midi value
- *
- *  @function
- *
- *  @param {number} midiValue         Note midi value
- *  @param {boolean} [sharps = true]   Should the note be created with sharps
- *
- *  @return {any}                     Note object
- *
- */
-export const fromMidi = (midiValue: number, sharps: boolean = true): any => {
-  const midi = Math.round(midiValue);
-  const pcs = sharps === true ? SHARPS : FLATS;
-  const pc = pcs[midi % 12];
-  const o = Math.floor(midi / 12) - 1;
-  return pc + o;
-};
-
-
-/**
- *  Create note object from frequency value
- *
- *  @function
- *
- *  @param {number} freq         Note frequency
- *  @param {boolean} [sharps = true]   Should the note be created with sharps
- *
- *  @return {any}                     Note object
- *
- */
-export const fromFreq = (freq: number, sharps: boolean = true): any => {
-  return compose(fromMidi, freqToMidi)(freq, sharps);
-};
-
-
-/**
  *  Return note in simplified notation if possible.
  *
  *  @function
@@ -345,14 +251,13 @@ export const fromFreq = (freq: number, sharps: boolean = true): any => {
  *  @return {any}                       Note object
  *
  */
-export const simplify = (note: string, sameAcc: boolean = true): any => {
+export const simplify = (note: string, sameAcc = true): any => {
 
   const ifMidi = Validator.isMidi(property('midi', note));
 
-  const nameFromMidi = compose(fromMidi, property('midi'))(note);
-  const nameFromPc = compose(property('pc'), fromMidi, property('chroma'))(note);
+  const nameFromMidi = compose(NAME.fromMidi, property('midi'))(note);
+  const nameFromPc = compose(property('pc'), NAME.fromMidi, property('chroma'))(note);
 
-  const either = (f, g, c) => c ? f : g;
 
   return either(nameFromMidi, nameFromPc, ifMidi);
 

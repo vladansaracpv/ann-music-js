@@ -1,61 +1,42 @@
-import { property, fromMidi } from './properties';
-import { compose } from '../helpers';
-
-export const transposeBySemitone = (note, semitones) => {
-  const midi = property('midi');
-  const midiTransposed = (note, semitones) => midi(note) + semitones;
-  return compose(fromMidi, midiTransposed)(note, semitones);
-};
-
-export const parseTransAmount = (amount) => {
-  // If no string value given, we assume it should be transposed in semitones
-  if (amount.length === 0) return 1;
-
-  const isOctave = (
-    amount.indexOf('octave') > -1 ||
-    amount.indexOf('oct') > -1 ||
-    amount.indexOf('o') > -1
-  );
-
-  const isSteps = amount.indexOf('steps') > -1;
-
-  const isSemi = (
-    amount.indexOf('halfsteps') > -1 ||
-    amount.indexOf('half') > -1 ||
-    amount.indexOf('semi') > -1 ||
-    amount.indexOf('h') > -1
-  );
-
-  if (isOctave) return 12;
-  if (isSteps) return 6;
-
-  return isSemi ? 1 : 0;
-
-};
-
-export const transposeBy = (note, amount) => {
-  const amountVal = amount.split(' ');
-  const n = Number.parseInt(amountVal[0]);
-  const k = parseTransAmount(amountVal[1] || '');
-  return transposeBySemitone(note, n * k);
-};
+import { property } from './properties';
+import { compose, add, add2, somethingTrue } from '../helpers';
+import { NAME } from './factory';
 
 const midi = property('midi');
 
-export const add = a => b => a + b;
-export const next = (x, n = 1) => compose(fromMidi, compose(add(n), midi))(x);
-export const prev = (x, n = 1) => next(x, -n);
+export class Transpose {
 
+  static semitones = (note: string, semitones: number): string => compose(NAME.fromMidi, add2)(midi(note), semitones);
 
-/*
-  create := prop(N) => N
-  create => f(N) => N
+  static tones = (note: string, tones: number): string => Transpose.semitones(note, 2 * tones);
 
-  create:
-    Note.property => Note
-    transform(Note) => Note
-    create('Note').from('Note').with('chroma', 5)
-    create('Note').from('Note').that('a => a.chroma === 5')
-    create('Note').from('C#2 - 3').down('3 step')
-    create('Note').from('C#m chord')
- */
+  static octaves = (note: string, octaves: number): string => Transpose.semitones(note, 12 * octaves);
+
+  static parseAmount = (amount: string): number => {
+
+    const OCTAVE_REGEX = /^(octaves|octave|oct|o)?$/;
+    const STEPS_REGEX = /^(steps|step|s)?$/;
+    const SEMI_REGEX = /^(halfsteps|halves|half|semi|h)$/;
+
+    if (amount.length === 0) return 1;
+    if (OCTAVE_REGEX.test(amount)) return 12;
+    if (STEPS_REGEX.test(amount)) return 6;
+    if (SEMI_REGEX.test(amount)) return 1;
+
+    return 0;
+
+  };
+
+  static transpose = (note: string, amount: string): string => {
+    const amountVal = amount.split(' ');
+    const n = Number.parseInt(amountVal[0]);
+    const k = Transpose.parseAmount(amountVal[1] || '');
+    return Transpose.semitones(note, n * k);
+  };
+
+  static next = (x, n = 1) => compose(NAME.fromMidi, compose(add(n), midi))(x);
+
+  static prev = (x, n = 1) => Transpose.next(x, -n);
+}
+
+console.log(Transpose.next('C4', 7));

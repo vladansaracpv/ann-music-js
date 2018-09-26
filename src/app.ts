@@ -10,4 +10,5 @@ distance;
 operators;
 note;
 Validator;
+transpose;
 factory;

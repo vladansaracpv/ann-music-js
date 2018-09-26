@@ -26,3 +26,18 @@ export const and = (args, hasTick = false) => {
   const argsWithTick = hasTick ? args : withTick(args);
   return `[ ${argsWithTick.join(', ')} ]`;
 };
+
+export const either = (f, g, c) => c ? f : g;
+
+export const madeOfChar = el => el[0].repeat(el.length) === el;
+export const isMember = (X: string | string[], k) => !isEmpty(k) && X.indexOf(k) > -1;
+export const inside = (a, b, x) => a <= x && x <= b;
+export const isInt = x => Number.isInteger(x);
+export const isNum = x => typeof(x) === 'number';
+export const isEmpty = x => x.length === 0;
+export const rest = (x, n = 1) => x.substring(n, x.length - 1);
+export const allTrue = (...args) => args.reduce((acc, x) => acc && x);
+export const somethingTrue = (...args) => args.reduce((acc, x) => acc || x);
+export const flatten = X => [...[].concat(...[X])];
+export const add = a => b => a + b;
+export const add2 = (a, b) => a + b;
