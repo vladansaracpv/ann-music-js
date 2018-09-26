@@ -1,4 +1,5 @@
 import { Theory } from './theory';
+import { accidental } from './properties';
 import {
   isMember,
   isInt,
@@ -7,7 +8,8 @@ import {
   inside,
   rest,
   isEmpty,
-  madeOfChar
+  madeOfChar,
+  firstLetter
 }
 from '../helpers';
 
@@ -24,7 +26,7 @@ export class Validator {
   static isAccidental = (accidental) => {
     if (isEmpty(accidental)) return true;
     if (!madeOfChar(accidental)) return false;
-    return '#b'.indexOf(accidental[0]) > -1;
+    return '#b'.indexOf(firstLetter(accidental)) > -1;
   };
   static isOctave = octave => allTrue(!isEmpty(octave), isInt(+octave));
   static isPc = pc => (pc.length === 1 ? Validator.isLetter(pc) : allTrue(Validator.isLetter(pc[0]), Validator.isAccidental(pc.substring(1))));

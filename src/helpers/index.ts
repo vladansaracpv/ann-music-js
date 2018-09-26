@@ -45,3 +45,5 @@ export const and = (args, hasTick = false) => {
   const argsWithTick = hasTick ? args : withTick(args);
   return `[ ${argsWithTick.join(', ')} ]`;
 };
+    
+export const fillStr = (s, n) => Array(Math.abs(n) + 1).join(s);

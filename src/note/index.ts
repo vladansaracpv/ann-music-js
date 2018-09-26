@@ -28,8 +28,8 @@ export class Note {
     );
   }
 
-  static create(value: any, from = 'name') {
-    const name = NOTE_PROP_FACTORY('name', from, value);
+  static create(withValue: any, fromProp = 'name') {
+    const name = NOTE_PROP_FACTORY('name', fromProp, withValue);
     if (!name) return undefined;
     return new Note(name);
   }
@@ -48,5 +48,3 @@ export class Note {
   next = (n = 1) => Transpose.next(this.name, n);
   prev = (n = 1) => Transpose.prev(this.name, n);
 }
-
-const d = Note.create(61, 'midi');

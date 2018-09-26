@@ -6,6 +6,8 @@ import { Validator } from './note/validator';
 import * as helpers from './helpers';
 import * as factory from './note/factory';
 import { Note } from './note/index';
+import { Theory } from './interval/theory';
+import { Properties } from './interval/properties';
 
 distance;
 operators;
@@ -14,3 +16,6 @@ Validator;
 transpose;
 factory;
 Note;
+
+Theory;
+Properties;

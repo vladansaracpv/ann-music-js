@@ -1,5 +1,5 @@
 import { midi } from './properties';
-import { compose, add, add2, somethingTrue } from '../helpers';
+import { compose, add, add2, somethingTrue, firstLetter } from '../helpers';
 import { NAME } from './factory';
 
 export class Transpose {
@@ -23,7 +23,7 @@ export class Transpose {
   };
   static transpose = (note: string, amount: string): string => {
     const amountVal = amount.split(' ');
-    const n = Number.parseInt(amountVal[0]);
+    const n = Number.parseInt(firstLetter(amountVal));
     const k = Transpose.parseAmount(amountVal[1] || '');
     return Transpose.semitones(note, n * k);
   };
