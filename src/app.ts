@@ -9,6 +9,8 @@ import { Note } from './note/index';
 import { Theory } from './interval/theory';
 import { Properties } from './interval/properties';
 
+import * as beat from './beat';
+
 distance;
 operators;
 note;
@@ -19,3 +21,5 @@ Note;
 
 Theory;
 Properties;
+
+beat;

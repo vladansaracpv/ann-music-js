@@ -82,4 +82,3 @@ export const alteration = interval => Properties.props(interval).alteration;
 export const semitones = interval => Properties.props(interval).semitones;
 export const chroma = interval => Properties.props(interval).chroma;
 
-console.log(Properties.props('m9'));
