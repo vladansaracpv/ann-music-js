@@ -84,5 +84,5 @@ export class Beat {
 }
 
 const c = new Beat(4, 4);
-c.print();
+// c.print();
 // c.sheet();
