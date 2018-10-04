@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 var helpers_1 = require("../helpers");
 var FactoryError = /** @class */ (function () {
     function FactoryError() {
@@ -28,4 +28,3 @@ var FactoryError = /** @class */ (function () {
     return FactoryError;
 }());
 exports.FactoryError = FactoryError;
-//# sourceMappingURL=index.js.map

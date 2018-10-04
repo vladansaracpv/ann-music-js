@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 var Theory = /** @class */ (function () {
     function Theory() {
     }
@@ -85,4 +85,3 @@ var Theory = /** @class */ (function () {
     return Theory;
 }());
 exports.Theory = Theory;
-//# sourceMappingURL=theory.js.map

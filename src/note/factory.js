@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 var theory_1 = require("./theory");
 var helpers_1 = require("../helpers");
 var properties_1 = require("./properties");
@@ -87,7 +87,7 @@ var ACCIDENTAL = /** @class */ (function () {
         frequency: ACCIDENTAL.fromFreq,
         letter: ACCIDENTAL.fromLetter,
         step: ACCIDENTAL.fromStep,
-        octave: ACCIDENTAL.fromOct,
+        octave: ACCIDENTAL.fromOct
     };
     ACCIDENTAL.FACTORY = helpers_1.curry(function (fromProp, withValue) { return ACCIDENTAL.FROM[fromProp](withValue); });
     return ACCIDENTAL;
@@ -116,7 +116,7 @@ var ALTERATION = /** @class */ (function () {
         frequency: ALTERATION.fromFreq,
         letter: ALTERATION.fromLetter,
         step: ALTERATION.fromStep,
-        octave: ALTERATION.fromOct,
+        octave: ALTERATION.fromOct
     };
     ALTERATION.FACTORY = helpers_1.curry(function (fromProp, withValue) { return ALTERATION.FROM[fromProp](withValue); });
     return ALTERATION;
@@ -270,7 +270,7 @@ var OCTAVE = /** @class */ (function () {
         pc: OCTAVE.fromPc,
         step: OCTAVE.fromStep,
         alteration: OCTAVE.fromAlt,
-        chroma: OCTAVE.fromChroma,
+        chroma: OCTAVE.fromChroma
     };
     OCTAVE.FACTORY = helpers_1.curry(function (fromProp, withValue) { return OCTAVE.FROM[fromProp](withValue); });
     return OCTAVE;
@@ -306,7 +306,7 @@ var NAME = /** @class */ (function () {
         pc: NAME.fromPc,
         step: NAME.fromStep,
         alteration: NAME.fromAlt,
-        chroma: NAME.fromChroma,
+        chroma: NAME.fromChroma
     };
     NAME.FACTORY = helpers_1.curry(function (fromProp, withValue) { return NAME.FROM[fromProp](withValue); });
     return NAME;
@@ -327,4 +327,3 @@ var NOTE_PROP_FACTORY_DICT = {
 exports.NOTE_PROP_FACTORY = helpers_1.curry(function (whatProp, fromProp, withValue) {
     return NOTE_PROP_FACTORY_DICT[whatProp](fromProp, withValue);
 });
-//# sourceMappingURL=factory.js.map

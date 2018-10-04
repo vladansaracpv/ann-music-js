@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 var properties_1 = require("./properties");
 var helpers_1 = require("../helpers");
 var Operators = /** @class */ (function () {
@@ -53,4 +53,3 @@ var Operators = /** @class */ (function () {
     return Operators;
 }());
 exports.Operators = Operators;
-//# sourceMappingURL=operators.js.map

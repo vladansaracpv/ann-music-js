@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 var helpers_1 = require("../helpers");
 var theory_1 = require("./theory");
 var validator_1 = require("./validator");
@@ -95,4 +95,3 @@ exports.alteration = function (note) { return Properties.props(note).alteration;
 exports.chroma = function (note) { return Properties.props(note).chroma; };
 exports.midi = function (note) { return Properties.props(note).midi; };
 exports.frequency = function (note) { return Properties.props(note).frequency; };
-//# sourceMappingURL=properties.js.map

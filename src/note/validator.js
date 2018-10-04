@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 var theory_1 = require("./theory");
 var helpers_1 = require("../helpers");
 var Validator = /** @class */ (function () {
@@ -31,4 +31,3 @@ var Validator = /** @class */ (function () {
     return Validator;
 }());
 exports.Validator = Validator;
-//# sourceMappingURL=validator.js.map

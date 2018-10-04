@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 var properties_1 = require("./properties");
 var helpers_1 = require("../helpers");
 var Distance = /** @class */ (function () {
@@ -13,4 +13,3 @@ var Distance = /** @class */ (function () {
     return Distance;
 }());
 exports.Distance = Distance;
-//# sourceMappingURL=distance.js.map

@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 // Functional programming methods
 exports.compose = function () {
     var fns = [];
@@ -84,4 +84,3 @@ exports.and = function (args, hasTick) {
     return "[ " + argsWithTick.join(', ') + " ]";
 };
 exports.fillStr = function (s, n) { return Array(Math.abs(n) + 1).join(s); };
-//# sourceMappingURL=index.js.map

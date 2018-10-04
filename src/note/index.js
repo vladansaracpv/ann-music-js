@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 var distance_1 = require("./distance");
 var operators_1 = require("./operators");
 var properties_1 = require("./properties");
@@ -62,4 +62,3 @@ var Note = /** @class */ (function () {
     return Note;
 }());
 exports.Note = Note;
-//# sourceMappingURL=index.js.map

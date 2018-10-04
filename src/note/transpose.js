@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 var properties_1 = require("./properties");
 var helpers_1 = require("../helpers");
 var factory_1 = require("./factory");
@@ -40,4 +40,3 @@ var Transpose = /** @class */ (function () {
     return Transpose;
 }());
 exports.Transpose = Transpose;
-//# sourceMappingURL=transpose.js.map
