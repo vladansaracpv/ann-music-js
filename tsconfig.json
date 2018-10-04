@@ -6,16 +6,16 @@
       "moduleResolution": "node",
       "target": "es5",
       "resolveJsonModule": true,
-      "allowJs": true,
       "noImplicitAny": false,
-      "sourceMap": true,
+      "sourceMap": false,
+      "allowJs": true,
       "baseUrl": ".",
       "lib": [
         "dom",
         "es6",
         "es2015"
       ],
-      "outDir": "build"
+      "outDir": "dist"
   },
   "exclude": [
       "node_modules",

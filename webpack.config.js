@@ -1,10 +1,12 @@
 const path = require('path');
 
 module.exports = {
-    entry: path.join(__dirname, '/src/app.ts'),
+    mode: 'development',
+    entry: './src/app.ts',
     output: {
-        filename: 'app.js',
-        path: path.resolve(__dirname, 'build'),
+        filename: 'bundle.js',
+        publicPath: 'http://localhost:3000/dist/',
+        path: path.resolve(__dirname, 'dist'),
     },
     module: {
         rules: [
@@ -14,6 +16,12 @@ module.exports = {
                 exclude: /node_modules/,
             },
         ]
+    },
+    devServer: {
+        openPage: '/dist',
+        hot: true,
+        inline: false,
+        port: 3000
     },
     resolve: {
         extensions: [".ts", ".tsx", ".js"],

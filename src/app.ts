@@ -1,32 +1,26 @@
-// import { Distance } from './note/distance';
-// import { Note } from './note/index';
-// import * as Tone from 'Tone';
 import * as Tone from 'tone';
 
-// const c = Note.create('C4');
+const audioContext  = new AudioContext();
 
-const audioCtx = new AudioContext();
 
-const oscillator = audioCtx.createOscillator();
-oscillator.type = 'sine'; // sine wave — other values are 'sine', 'sawtooth', 'triangle' and 'custom'
-// oscillator.frequency.value = c.frequency; // value in hertz
+const loadSound = (sound: string, baseUrl = '/src/sounds/'): AudioBufferSourceNode => {
+  const sourceNode = audioContext.createBufferSource();
+  fetch(baseUrl + sound)
+    .then(response => response.arrayBuffer())
+    .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
+    .then((audioBuffer) => {
+      sourceNode.buffer = audioBuffer;
+    })
+    .catch(e => console.error(e));
+  return sourceNode;
+};
 
-const gainNode = audioCtx.createGain();
+const hi = loadSound('chorus-female-g5.wav');
 
-oscillator.connect(gainNode);
-gainNode.connect(audioCtx.destination);
+const pannerNodehi = audioContext.createStereoPanner();
+pannerNodehi.pan.value = -1;
+hi.connect(pannerNodehi);
+pannerNodehi.connect(audioContext.destination);
+hi.start(0, 0, 5);
 
-const now = audioCtx.currentTime;
-
-let kick;
-let hat;
-let snare;
-
-// const Tone = require('Tone');
-
-const synth = new Tone.FMSynth().toMaster();
-
-synth.triggerAttackRelease('C4', 0.5, 0);
-synth.triggerAttackRelease('E4', 0.5, 1);
-synth.triggerAttackRelease('G4', 0.5, 2);
-synth.triggerAttackRelease('B4', 0.5, 3);
+console.log('Ok');

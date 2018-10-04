@@ -7,4 +7,5 @@
     ],
     "eslint.enable": false,
     "prettier.singleQuote": true,
+    "cSpell.enabled": false,
 }
