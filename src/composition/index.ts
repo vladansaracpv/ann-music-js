@@ -1,6 +1,5 @@
-
-
-let audioCtx = new AudioContext();
+export namespace Composition {
+const audioCtx = new AudioContext();
 
 const oscillator = audioCtx.createOscillator();
 
@@ -16,4 +15,4 @@ const now = audioCtx.currentTime;
 
 oscillator.start(now);
 oscillator.stop(now + 1);
-// }
+}

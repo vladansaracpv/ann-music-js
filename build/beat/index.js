@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var Beats;
 (function (Beats) {
-    class Grammar {
-        constructor() {
+    var Grammar = /** @class */ (function () {
+        function Grammar() {
             this.terminals = ['w', 'h', 'q'];
             this.tokens = ['W', 'H', 'Q'];
             this.durations = {
@@ -17,50 +17,51 @@ var Beats;
                 Q: ['q']
             };
         }
-    }
-    class Note {
-        constructor(duration, rules) {
+        return Grammar;
+    }());
+    var Note = /** @class */ (function () {
+        function Note(duration, rules) {
             this.duration = duration;
             this.rules = rules;
         }
-    }
-    class Data {
-        constructor(sentence, parse) {
+        return Note;
+    }());
+    var Data = /** @class */ (function () {
+        function Data(sentence, parse) {
             this.sentence = sentence;
             this.parse = parse;
         }
-    }
-    class Node {
-        constructor(data) {
-            this.print = () => console.log(`Generated: ${this.data.sentence}, Parsing: ${this.data.parse}`);
+        return Data;
+    }());
+    var Node = /** @class */ (function () {
+        function Node(data) {
+            var _this = this;
+            this.print = function () { return console.log("Generated: " + _this.data.sentence + ", Parsing: " + _this.data.parse); };
             this.data = data;
         }
-    }
-    class Parser {
-        constructor(root) {
+        return Node;
+    }());
+    var Parser = /** @class */ (function () {
+        function Parser(root) {
         }
-    }
+        return Parser;
+    }());
 })(Beats = exports.Beats || (exports.Beats = {}));
-class Beat {
-    constructor(beats, unit) {
-        this.print = () => console.log(`Time signature: ${this.beats}/${this.unit}`);
-        this.sheet = () => {
-            const s = `
-      1   2   3   4     1   2   3   4
-    +---+---+---+---+ +---+---+---+---+
-    | o |   | o |   | |   |   |   |   |
-    +---+---+---+---+ +---+---+---+---+
-    | 1 | & | 2 | & | | 3 | & | 4 | & |
-    +---+---+---+---+ +---+---+---+---+
-    `;
+var Beat = /** @class */ (function () {
+    function Beat(beats, unit) {
+        var _this = this;
+        this.print = function () { return console.log("Time signature: " + _this.beats + "/" + _this.unit); };
+        this.sheet = function () {
+            var s = "\n      1   2   3   4     1   2   3   4\n    +---+---+---+---+ +---+---+---+---+\n    | o |   | o |   | |   |   |   |   |\n    +---+---+---+---+ +---+---+---+---+\n    | 1 | & | 2 | & | | 3 | & | 4 | & |\n    +---+---+---+---+ +---+---+---+---+\n    ";
             console.log(s);
         };
         this.unit = unit;
         this.beats = beats;
     }
-}
+    return Beat;
+}());
 exports.Beat = Beat;
-const c = new Beat(4, 4);
+var c = new Beat(4, 4);
 // c.print();
 // c.sheet();
 //# sourceMappingURL=index.js.map

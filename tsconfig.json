@@ -4,7 +4,7 @@
       "esModuleInterop": true,
       "allowSyntheticDefaultImports": true,
       "moduleResolution": "node",
-      "target": "es6",
+      "target": "es5",
       "resolveJsonModule": true,
       "allowJs": true,
       "noImplicitAny": false,
@@ -12,7 +12,8 @@
       "baseUrl": ".",
       "lib": [
         "dom",
-        "es6"
+        "es6",
+        "es2015"
       ],
       "outDir": "build"
   },
