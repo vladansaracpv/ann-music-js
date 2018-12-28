@@ -26,7 +26,7 @@ describe('\nVALIDATIONS', () => {
     });
 
     it(`should return FALSE otherwise: (name = 'Vb' | name = 'C#3.2' | name = 'C#b4')`, () => {
-      const result = Validator.isName('C#');
+      const result = Validator.isName('C#3.2');
       expect(result).to.equal(false);
     });
 

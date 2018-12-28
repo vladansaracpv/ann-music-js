@@ -1,7 +1,7 @@
-import { compose, curry, either, glue } from '../helpers';
-import { Theory } from './theory';
-import { Validator } from './validator';
-import { FREQUENCY, MIDI, NAME } from './factory';
+import { curry, glue } from '../helpers';
+import { Theory as NOTE } from './theory';
+import { FREQUENCY } from './factories/frequency';
+import { NAME } from './factories/name';
 
 export class Properties {
 
@@ -10,46 +10,106 @@ export class Properties {
    *
    *  @function
    *
-   *  @param {string} note        Note string
+   *  @param  {string} note   Note string
    *
-   *  @return {object}            Note object
+   *  @return {object}        Note object
    *
    */
   static props = (noteName): any => {
 
-    const tokens = Theory.parse(noteName);
-    if (!tokens) return Theory.EMPTY_NOTE;
+    const tokens = NOTE.parse(noteName);
+    if (!tokens) return NOTE.EMPTY_NOTE;
 
-    const { letter, accidental, octave, rest } = tokens;
-    if (letter === '' || rest !== '') return Theory.EMPTY_NOTE;
+    const { letter, accidental, octave } = tokens;
 
-    const note = Theory.EMPTY_NOTE;
-    note.letter = letter.toUpperCase();
-    note.accidental = accidental;
-    note.octave = (octave ? Number.parseInt(octave) : 4);
-    note.pc = glue(note.letter, note.accidental);
-    note.name = glue(note.pc, note.octave);
-    note.step = Theory.LETTERS.indexOf(letter);
-    note.alteration = (note.accidental.indexOf('b') > -1 ? -accidental.length : accidental.length);
-    note.chroma = (Theory.SEMI[note.step] + note.alteration + 120) % 12;
-    note.midi = Theory.SEMI[note.step] + note.alteration + 12 * (note.octave + 1);
-    note.frequency = note.midi ? FREQUENCY.fromMidi(note.midi) : undefined;
 
-    return note;
+    /**
+     *  Pitch Class (pc) is made from 
+     *  - @letter (C, D, E.., B)
+     *  - @accidental ('#', 'bb', '')
+     *  
+     *  Example: C#, Gb, F##
+     */
+    const pc = glue(letter, accidental);
+
+
+    /**
+     *  Note name is pitch class with octave
+     *  
+     *  Example: C#4, Gb3, F##5
+     */
+    const name = glue(pc, octave);
+
+
+    /**
+     *  Note step is index of it's letter, starting from 0 (C)
+     *  
+     *  Example: C(0), F(3)...
+     */
+    const step = NOTE.LETTERS.indexOf(letter);
+
+
+    /**
+     *  Note alteration is integer value of accidental value
+     *  - # = +1
+     *  - b = -1
+     * 
+     *  Example: ## = 2, bb = -2
+     */
+    const accl = accidental.length;
+    const alteration = accidental.indexOf('b') ? accl : -accl;
+
+
+    /**
+     *  Note chroma value is index of it's PC starting from 0 (C),
+     * 
+     *  Example: C#: 1, F#/Gb: 6
+     */
+    const chroma = Math.abs(NOTE.WHITES[step] + alteration) % 12;
+
+
+    /**
+     *  Note midi value is it's unique index used in midi devices
+     * 
+     *  Example: C4: 60, C-1: 0, D#2: 39
+     */
+    const midi = NOTE.WHITES[step] + alteration + 12 * (octave + 1);
+
+
+    /**
+     *  Note frequency
+     */
+    const frequency = midi ? FREQUENCY.fromMidi(midi) : undefined;
+
+    return {
+      ...NOTE.EMPTY_NOTE,
+      name,
+      letter,
+      step,
+      accidental,
+      alteration,
+      octave,
+      pc,
+      chroma,
+      midi,
+      frequency
+    };
   };
 
+  
   /**
    *  Create note object by parsing note string
    *
    *  @function
    *
-   *  @param {string} property    Note property
-   *  @param {string} note        Note string
+   *  @param  {string} property   Note property
+   *  @param  {string} note       Note string
    *
    *  @return {any}               Note property
    *
    */
   static property = curry((name, note) => Properties.props(note)[name]);
+
 
   /**
    *  Return note in simplified notation if possible.
@@ -62,18 +122,16 @@ export class Properties {
    *  @return {any}                       Note object
    *
    */
-  static simplify = (note: string, sameAcc = true): any => {
+  static simplify = (note: string, withSameAccidentals = true): any => {
+    /** Try to get midi value */
+    const midi = Properties.property('midi', note);
+    
+    /** Should the same accidentals be used */
+    const alteration = Properties.property('alteration', note);
+    const hasSharps = alteration > 0;
+    const useSharps = withSameAccidentals ? hasSharps : !hasSharps;
 
-    const ifMidi = Validator.isMidi(Properties.property('midi', note));
-    const hasSharps = Properties.property('alteration', note) > -1;
-    const useSharps = (sameAcc ? hasSharps : !hasSharps);
-    const fromMidi = note => NAME.fromMidi(note, useSharps);
-    const nameFromMidi = compose(fromMidi, Properties.property('midi'))(note);
-    const nameFromPc = compose(Properties.property('pc'), fromMidi, Properties.property('chroma'))(note);
-
-
-    return either(nameFromMidi, nameFromPc, ifMidi);
-
+    return NAME.fromMidi(midi, useSharps);
   };
 
   /**
@@ -81,23 +139,23 @@ export class Properties {
    *
    *  @function
    *
-   *  @param {string}  note               Note string
+   *  @param  {string}  note       Note string
    *
-   *  @return {string}                    Note object
+   *  @return {string}            Note object
    *
    */
   static enharmonic = (note: string): string => Properties.simplify(note, false);
-
 }
 
-  // Getters for note properties
-export const name = note => Properties.props(note).name;
-export const letter = note => Properties.props(note).letter;
-export const accidental = note => Properties.props(note).accidental;
-export const octave = note => Properties.props(note).octave;
-export const pc = note => Properties.props(note).pc;
-export const step = note => Properties.props(note).step;
-export const alteration = note => Properties.props(note).alteration;
-export const chroma = note => Properties.props(note).chroma;
-export const midi = note => Properties.props(note).midi;
-export const frequency = note => Properties.props(note).frequency;
+// Getters for note properties
+const props = Properties.props;
+export const name =       note => props(note).name;
+export const letter =     note => props(note).letter;
+export const step =       note => props(note).step;
+export const accidental = note => props(note).accidental;
+export const alteration = note => props(note).alteration;
+export const octave =     note => props(note).octave;
+export const pc =         note => props(note).pc;
+export const chroma =     note => props(note).chroma;
+export const midi =       note => props(note).midi;
+export const frequency =  note => props(note).frequency;

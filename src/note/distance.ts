@@ -1,10 +1,18 @@
 import { midi } from './properties';
-import { compose, curry, diff, diff2 } from '../helpers';
-import { NAME } from './factory';
+import { diff2 } from '../helpers';
 
-export class Distance {
+  export const distance = (...args) => {
+    
+    if(args.length === 1) 
+      return (x, f=midi) => distance(x, args[0], f);
+      
+    if(args.length === 2) 
+      return distance(args[0], args[1], midi);
+    
+    const [x, y, f=midi] = args;
+    return Math.abs(diff2(f(x), f(y)));
+  };
 
-  static metric = curry((fn, arr) => arr.map(fn));
-  static distance = (a, b, fn = midi) => compose(Math.abs, diff, Distance.metric(fn))([a, b]);
-
-}
+  export default {
+    distance
+  };

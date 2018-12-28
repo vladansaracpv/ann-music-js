@@ -1,11 +1,5 @@
 {
-    "cSpell.words": [
-        "CDEFGAB",
-        "INOTE",
-        "enharmonic",
-        "halfsteps"
-    ],
     "eslint.enable": false,
     "prettier.singleQuote": true,
-    "cSpell.enabled": false,
+    "eslint.validate": ["javascript", "tsc", "typescript"],
 }

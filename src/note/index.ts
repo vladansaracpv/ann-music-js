@@ -1,19 +1,17 @@
-import { Theory } from './theory';
-import { Distance } from './distance';
-import { Operators as Op} from './operators';
+import { distance } from './distance';
+import { Operators as Op } from './operators';
 import { Properties, midi, frequency } from './properties';
 import { Transpose } from './transpose';
 import { compose } from '../helpers';
 import { NOTE_PROP_FACTORY } from './factory';
 
 export class Note {
-
   name: string;
-  octave: number;
   letter: string;
   step: number;
   accidental: string;
   alteration: number;
+  octave: number;
   pc: string;
   chroma: number;
   midi: number;
@@ -21,7 +19,10 @@ export class Note {
   enharmonic: string;
 
   private constructor(name: string) {
-    compose(Object.freeze, Object.assign)(
+    compose(
+      Object.freeze,
+      Object.assign
+    )(
       this,
       { enharmonic: Properties.enharmonic(name) },
       Properties.props(name)
@@ -34,7 +35,7 @@ export class Note {
     return new Note(name);
   }
 
-  distanceFrom = (n: Note, fn = midi) => Distance.distance(this.name, n.name, fn);
+  distanceFrom = (n: Note, fn = midi) => distance(this.name, n.name, fn);
 
   gt = (other, f = midi) => Op.gt(this.name, other.name, f);
   geq = (other, f = midi) => Op.geq(this.name, other.name, f);
@@ -45,6 +46,6 @@ export class Note {
   inSegment = (a, b, f = midi) => Op.inSegment(a.name, b.name, this.name, f);
 
   transpose = (amount: string) => Transpose.transpose(this.name, amount);
-  next = (n = 1) => Transpose.next(this.name, n);
-  prev = (n = 1) => Transpose.prev(this.name, n);
+  next = (n = 1) => Transpose.nextBy(this.name, n);
+  prev = (n = 1) => Transpose.prevBy(this.name, n);
 }

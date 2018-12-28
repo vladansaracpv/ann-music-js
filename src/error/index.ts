@@ -2,13 +2,13 @@ import { curry } from '../helpers';
 
 export class FactoryError {
 
-  static NEED_MORE_ARGS = curry((...args) => {
+  static MISSING_ARGS = curry((...args) => {
     const dict = FactoryError.errorDict(args);
     console.log(`Couldn't create NOTE.${dict.forProp} just from NOTE.${dict.fromProp}: '${dict.withValue}'. Try with ${dict.need} included.`);
     return undefined;
   });
 
-  static NO_FACT_FOR_PARAM = curry((...args) => {
+  static NO_FACTORY = curry((...args) => {
     const dict = FactoryError.errorDict(args);
     console.log(`Couldn't create NOTE.${dict.forProp} from NOTE.${dict.fromProp}: '${dict.withValue}'`);
     return undefined;
