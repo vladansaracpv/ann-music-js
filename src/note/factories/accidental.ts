@@ -1,6 +1,6 @@
-import { compose, curry, firstLetter } from '../../helpers';
+import { compose, curry } from '../../helpers';
 import { FactoryError as ERROR } from '../../error';
-import { Validator } from '../validator';
+import { isAccidental } from '../validator';
 import { PC } from '../factories/pc';
 import { MIDI } from '../factories/midi';
 
@@ -33,5 +33,5 @@ const FROM = {
 export const ACCIDENTAL_FACTORY = curry((prop, withValue) => {
   const accidental = FROM[prop](withValue);
   if(!accidental) return undefined;
-  return Validator.isAccidental(accidental) ? accidental : undefined;
+  return isAccidental(accidental) ? accidental : undefined;
 });

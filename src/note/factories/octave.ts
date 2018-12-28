@@ -1,6 +1,6 @@
 import { compose, curry } from '../../helpers';
 import { FactoryError as ERROR } from '../../error';
-import { Validator } from '../validator';
+import { isOctave } from '../validator';
 import { octave } from '../properties';
 import { MIDI } from '../factories/midi';
 
@@ -16,7 +16,6 @@ export class OCTAVE {
   static fromAlt    = alt    => ERROR.NO_FACTORY('octave', 'alteration', alt);
   static fromChroma = chroma => ERROR.NO_FACTORY('octave', 'chroma', chroma);
 }
-
 
 const FROM = {
   octave:     OCTAVE.fromOctave,
@@ -34,6 +33,6 @@ const FROM = {
 export const OCTAVE_FACTORY = curry((prop, withValue) => {
   const octave = FROM[prop](withValue);
   if(!octave) return undefined;
-  return Validator.isOctave(octave) ? octave : undefined;
+  return isOctave(octave) ? octave : undefined;
 });
   

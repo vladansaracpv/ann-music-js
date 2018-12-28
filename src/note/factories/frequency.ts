@@ -1,6 +1,6 @@
 import { curry, and, or } from '../../helpers';
 import { FactoryError as ERROR } from '../../error';
-import { Validator } from '../validator';
+import { isFrequency } from '../validator';
 import { frequency } from '../properties';
 
 export class FREQUENCY {
@@ -32,6 +32,6 @@ const FROM = {
 export const FREQUENCY_FACTORY = curry((prop, withValue) => {
   const freq = FROM[prop](withValue);
   if(!freq) return undefined;
-  return Validator.isFrequency(freq) ? freq : undefined;
+  return isFrequency(freq) ? freq : undefined;
 });
   

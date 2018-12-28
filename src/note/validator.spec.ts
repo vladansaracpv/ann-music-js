@@ -1,4 +1,4 @@
-import { Validator } from './validator';
+import * as Validator from './validator';
 import { expect } from 'chai';
 import 'mocha';
 

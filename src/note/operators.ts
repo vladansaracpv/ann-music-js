@@ -1,5 +1,5 @@
 import { midi } from './properties';
-import { curry, allTrue } from '../helpers';
+import { allTrue } from '../helpers';
 
 /**
  *  Class of operators used for comparing two notes x and y
@@ -10,6 +10,7 @@ import { curry, allTrue } from '../helpers';
  *  - $ greater('C4', 'C#4') = 'C#4'
  */
 export class Operators {
+
 
   /** 
    *  x > y ? x : y
@@ -65,6 +66,7 @@ export class Operators {
     return f(x) > f(y);
   }
   
+
   /**
    *  x >= y
    * 
@@ -81,8 +83,8 @@ export class Operators {
     const [x, y, f=midi] = args;
     return f(x) >= f(y);
   }
-    ​
-
+  
+  ​
   /**
    *  x === y
    * 
@@ -99,8 +101,8 @@ export class Operators {
     const [x, y, f=midi] = args;
     return f(x) === f(y);
   }
-    ​
-
+  
+  ​
   /**
    *  x < y
    * 
@@ -117,8 +119,8 @@ export class Operators {
     const [x, y, f=midi] = args;
     return f(x) < f(y);
   }
-    ​
-
+  
+  ​
   /**
    *  x <= y
    * 
@@ -159,8 +161,8 @@ export class Operators {
       Operators.lt(n, y, f)
     );
   }
-    ​
-
+  
+  ​
   /**
    *  x <= n <= y
    * 

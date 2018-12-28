@@ -1,6 +1,6 @@
 import { compose, curry, firstLetter } from '../../helpers';
 import { FactoryError as ERROR } from '../../error';
-import { Validator } from '../validator';
+import { isAlteration } from '../validator';
 import { PC } from '../factories/pc';
 import { MIDI } from '../factories/midi';
 
@@ -33,5 +33,5 @@ const FROM = {
 export const ALTERATION_FACTORY = curry((prop, withValue) => {
   const alteration = FROM[prop](withValue);
   if(!alteration) return undefined;
-  return Validator.isAlteration(alteration) ? alteration : undefined;
+  return isAlteration(alteration) ? alteration : undefined;
 });

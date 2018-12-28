@@ -1,39 +1,39 @@
 import { midi } from './properties';
 import { NAME } from './factories/name';
 
-export class Transpose {
 
-  /** Transpose @note by number of @semitones */
-  static bySemitones = (...args) => {
+  /* Transpose @note by number of @semitones */
+  export const bySemitones = (...args) => {
     if(args.length === 1)
-      return note => Transpose.bySemitones(note, args[0]);
+      return note => bySemitones(note, args[0]);
 
     const [note, semitones] = args;
     return NAME.fromMidi(midi(note) + semitones);
   }
 
 
-  /** Transpose @note by number of @tones */
-  static byTones = (...args) => {
+  /* Transpose @note by number of @tones */
+  export const byTones = (...args) => {
     if(args.length === 1)
-      return note => Transpose.byTones(note, args[0]);
+      return note => byTones(note, args[0]);
 
     const [note, tones] = args;
-    return Transpose.bySemitones(note, 2 * tones);
+    return bySemitones(note, 2 * tones);
   }
 
 
-  /** Transpose @note by number of @octaves */
-  static byOctaves = (...args) => {
+  /* Transpose @note by number of @octaves */
+  export const byOctaves = (...args) => {
     if(args.length === 1)
-      return note => Transpose.byOctaves(note, args[0]);
+      return note => byOctaves(note, args[0]);
 
     const [note, octaves] = args;
-    return Transpose.bySemitones(note, 12 * octaves);
+    return bySemitones(note, 12 * octaves);
   }
 
-  /** Parse units used for transpose */
-  static parseAmount = (amount) => {
+  
+  /* Parse units used for transpose */
+  export const parseAmount = (amount) => {
     const OCTAVE_REGEX = /^(octaves|octave|oct|o)?$/;
     const STEPS_REGEX = /^(steps|step|s)?$/;
     const SEMI_REGEX = /^(halfsteps|halves|half|semi|h)$/;
@@ -47,33 +47,33 @@ export class Transpose {
 
   };
 
-
-  /** Transpose note @note by ammount @by */
-  static transpose = (...args) => {
+  
+  /* Transpose note @note by ammount @by */
+  export const transpose = (...args) => {
     if(args.length === 1) 
-      return note => Transpose.transpose(note, args[0]);
+      return note => transpose(note, args[0]);
     
     const [note, by] = args;
     const unitAmount = by.split(' ');
     const amount = Number.parseInt(unitAmount[0]);
-    const unitValue = Transpose.parseAmount(unitAmount[1]);
-    return Transpose.bySemitones(note, amount * unitValue);
+    const unitValue = parseAmount(unitAmount[1]);
+    return bySemitones(note, amount * unitValue);
   };
 
+  
+  /* Get next note by incrementing MIDI */
+  export const next = note => NAME.fromMidi(midi(note) + 1);
 
-  /** Get next note by incrementing MIDI */
-  static next = note => NAME.fromMidi(midi(note) + 1);
+  
+  /* Get prev note by decrementing MIDI */
+  export const prev = note => NAME.fromMidi(midi(note) - 1);
 
-
-  /** Get prev note by decrementing MIDI */
-  static prev = note => NAME.fromMidi(midi(note) - 1);
-
-
-  /** Get note @n steps ahead */
-  static nextBy = (...args) => {
+  
+  /* Get note @n steps ahead */
+  export const nextBy = (...args) => {
 
     if(args.length === 1) 
-      return note => Transpose.nextBy(note, args[0]);
+      return note => nextBy(note, args[0]);
 
     const [note, amount] = args;
     const newMidi = midi(note) + amount;
@@ -81,8 +81,6 @@ export class Transpose {
     return NAME.fromMidi(newMidi);
   };
 
-
-  /** Get note @n steps behind */
-  static prevBy = (...args) => Transpose.nextBy(...args);
-
-}
+  
+  /* Get note @n steps behind */
+  export const prevBy = (...args) => nextBy(...args);

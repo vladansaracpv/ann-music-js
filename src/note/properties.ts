@@ -1,9 +1,7 @@
 import { curry, glue } from '../helpers';
-import { Theory as NOTE } from './theory';
+import { EMPTY_NOTE, parse, LETTERS, WHITES } from './theory';
 import { FREQUENCY } from './factories/frequency';
 import { NAME } from './factories/name';
-
-export class Properties {
 
   /**
    *  Create note object by parsing note string
@@ -15,10 +13,10 @@ export class Properties {
    *  @return {object}        Note object
    *
    */
-  static props = (noteName): any => {
+  export const props = (noteName): any => {
 
-    const tokens = NOTE.parse(noteName);
-    if (!tokens) return NOTE.EMPTY_NOTE;
+    const tokens = parse(noteName);
+    if (!tokens) return EMPTY_NOTE;
 
     const { letter, accidental, octave } = tokens;
 
@@ -46,7 +44,7 @@ export class Properties {
      *  
      *  Example: C(0), F(3)...
      */
-    const step = NOTE.LETTERS.indexOf(letter);
+    const step = LETTERS.indexOf(letter);
 
 
     /**
@@ -65,7 +63,7 @@ export class Properties {
      * 
      *  Example: C#: 1, F#/Gb: 6
      */
-    const chroma = Math.abs(NOTE.WHITES[step] + alteration) % 12;
+    const chroma = Math.abs(WHITES[step] + alteration) % 12;
 
 
     /**
@@ -73,7 +71,7 @@ export class Properties {
      * 
      *  Example: C4: 60, C-1: 0, D#2: 39
      */
-    const midi = NOTE.WHITES[step] + alteration + 12 * (octave + 1);
+    const midi = WHITES[step] + alteration + 12 * (octave + 1);
 
 
     /**
@@ -82,7 +80,7 @@ export class Properties {
     const frequency = midi ? FREQUENCY.fromMidi(midi) : undefined;
 
     return {
-      ...NOTE.EMPTY_NOTE,
+      ...EMPTY_NOTE,
       name,
       letter,
       step,
@@ -92,10 +90,10 @@ export class Properties {
       pc,
       chroma,
       midi,
-      frequency
+      frequency,
+      enharmonic: ''
     };
   };
-
   
   /**
    *  Create note object by parsing note string
@@ -108,8 +106,7 @@ export class Properties {
    *  @return {any}               Note property
    *
    */
-  static property = curry((name, note) => Properties.props(note)[name]);
-
+  export const property = curry((name, note) => props(note)[name]);
 
   /**
    *  Return note in simplified notation if possible.
@@ -122,33 +119,31 @@ export class Properties {
    *  @return {any}                       Note object
    *
    */
-  static simplify = (note: string, withSameAccidentals = true): any => {
+  export const simplify = (note: string, withSameAccidentals = true): any => {
     /** Try to get midi value */
-    const midi = Properties.property('midi', note);
+    const midi = property('midi', note);
     
     /** Should the same accidentals be used */
-    const alteration = Properties.property('alteration', note);
+    const alteration = property('alteration', note);
     const hasSharps = alteration > 0;
     const useSharps = withSameAccidentals ? hasSharps : !hasSharps;
 
     return NAME.fromMidi(midi, useSharps);
   };
 
-  /**
-   *  Return enharmonic note of given note
-   *
-   *  @function
-   *
-   *  @param  {string}  note       Note string
-   *
-   *  @return {string}            Note object
-   *
-   */
-  static enharmonic = (note: string): string => Properties.simplify(note, false);
-}
+/**
+ *  Return enharmonic note of given note
+ *
+ *  @function
+ *
+ *  @param  {string}  note       Note string
+ *
+ *  @return {string}            Note object
+ *
+ */
+export const enharmonic = (note: string): string => simplify(note, false);
 
 // Getters for note properties
-const props = Properties.props;
 export const name =       note => props(note).name;
 export const letter =     note => props(note).letter;
 export const step =       note => props(note).step;

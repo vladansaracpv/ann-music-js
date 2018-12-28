@@ -1,15 +1,13 @@
-import { Theory } from '../theory';
+import { LETTERS } from '../theory';
 import { compose, curry, firstLetter } from '../../helpers';
 import { FactoryError as ERROR } from '../../error';
-import { Validator } from '../validator';
+import { isLetter } from '../validator';
 import { PC } from '../factories/pc';
 import { MIDI } from '../factories/midi';
 
-const dict = ERROR.errorDict;
-
 export class LETTER {
   static fromLetter = letter => letter;
-  static fromStep   = step   => Theory.LETTERS[step];
+  static fromStep   = step   => LETTERS[step];
   static fromName   = name   => firstLetter(name);
   static fromPc     = pc     => firstLetter(pc);
   static fromChroma = chroma => compose(LETTER.fromPc, PC.fromChroma)(chroma);
@@ -36,5 +34,5 @@ const FROM = {
 export const LETTER_FACTORY = curry((prop, withValue) => {
   const letter = FROM[prop](withValue);
   if(!letter) return undefined;
-  return Validator.isLetter(letter) ? letter : undefined;
+  return isLetter(letter) ? letter : undefined;
 });

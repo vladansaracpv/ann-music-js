@@ -1,4 +1,4 @@
-import { Theory } from './theory';
+import { PROPERTIES, LETTERS, parse } from './theory';
 import {
   isMember,
   isInt,
@@ -10,83 +10,83 @@ import {
   firstLetter
 } from '../helpers';
 
-export class Validator {
 
-  /** Valid key is from the PROPERTIES array */
-  static isKey = key => isMember(Theory.PROPERTIES, key);
-
-
-  /** 
-   *  Valid name contains valid:
-   *  - Letter
-   *  - Accidental
-   *  - Octave
-   */
-  static isName = name => {
-
-    const tokens = Theory.parse(name);
-    if (!tokens) return false;
-    
-    const { letter, accidental, octave, rest } = tokens;
-    return allTrue(
-      Validator.isLetter(letter),
-      Validator.isAccidental(accidental),
-      Validator.isOctave(octave)
-    );
-  };
+/* Valid key is from the PROPERTIES array */
+const isKey = key => isMember(PROPERTIES, key);
 
 
-  /** Valid letter is from the LETTERS string */
-  static isLetter = letter => isMember(Theory.LETTERS, letter);
+/* Valid name contains valid {letter, accidental, octave} */
+const isName = name => {
 
-
-  /** 
-   *  Valid accidental is either:
-   *  - Empty string: ''
-   *  - Made only from one or more '#' or 'b'
-   */
-  static isAccidental = accidental => {
-    if (isEmpty(accidental)) return true;
-    if (!madeOfChar(accidental)) return false;
-    return '#b'.indexOf(firstLetter(accidental)) > -1;
-  };
+  const tokens = parse(name);
+  if (!tokens) return false;
   
+  const { letter, accidental, octave, rest } = tokens;
 
-  /** Valid octave is integer */
-  static isOctave = octave => allTrue(!isEmpty(octave), isInt(+octave));
-    
-
-  /** 
-   *  Valid Pitch Class is made up from valid:
-   *  - Letter
-   *  - Accidental
-   */
-  static isPc = pc => {
-    if(pc.length === 1) return Validator.isLetter(pc);
-    return allTrue(
-      Validator.isLetter(pc[0]),
-      Validator.isAccidental(pc.substring(1))
-    );
-  };
+  return allTrue(
+    isLetter(letter),
+    isAccidental(accidental),
+    isOctave(octave)
+  );
   
-  
-  /** Valid step is an integer from [0,6] */
-  static isStep = step => allTrue(isInt(step), inside(0, 6, step));
-  
+};
 
-  /** Valid alteration value is represented by integer */
-  static isAlteration = alteration => isInt(alteration);
-  
 
-  /** Valid chroma value is integer from [0, 11] */
-  static isChroma = chroma => isInt(chroma) && inside(0, 11, chroma);
-  
+/* Valid letter is from the LETTERS string */
+const isLetter = letter => isMember(LETTERS, letter);
 
-  /** Valid midi is integer */
-  static isMidi = midi => isInt(midi);
-  
 
-  /** Valid frequency is positive number */
-  static isFrequency = freq => allTrue(isNum(freq), freq > 0);
+/* Valid accidental is either '' or multiple of #/b */
+const isAccidental = accidental => {
+  if (isEmpty(accidental)) return true;
+  if (!madeOfChar(accidental)) return false;
+  return '#b'.indexOf(firstLetter(accidental)) > -1;
+};
 
+
+/* Valid octave is integer */
+const isOctave = octave => allTrue(!isEmpty(octave), isInt(+octave));
+
+
+/* Valid pc is made up from valid {letter, accidental} */
+const isPc = pc => {
+  if(pc.length === 1) return isLetter(pc);
+  return allTrue(
+    isLetter(pc[0]),
+    isAccidental(pc.substring(1))
+  );
+};
+
+
+/* Valid step is an integer from [0,6] */
+const isStep = step => allTrue(isInt(step), inside(0, 6, step));
+
+
+/* Valid alteration value is represented by integer */
+const isAlteration = alteration => isInt(alteration);
+
+
+/* Valid chroma value is integer from [0, 11] */
+const isChroma = chroma => isInt(chroma) && inside(0, 11, chroma);
+
+
+/* Valid midi is integer */
+const isMidi = midi => isInt(midi);
+
+
+/* Valid frequency is positive number */
+const isFrequency = freq => allTrue(isNum(freq), freq > 0);
+
+export {
+  isKey,
+  isName,
+  isLetter,
+  isAccidental,
+  isAlteration,
+  isOctave,
+  isPc,
+  isStep,
+  isChroma,
+  isMidi,
+  isFrequency
 }

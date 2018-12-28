@@ -1,12 +1,12 @@
-import { Theory } from '../theory';
-import { compose, curry, firstLetter, or } from '../../helpers';
+import { SHARPS, FLATS } from '../theory';
+import { compose, curry, or } from '../../helpers';
 import { FactoryError as ERROR } from '../../error';
-import { Validator } from '../validator';
+import { isChroma } from '../validator';
 import { chroma } from '../properties';
 import { MIDI } from '../factories/midi';
 
 export class CHROMA {
-  static fromPc     = pc     => pc.indexOf('#') > 0 ? Theory.SHARPS.indexOf(pc) : Theory.FLATS.indexOf(pc);
+  static fromPc     = pc     => pc.indexOf('#') > 0 ? SHARPS.indexOf(pc) : FLATS.indexOf(pc);
   static fromName   = name   => chroma(name);
   static fromChroma = chroma => chroma;
   static fromMidi   = midi   => CHROMA.fromChroma(midi % 12);
@@ -34,5 +34,5 @@ const FROM = {
 export const CHROMA_FACTORY = curry((prop, withValue) => {
   const chroma = FROM[prop](withValue);
   if(!chroma) return undefined;
-  return Validator.isChroma(chroma) ? chroma : undefined;
+  return isChroma(chroma) ? chroma : undefined;
 });

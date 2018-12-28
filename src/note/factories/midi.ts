@@ -1,6 +1,6 @@
 import { curry, and, or } from '../../helpers';
 import { FactoryError as ERROR } from '../../error';
-import { Validator } from '../validator';
+import { isMidi } from '../validator';
 import { midi } from '../properties';
 
 export class MIDI {
@@ -32,6 +32,6 @@ const FROM = {
 export const MIDI_FACTORY = curry((prop, withValue) => {
   const midi = FROM[prop](withValue);
   if(!midi) return undefined;
-  return Validator.isMidi(midi) ? midi : undefined;
+  return isMidi(midi) ? midi : undefined;
 });
   

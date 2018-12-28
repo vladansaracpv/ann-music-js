@@ -1,13 +1,13 @@
-import { Theory } from '../theory';
+import { LETTERS } from '../theory';
 import { compose, curry, firstLetter } from '../../helpers';
 import { FactoryError as ERROR } from '../../error';
-import { Validator } from '../validator';
+import { isStep } from '../validator';
 import { PC } from '../factories/pc';
 import { MIDI } from '../factories/midi';
 
 export class STEP {
-  static fromLetter = letter => Theory.LETTERS.indexOf(letter);
-  static fromStep   = step   => Theory.LETTERS[step];
+  static fromLetter = letter => LETTERS.indexOf(letter);
+  static fromStep   = step   => LETTERS[step];
   static fromName   = name   => compose(STEP.fromLetter, firstLetter)(name);
   static fromPc     = pc     => compose(STEP.fromLetter, firstLetter)(pc);
   static fromChroma = chroma => compose(STEP.fromPc, PC.fromChroma)(chroma);
@@ -18,7 +18,6 @@ export class STEP {
   static fromOct    = oct    => ERROR.NO_FACTORY('step', 'octave', oct);
 }
 
-  
 const FROM = {
   letter:     STEP.fromLetter,
   name:       STEP.fromName,
@@ -35,5 +34,5 @@ const FROM = {
 export const STEP_FACTORY = curry((prop, withValue) => {
   const step = FROM[prop](withValue);
   if(!step) return undefined;
-  return Validator.isStep(step) ? step : undefined;
+  return isStep(step) ? step : undefined;
 });

@@ -1,15 +1,13 @@
-import { Theory } from '../theory';
+import { WITH_SHARPS } from '../theory';
 import { compose, curry, or } from '../../helpers';
 import { FactoryError as ERROR } from '../../error';
-import { Validator } from '../validator';
+import { isPc } from '../validator';
 import { MIDI } from '../factories/midi';
-
-
 
 export class PC {
   static fromName   = name   => name(name);
   static fromPc     = pc     => pc;
-  static fromChroma = chroma => Theory.WITH_SHARPS[chroma];
+  static fromChroma = chroma => WITH_SHARPS[chroma];
   static fromMidi   = midi   => PC.fromChroma(midi % 12);
   static fromFreq   = freq   => compose(PC.fromMidi, MIDI.fromFreq)(freq);
   static fromLetter = letter => ERROR.MISSING_ARGS('pc', 'letter', letter, or(['accidental', 'alteration']));
@@ -18,7 +16,6 @@ export class PC {
   static fromAlt    = alt    => ERROR.MISSING_ARGS('pc', 'octave', alt, or(['letter', 'step']));
   static fromOct    = oct    => ERROR.NO_FACTORY('pc', 'octave', oct);
 }
-
 
 const FROM = {
   pc:         PC.fromPc,
@@ -36,5 +33,5 @@ const FROM = {
 export const PC_FACTORY = curry((prop, withValue) => {
   const pc = FROM[prop](withValue);
   if(!pc) return undefined;
-  return Validator.isPc(pc) ? pc : undefined;
+  return isPc(pc) ? pc : undefined;
 });
