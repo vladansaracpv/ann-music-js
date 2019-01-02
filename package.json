@@ -7,7 +7,7 @@
     "start": "npm run server && npm run build",
     "server": "webpack-dev-server --color --hot --inline --open-page=dist --port=3000",
     "build": "webpack --config webpack.config.js --watch",
-    "lite": "lite-server -c ./my-bs-config.json",
+    "lite": "lite-server",
     "dev": "tsc-watch --onSuccess \"webpack --mode development\"",
     "devts": "tsc-watch --onSuccess \"webpack-dev-server --mode development\"",
     "build:old": "tsc -p .",

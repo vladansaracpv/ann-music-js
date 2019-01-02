@@ -1,7 +1,10 @@
 import { Note } from './note';
-import { chroma, midi } from './note/properties';
-import { PROPERTIES } from './note/theory';
+import { compose } from './helpers';
+import { chroma, midi, props } from './note/properties';
+import { toBinary, isPc, toPcSet } from './pc/index';
+import { WITH_SHARPS } from './note/theory';
+import { callNTimes, shuffleBeat } from './beat';
 
-console.log(PROPERTIES);
-// const e5 = Note.create(64, 'midi');
-// console.table(e5);
+const bar = ['q', 'q', 'q', 'q'];
+
+console.log(callNTimes(shuffleBeat, bar, 2));
