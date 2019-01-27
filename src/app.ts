@@ -1,10 +1,10 @@
-import { Note } from './note';
-import { compose } from './helpers';
-import { chroma, midi, props } from './note/properties';
-import { toBinary, isPc, toPcSet } from './pc/index';
-import { WITH_SHARPS } from './note/theory';
-import { callNTimes, shuffleBeat } from './beat';
+import * as distance from './distance';
+import * as interval from './interval/theory';
 
-const bar = ['q', 'q', 'q', 'q'];
+// const ivl = 'M3';
+// console.log('Interval: ', interval.props(ivl));
+console.log(`Encode ${'F3'}: ${distance.encodeNote('F3')}`);
 
-console.log(callNTimes(shuffleBeat, bar, 2));
+// console.log(interval.NAMES.map(distance.encodeIvl));
+
+console.log(distance.FIFTH_OCTS);

@@ -2,6 +2,8 @@ import { curry, glue } from '../helpers';
 import { EMPTY_NOTE, parse, LETTERS, WHITES } from './theory';
 import { FREQUENCY } from './factories/frequency';
 import { NAME } from './factories/name';
+import { LETTER } from './factories/letter';
+import { ACCIDENTAL } from './factories/accidental';
 
 /**
  *  Create note object by parsing note string
@@ -83,7 +85,9 @@ export const props = (noteName): any => {
     chroma,
     midi,
     frequency,
-    enharmonic: ''
+    enharmonic: '',
+    oct: octave,
+    alt: alteration
   };
 };
 
@@ -146,3 +150,21 @@ export const pc = note => props(note).pc;
 export const chroma = note => props(note).chroma;
 export const midi = note => props(note).midi;
 export const frequency = note => props(note).frequency;
+
+export const from = (fromProps = {}, baseNote = null) => {
+  const { step, alt, oct } = baseNote
+    ? Object.assign({}, props(baseNote), fromProps)
+    : fromProps;
+  if (typeof step !== 'number') return null;
+  // if (typeof alt !== "number") return null
+  const letter = LETTER.fromStep(step);
+  if (!letter) return null;
+  const pc = letter + ACCIDENTAL.fromAlt(alt);
+  return oct || oct === 0 ? pc + oct : pc;
+};
+
+/**
+ * Deprecated. This is kept for backwards compatibility only.
+ * Use Note.from instead
+ */
+export const build = from;

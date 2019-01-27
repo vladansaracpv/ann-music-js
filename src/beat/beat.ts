@@ -1,44 +1,33 @@
-import { compose } from '../helpers';
-
-const flipCoin = n => Math.floor(Math.random() * n);
+import { compose, splitArr, joinArr, flipCoin } from '../helpers';
 
 const division = {
+  w: ['w', 'h-h', 'h.-q'],
   h: ['h', 'q-q', 'q.-e'],
   q: ['q', 'e-e', 'e.-s'],
   e: ['e', 's-s', 's.-t'],
   s: ['s', 't-t', 't-t'],
-  'q.': ['e-e-e', 'q-e', 'e-q'],
-  'e.': ['s-s-s', 'e-s', 's-e'],
-  's.': ['t-t-t', 's-t', 't-s']
+  'h.': ['q-q-q', 'h-q', 'h.'],
+  'q.': ['e-e-e', 'q-e', 'q.'],
+  'e.': ['s-s-s', 'e-s', 'e.'],
+  's.': ['t-t-t', 's-t', 's.']
 };
 
 const divide = (note, chance) => division[note][chance];
 const randDivide = bar => bar.map(ch => divide(ch, flipCoin(3)));
 const mapRandDivide = arr => arr.map(q => randDivide(q));
-const flatArray = arr => arr.reduce((el, acc) => acc.concat(...el), []);
 const printBar = bar => bar.reduce((acc, el, i) => `| ${el} ${acc}`, '|');
-const splitArr = by => arr => arr.map(q => q.split(by));
-const joinArr = by => arr => arr.map(q => q.join(by));
-const shuffleBeat = arr => {
-  return compose(
+const shuffleBeat = arr =>
+  compose(
     joinArr('-'),
     mapRandDivide,
     splitArr('-')
   )(arr);
-};
-
-const mapNTimes = (fn, arr, n) => {
-  return n == 0 ? arr : mapNTimes(fn, arr.map(fn), n - 1);
-};
-
-const callNTimes = (fn, arr, n) => {
-  return n == 0 ? arr : callNTimes(fn, fn(arr), n - 1);
-};
 
 const bar = ['q', 'q', 'q', 'q'];
 
-const result = shuffleBeat(bar);
-console.log(printBar(callNTimes(shuffleBeat, bar, 2)));
+/**
+ *  [w   |h h |qqqq|]
+ */
 
 const sheet = () => {
   console.log(`
@@ -51,16 +40,23 @@ const sheet = () => {
   `);
 };
 
-export {
-  flipCoin,
-  divide,
-  randDivide,
-  mapRandDivide,
-  flatArray,
-  printBar,
-  splitArr,
-  joinArr,
-  shuffleBeat,
-  mapNTimes,
-  callNTimes
+const noteValues = { w: 1, h: 2, q: 4, e: 8, s: 16, t: 32 };
+
+const setNoteValuesForTempo = (note, t) => {
+  let noteTypes = 'whqest'.split('');
+  let duration = noteValues[note] * t;
+
+  let relativeDuration = noteTypes.map((el, i) => ({
+    [el]: duration / noteValues[el]
+  }));
+  return relativeDuration.reduce((acc, el, i) => Object.assign({}, acc, el));
 };
+
+const tempo = (bpm, note) => ({
+  bpm,
+  note,
+  beatValue: 60.0 / bpm,
+  noteValues: setNoteValuesForTempo(note, this.beatValue)
+});
+
+export { divide, randDivide, mapRandDivide, printBar, shuffleBeat, tempo };

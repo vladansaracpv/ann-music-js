@@ -1,18 +1,10 @@
 import { midi } from './properties';
 import { diff2 } from '../helpers';
 
-  export const distance = (...args) => {
-    
-    if(args.length === 1) 
-      return (x, f=midi) => distance(x, args[0], f);
-      
-    if(args.length === 2) 
-      return distance(args[0], args[1], midi);
-    
-    const [x, y, f=midi] = args;
-    return Math.abs(diff2(f(x), f(y)));
-  };
+export const distance = (...args) => {
+  const [from, to, fn = midi] = args;
+  if (args.length == 1) return (to, f = fn) => distance(from, to, f);
+  if (args.length == 2) return distance(from, to, fn);
 
-  export default {
-    distance
-  };
+  return Math.abs(fn(from) - fn(to));
+};

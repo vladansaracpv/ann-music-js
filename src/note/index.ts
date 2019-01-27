@@ -1,6 +1,6 @@
 import { props, enharmonic, midi } from './properties';
 import { distance } from './distance';
-import { Operators as Op } from './operators';
+import * as Op from './operators';
 import * as Transpose from './transpose';
 import { compose } from '../helpers';
 import { NOTE_PROP_FACTORY } from './factories';
@@ -19,13 +19,13 @@ export class Note {
   enharmonic: string;
 
   private constructor(note_name: string) {
-    compose(Object.freeze, Object.assign )(
-      this,
-      {
-        ...props(note_name),
-        enharmonic: enharmonic(note_name)
-      }
-    );
+    compose(
+      Object.freeze,
+      Object.assign
+    )(this, {
+      ...props(note_name),
+      enharmonic: enharmonic(note_name)
+    });
   }
 
   static create(withValue: any, fromProp = 'name') {
@@ -38,18 +38,18 @@ export class Note {
   distanceFrom = (n: Note, fn = midi) => distance(this.name, n.name, fn);
 
   /* Equality operators */
-  greater    = (other, f=midi) => Op.greater(this.name, other.name, f);
-  less       = (other, f=midi) => Op.less(this.name, other.name, f);
-  gt         = (other, f=midi) => Op.gt(this.name, other.name, f);
-  geq        = (other, f=midi) => Op.geq(this.name, other.name, f);
-  eq         = (other, f=midi) => Op.eq(this.name, other.name, f);
-  lt         = (other, f=midi) => Op.lt(this.name, other.name, f);
-  leq        = (other, f=midi) => Op.leq(this.name, other.name, f);
-  inInterval = (a, b, f=midi)  => Op.inInterval(a.name, b.name, this.name, f);
-  inSegment  = (a, b, f=midi)  => Op.inSegment(a.name, b.name, this.name, f);
+  higher = (other, f = midi) => Op.higher(this.name, other.name, f);
+  lower = (other, f = midi) => Op.lower(this.name, other.name, f);
+  higherThan = (other, f = midi) => Op.higherThan(this.name, other.name, f);
+  higherEq = (other, f = midi) => Op.higherEq(this.name, other.name, f);
+  equal = (other, f = midi) => Op.equal(this.name, other.name, f);
+  lowerThan = (other, f = midi) => Op.lowerThan(this.name, other.name, f);
+  lowerEq = (other, f = midi) => Op.lowerEq(this.name, other.name, f);
+  inInterval = (a, b, f = midi) => Op.inInterval(a.name, b.name, this.name, f);
+  inSegment = (a, b, f = midi) => Op.inSegment(a.name, b.name, this.name, f);
 
   /* Transpose */
-  transpose  = (amount: string)  => Transpose.transpose(this.name, amount);
-  next       = (n = 1)           => Transpose.nextBy(this.name, n);
-  prev       = (n = 1)           => Transpose.prevBy(this.name, n);
+  transpose = (amount: string) => Transpose.transpose(this.name, amount);
+  next = (n = 1) => Transpose.nextBy(this.name, n);
+  prev = (n = 1) => Transpose.prevBy(this.name, n);
 }
