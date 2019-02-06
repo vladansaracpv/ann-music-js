@@ -538,8 +538,9 @@ export const build = (
 export const simplify = (str: IntervalName) => {
   const p = props(str);
   if (p === NO_INTERVAL) return null;
-  const intervalProps = p as IntervalProps;
-  return intervalProps.simple + intervalProps.q;
+  const ivlProps = p as IntervalProps;
+
+  return ivlProps.simple + ivlProps.q;
 };
 
 /**

@@ -19,51 +19,51 @@ export const lower = (...args) => {
   return fn(a) < fn(b) ? a : b;
 };
 
-export const equal = (...args) => {
+export const isEqual = (...args) => {
   const [a, b, fn = midi] = args;
 
-  if (args.length == 1) return (other, f = fn) => equal(a, other, f);
-  if (args.length == 2) return equal(a, b, fn);
+  if (args.length == 1) return (other, f = fn) => isEqual(a, other, f);
+  if (args.length == 2) return isEqual(a, b, fn);
 
   return fn(a) === fn(b);
 };
 
 export const higherThan = (...args) => {
   const [a, b, fn = midi] = args;
-  return equal(a, higher(...args)) && !equal(...args);
+  return isEqual(a, higher(...args)) && !isEqual(...args);
 };
 
 export const lowerThan = (...args) => {
   const [a, b, fn = midi] = args;
-  return equal(a, lower(...args)) && !equal(...args);
+  return isEqual(a, lower(...args)) && !isEqual(...args);
 };
 
-export const higherEq = (...args) => {
+export const higherOrEqual = (...args) => {
   const [a, b, fn = midi] = args;
-  return equal(a, higher(...args)) || equal(...args);
+  return isEqual(a, higher(...args)) || isEqual(...args);
 };
 
-export const lowerEq = (...args) => {
+export const lowerOrEqual = (...args) => {
   const [a, b, fn = midi] = args;
-  return equal(a, lower(...args)) || equal(...args);
+  return isEqual(a, lower(...args)) || isEqual(...args);
 };
 
-export const inInterval = (...args) => {
+export const isBetween = (...args) => {
   const [a, b, note, fn = midi] = args;
 
-  if (args.length === 1) return (b, note, f = fn) => inInterval(a, b, note, f);
-  if (args.length === 2) return (n, f = fn) => inInterval(a, b, n, f);
-  if (args.length === 3) return inInterval(a, b, note, fn);
+  if (args.length === 1) return (b, note, f = fn) => isBetween(a, b, note, f);
+  if (args.length === 2) return (n, f = fn) => isBetween(a, b, n, f);
+  if (args.length === 3) return isBetween(a, b, note, fn);
 
   return allTrue(lowerThan(a, note), lowerThan(note, b, fn));
 };
 
-export const inSegment = (...args) => {
+export const isInSegment = (...args) => {
   const [a, b, note, fn = midi] = args;
 
-  if (args.length === 1) return (b, note, f = fn) => inSegment(a, b, note, f);
-  if (args.length === 2) return (n, f = fn) => inSegment(a, b, n, f);
-  if (args.length === 3) return inSegment(a, b, note, fn);
+  if (args.length === 1) return (b, note, f = fn) => isInSegment(a, b, note, f);
+  if (args.length === 2) return (n, f = fn) => isInSegment(a, b, n, f);
+  if (args.length === 3) return isInSegment(a, b, note, fn);
 
-  return allTrue(lowerEq(a, note), lowerEq(note, b, fn));
+  return allTrue(lowerOrEqual(a, note), lowerOrEqual(note, b, fn));
 };

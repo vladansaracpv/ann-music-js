@@ -1,4 +1,4 @@
-import { props, name } from '../note/properties';
+import { name } from '../note/properties';
 
 // Functional programming methods
 export const compose = (...fns) => (...args) =>
@@ -31,8 +31,8 @@ export const flatArray = arr => arr.reduce((el, acc) => acc.concat(...el), []);
 
 // Boolean methods
 export const madeOfChar = el => el[0].repeat(el.length) === el;
-export const memberOf = (X: string | string[], k) =>
-  !isEmpty(k) && X.indexOf(k) > -1;
+export const memberOf = (X: string | string[], el) =>
+  !isEmpty(el) && X.indexOf(el) > -1;
 export const inside = (a, b, x) => a <= x && x <= b;
 export const isInt = x => Number.isInteger(x);
 export const isNum = x => typeof x === 'number';
@@ -91,16 +91,16 @@ export const rotate = (n, arr) => {
 
 export const compact = arr => arr.filter(n => n === 0 || n);
 
-const height = name => {
-  const m = props(name).midi;
-  return m !== null ? m : props(name + '-100').midi;
-};
+// const height = name => {
+//   const m = props(name).midi;
+//   return m !== null ? m : props(name + '-100').midi;
+// };
 
-export const sort = src =>
-  compact(src.map(name)).sort((a, b) => height(a) > height(b));
+// export const sort = src =>
+//   compact(src.map(name)).sort((a, b) => height(a) > height(b));
 
-export const unique = arr =>
-  sort(arr).filter((n, i, a) => i === 0 || n !== a[i - 1]);
+// export const unique = arr =>
+//   sort(arr).filter((n, i, a) => i === 0 || n !== a[i - 1]);
 
 export const shuffle = (arr, rnd = Math.random) => {
   let i, t;
@@ -116,9 +116,9 @@ export const shuffle = (arr, rnd = Math.random) => {
 
 export const permutations = arr => {
   if (arr.length === 0) return [[]];
-  return permutations(arr.slice(1)).reduce(function(acc, perm) {
+  return permutations(arr.slice(1)).reduce(function (acc, perm) {
     return acc.concat(
-      arr.map(function(e, pos) {
+      arr.map(function (e, pos) {
         var newPerm = perm.slice();
         newPerm.splice(pos, 0, arr[0]);
         return newPerm;

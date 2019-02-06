@@ -1,5 +1,4 @@
 import { midi } from './properties';
-import { diff2 } from '../helpers';
 
 export const distance = (...args) => {
   const [from, to, fn = midi] = args;

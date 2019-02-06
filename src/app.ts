@@ -1,10 +1,5 @@
-import * as distance from './distance';
-import * as interval from './interval/theory';
+import { props, simplify } from './note/properties';
+import { WITH_SHARPS, WITH_FLATS, } from './note/theory';
 
-// const ivl = 'M3';
-// console.log('Interval: ', interval.props(ivl));
-console.log(`Encode ${'F3'}: ${distance.encodeNote('F3')}`);
-
-// console.log(interval.NAMES.map(distance.encodeIvl));
-
-console.log(distance.FIFTH_OCTS);
+console.log(WITH_SHARPS)
+console.log(WITH_FLATS)

@@ -17,7 +17,7 @@ type NoteProps = {
   letter: string;
   step: number;
   accidental: string;
-  alteration: string;
+  alteration: number;
   octave: number;
   pc: string;
   chroma: number;
@@ -52,27 +52,31 @@ export const REGEX = /^([a-gA-G]?)(#{1,}|b{1,}|x{1,}|)(-?\d*)\s*(.*)$/;
 export const LETTERS = 'CDEFGAB';
 
 /* Accidentals symbols: sharps(#), flats(b) */
-export const ACCIDENTALS = 'b #'.split(' ');
+export const ACCIDENTALS = ['b', '#'];
 
 /* All note names */
 export const ALL_NOTES = 'C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B'.split(
   ' '
 );
 
+const contains = char => str => str.includes(char);
 /* Only sharp(#) notes */
-export const SHARPS = ALL_NOTES.filter(x => x.includes('#'));
+export const SHARPS = ALL_NOTES.filter(contains('#'));
 
 /* Only flat notes */
-export const FLATS = ALL_NOTES.filter(x => x.includes('b'));
+export const FLATS = ALL_NOTES.filter(contains('b'));
 
 /* Only natural notes without accidentals */
-export const NATURALS = ALL_NOTES.filter(x => x.length === 1);
+const isChar = (str) => str.length === 1;
+export const NATURALS = ALL_NOTES.filter(isChar);
 
 /* Natural + sharp notes */
-export const WITH_SHARPS = ALL_NOTES.filter(x => FLATS.indexOf(x) == -1);
+const notFlat = (note) => FLATS.indexOf(note) < 0;
+export const WITH_SHARPS = ALL_NOTES.filter(notFlat);
 
 /* Natural + flat notes */
-export const WITH_FLATS = ALL_NOTES.filter(x => SHARPS.indexOf(x) == -1);
+const notSharp = note => SHARPS.indexOf(note) < 0;
+export const WITH_FLATS = ALL_NOTES.filter(notSharp);
 
 /* Natural notes positions in C chromatic scale (white keys) */
 export const WHITES = [0, 2, 4, 5, 7, 9, 11];

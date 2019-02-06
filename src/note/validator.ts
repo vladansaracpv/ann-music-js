@@ -16,7 +16,7 @@ const isKey = key => memberOf(KEYS, key);
 /* Valid name contains valid {letter, accidental, octave} */
 const isName = name => {
   const tokens = parse(name);
-  if (!tokens) return false;
+  if (!tokens) { return false; }
 
   const { letter, accidental, octave, rest } = tokens;
 
@@ -28,8 +28,8 @@ const isLetter = letter => memberOf(LETTERS, letter);
 
 /* Valid accidental is either '' or multiple of #/b */
 const isAccidental = accidental => {
-  if (isEmpty(accidental)) return true;
-  if (!madeOfChar(accidental)) return false;
+  if (isEmpty(accidental)) { return true; }
+  if (!madeOfChar(accidental)) { return false; }
   return '#b'.indexOf(firstLetter(accidental)) > -1;
 };
 
@@ -38,7 +38,7 @@ const isOctave = octave => allTrue(!isEmpty(octave), isInt(+octave));
 
 /* Valid pc is made up from valid {letter, accidental} */
 const isPc = pc => {
-  if (pc.length === 1) return isLetter(pc);
+  if (pc.length === 1) { return isLetter(pc); }
   return allTrue(isLetter(pc[0]), isAccidental(pc.substring(1)));
 };
 

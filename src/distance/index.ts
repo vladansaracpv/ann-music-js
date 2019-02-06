@@ -6,12 +6,12 @@ import { props as iprops, build as ibuild } from '../interval/theory';
 const FIFTHS = [0, 2, 4, -1, 1, 3, 5];
 
 // Given a number of fifths, return the octaves they span
-const fOcts = f => Math.floor((f * 7) / 12);
+const fifthsOctaves = f => Math.floor((f * 7) / 12);
 
 // Get the number of octaves it span each step
 // [C, D, E,  F, G, A, B]
 // [0, 1, 2, -1, 0, 1, 2]
-export const FIFTH_OCTS = FIFTHS.map(fOcts);
+export const FIFTH_OCTS = FIFTHS.map(fifthsOctaves);
 
 /**
  * encode('2M') = [2, -1]
@@ -40,7 +40,7 @@ const unaltered = f => {
   return i < 0 ? 7 + i : i;
 };
 
-const decode = (f, o = 4, dir) => {
+const decode = (f, o = undefined, dir) => {
   const step = STEPS[unaltered(f)];
   const alt = Math.floor((f + 1) / 7);
   if (o === undefined) return { step, alt, dir };
@@ -77,10 +77,12 @@ export const encodeIvl = encoder(iprops);
  */
 export const transpose = (...args) => {
   if (args.length === 1) return i => transpose(args[0], i);
-  const n = encodeNote(args[0]);
+  const n =
+    encodeIvl(args[0]) !== null ? encodeIvl(args[0]) : encodeNote(args[0]);
   const i = encodeIvl(args[1]);
   if (n === null || i === null) return null;
   const tr = n.length === 1 ? [n[0] + i[0]] : [n[0] + i[0], n[1] + i[1]];
+  console.log(tr);
   return fromNote(decode(tr[0], tr[1], 1));
 };
 
@@ -234,6 +236,6 @@ export const semitones = (...args) => {
   return f.midi !== null && t.midi !== null
     ? t.midi - f.midi
     : f.chroma !== null && t.chroma !== null
-    ? (t.chroma - f.chroma + 12) % 12
-    : null;
+      ? (t.chroma - f.chroma + 12) % 12
+      : null;
 };
