@@ -1,5 +1,5 @@
 {
-    "eslint.enable": false,
+    "eslint.enable": true,
     "prettier.singleQuote": true,
     "eslint.validate": ["javascript", "tsc", "typescript"],
 }

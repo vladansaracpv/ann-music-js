@@ -1,5 +1,4 @@
-import { getNoteProps, simplify, midi, step, chroma, frequency } from './note/properties';
-import { distance } from './note/distance';
+import { ic, getIntervalProps } from './interval/theory';
 
-const stepsFromA = distance('A4', 'D4');
-console.log('fn: ', stepsFromA(midi));
+const ivl = getIntervalProps('A4')
+console.log(ivl);
