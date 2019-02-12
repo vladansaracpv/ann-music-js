@@ -1,9 +1,9 @@
 import { midi } from './properties';
+import { curry } from '../helpers';
 
-export const distance = (...args) => {
-  const [from, to, fn = midi] = args;
-  if (args.length == 1) return (to, f = fn) => distance(from, to, f);
-  if (args.length == 2) return distance(from, to, fn);
+const noteDistance = (fn, firstNote, secondNote) => {
+  return Math.abs(fn(firstNote) - fn(secondNote))
+}
 
-  return Math.abs(fn(from) - fn(to));
-};
+
+export const distance = curry(noteDistance);

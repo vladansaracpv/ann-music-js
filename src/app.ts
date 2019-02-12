@@ -1,4 +1,5 @@
-import { getNoteProps, simplify } from './note/properties';
-import { WITH_SHARPS, WITH_FLATS, } from './note/theory';
+import { getNoteProps, simplify, midi, step } from './note/properties';
+import { distance } from './note/distance';
 
-console.log(getNoteProps('C#4'))
+const stepsFromC = distance(step, 'C4');
+console.log(stepsFromC('B4'));

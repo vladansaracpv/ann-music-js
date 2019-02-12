@@ -35,7 +35,7 @@ export class Note {
   }
 
   /* Distance between two notes */
-  distanceFrom = (n: Note, fn = midi) => distance(this.name, n.name, fn);
+  // distanceFrom = (n: Note, fn = midi) => distance(midi, this.name, n.name);
 
   /* Equality operators */
   higher = (other, f = midi) => Op.higher(this.name, other.name, f);
