@@ -1,4 +1,4 @@
-import { props, enharmonic, midi } from './properties';
+import { getNoteProps, enharmonic, midi } from './properties';
 import { distance } from './distance';
 import * as Op from './operators';
 import * as Transpose from './transpose';
@@ -23,7 +23,7 @@ export class Note {
       Object.freeze,
       Object.assign
     )(this, {
-      ...props(note_name),
+      ...getNoteProps(note_name),
       enharmonic: enharmonic(note_name)
     });
   }
@@ -41,12 +41,12 @@ export class Note {
   higher = (other, f = midi) => Op.higher(this.name, other.name, f);
   lower = (other, f = midi) => Op.lower(this.name, other.name, f);
   higherThan = (other, f = midi) => Op.higherThan(this.name, other.name, f);
-  higherEq = (other, f = midi) => Op.higherEq(this.name, other.name, f);
-  equal = (other, f = midi) => Op.equal(this.name, other.name, f);
+  higherEq = (other, f = midi) => Op.higherOrEqual(this.name, other.name, f);
+  equal = (other, f = midi) => Op.isEqual(this.name, other.name, f);
   lowerThan = (other, f = midi) => Op.lowerThan(this.name, other.name, f);
-  lowerEq = (other, f = midi) => Op.lowerEq(this.name, other.name, f);
-  inInterval = (a, b, f = midi) => Op.inInterval(a.name, b.name, this.name, f);
-  inSegment = (a, b, f = midi) => Op.inSegment(a.name, b.name, this.name, f);
+  lowerEq = (other, f = midi) => Op.lowerOrEqual(this.name, other.name, f);
+  inInterval = (a, b, f = midi) => Op.isBetween(a.name, b.name, this.name, f);
+  inSegment = (a, b, f = midi) => Op.isInSegment(a.name, b.name, this.name, f);
 
   /* Transpose */
   transpose = (amount: string) => Transpose.transpose(this.name, amount);

@@ -91,7 +91,7 @@ export const WHITES = [0, 2, 4, 5, 7, 9, 11];
  *  @return {object}       { letter, accidental, octave, rest }
  *
  */
-export const parse = (note = ''): any => {
+export const parseNote = (note = ''): any => {
   const props = REGEX.exec(note);
   if (!props || props[1] === '' || props[4] !== '') return undefined;
 

@@ -1,5 +1,5 @@
 import { curry, glue, either } from '../helpers';
-import { EMPTY_NOTE, parse, LETTERS, WHITES, WITH_SHARPS, WITH_FLATS } from './theory';
+import { EMPTY_NOTE, parseNote, LETTERS, WHITES, WITH_SHARPS, WITH_FLATS } from './theory';
 
 /**
  *  Create note object by parsing note string
@@ -9,8 +9,25 @@ import { EMPTY_NOTE, parse, LETTERS, WHITES, WITH_SHARPS, WITH_FLATS } from './t
  *  @return Note object
  *
  */
+
+const getStepForLetter = (allLetters, letter) => allLetters.indexOf(letter);
+const getAccidentalValue = accidental => accidental[0] === 'b' ? -accidental.length : accidental.length;
+const getChroma = (keys, step, alteration) => (keys[step] + alteration + 12) % 12;
+const getPc = (noteLetter, accidental) => glue(noteLetter, accidental);
+const getName = (pc, octave) => glue(pc, octave);
+const getMidi = (chroma, octave) => chroma + 12 * (octave + 1);
+const getFreqFromMidi = (midi, tuning = 440) => 2 ** ((midi - 69) / 12) * tuning;
+const getNameFromMidi = (midi, sharps, flats, useSharps = true) => {
+  const index = midi % 12;
+  const octave = Math.floor(midi / 12) - 1;
+  const pc = either(sharps[index], flats[index], useSharps);
+  return pc + octave;
+};
+const getNameFromStep = (step, allLetters) => allLetters[step];
+const getAccidentalFromValue = alteration => (alteration < 0 ? 'b'.repeat(-alteration) : '#'.repeat(alteration));
+
 export const getNoteProps = (noteName): any => {
-  const tokens = parse(noteName);
+  const tokens = parseNote(noteName);
   if (!tokens) { return EMPTY_NOTE; }
 
   const { letter, accidental, octave } = tokens;
@@ -20,7 +37,7 @@ export const getNoteProps = (noteName): any => {
    *
    *  Example: C(0), F(3)...
    */
-  const step = LETTERS.indexOf(letter);
+  const step = getStepForLetter(LETTERS, letter);
 
   /**
    *  Note alteration is integer value of accidental value
@@ -29,16 +46,14 @@ export const getNoteProps = (noteName): any => {
    *
    *  Example: ## = 2, bb = -2
    */
-  const accl = accidental.length;
-  const alteration = accidental[0] === 'b' ? -accl : accl;
+  const alteration = getAccidentalValue(accidental);
 
   /**
    *  Note chroma value is index of it's PC starting from 0 (C),
    *
    *  Example: C#: 1, F#/Gb: 6
    */
-  const chroma = (WHITES[step] + alteration + 12) % 12;
-
+  const chroma = getChroma(WHITES, step, alteration);
 
   /**
    *  Pitch Class (pc) is made from
@@ -47,7 +62,7 @@ export const getNoteProps = (noteName): any => {
    *
    *  Example: C#, Gb, F##
    */
-  const pc = glue(letter, accidental);
+  const pc = getPc(letter, accidental);
   // const pc = alteration >= 0 ? WITH_SHARPS[chroma] : WITH_FLATS[chroma]
 
   /**
@@ -55,19 +70,18 @@ export const getNoteProps = (noteName): any => {
    *
    *  Example: C#4, Gb3, F##5
    */
-  const name = glue(pc, octave);
+  const name = getName(pc, octave);
 
   /**
    *  Note midi value is it's unique index used in midi devices
    *
    *  Example: C4: 60, C-1: 0, D#2: 39
    */
-  const midi = chroma + 12 * (octave + 1);
+  const midi = getMidi(chroma, octave);
 
   /**
    *  Note frequency
    */
-  const getFreqFromMidi = (midi, tuning = 440) => 2 ** ((midi - 69) / 12) * tuning;
   const frequency = midi ? getFreqFromMidi(midi) : undefined;
 
   return {
@@ -83,8 +97,6 @@ export const getNoteProps = (noteName): any => {
     midi,
     frequency,
     enharmonic: '',
-    oct: octave,
-    alt: alteration
   };
 };
 
@@ -108,12 +120,7 @@ export const property = curry((name, note) => getNoteProps(note)[name]);
  *  @return Note object
  *
  */
-const getNameFromMidi = (midi, useSharps = true) => {
-  const index = midi % 12;
-  const octave = Math.floor(midi / 12) - 1;
-  const pc = either(WITH_SHARPS[index], WITH_FLATS[index], useSharps);
-  return pc + octave;
-};
+
 export const simplify = (note: string, withSameAccidentals = true): any => {
   /** Try to get midi value */
   const midi = property('midi', note);
@@ -123,7 +130,7 @@ export const simplify = (note: string, withSameAccidentals = true): any => {
   const hasSharps = alteration >= 0;
   const useSharps = withSameAccidentals ? hasSharps : !hasSharps;
 
-  return getNameFromMidi(midi, useSharps);
+  return getNameFromMidi(midi, WITH_SHARPS, WITH_FLATS, useSharps);
 };
 
 /**
@@ -148,8 +155,7 @@ export const chroma = note => getNoteProps(note).chroma;
 export const midi = note => getNoteProps(note).midi;
 export const frequency = note => getNoteProps(note).frequency;
 
-const getNameFromStep = step => LETTERS[step];
-const getAccFromAlt = alt => (alt < 0 ? 'b'.repeat(-alt) : '#'.repeat(alt));
+
 
 export const from = (fromProps = {}, baseNote = null) => {
   const { step, alt, oct } = baseNote
@@ -158,9 +164,9 @@ export const from = (fromProps = {}, baseNote = null) => {
   console.log(step, alt, oct);
   if (typeof step !== 'number') { return null; }
   // if (typeof alt !== "number") return null
-  const letter = getNameFromStep(step);
+  const letter = getNameFromStep(step, WHITES);
   if (!letter) { return null; }
-  const pc = letter + getAccFromAlt(alt);
+  const pc = letter + getAccidentalFromValue(alt);
   return oct || oct === 0 ? pc + oct : pc;
 };
 

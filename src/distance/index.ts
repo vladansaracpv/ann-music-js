@@ -1,4 +1,4 @@
-import { props as noteProps, build as fromNote } from '../note/properties';
+import { getNoteProps as noteProps, build as fromNote } from '../note/properties';
 import { props as iprops, build as ibuild } from '../interval/theory';
 
 // Map from letter step to number of fifths starting from "C":

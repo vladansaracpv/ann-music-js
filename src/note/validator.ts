@@ -1,4 +1,4 @@
-import { KEYS, LETTERS, parse } from './theory';
+import { KEYS, LETTERS, parseNote } from './theory';
 import {
   memberOf,
   isInt,
@@ -15,7 +15,7 @@ const isKey = key => memberOf(KEYS, key);
 
 /* Valid name contains valid {letter, accidental, octave} */
 const isName = name => {
-  const tokens = parse(name);
+  const tokens = parseNote(name);
   if (!tokens) { return false; }
 
   const { letter, accidental, octave, rest } = tokens;
