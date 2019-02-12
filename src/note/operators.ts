@@ -1,69 +1,78 @@
 import { midi } from './properties';
 import { allTrue } from '../helpers';
 
+/** Return higher of two notes */
 export const higher = (...args) => {
-  const [a, b, fn = midi] = args;
+  const [firstNote, secondNote, fn = midi] = args;
 
-  if (args.length == 1) return (other, f = midi) => higher(a, other, f);
-  if (args.length == 2) return higher(a, b, midi);
+  if (args.length == 1) return (other, f = midi) => higher(firstNote, other, f);
+  if (args.length == 2) return higher(firstNote, secondNote, midi);
 
-  return fn(a) > fn(b) ? a : b;
+  return fn(firstNote) > fn(secondNote) ? firstNote : secondNote;
 };
 
+/** Return lower of two notes */
 export const lower = (...args) => {
-  const [a, b, fn = midi] = args;
+  const [firstNote, secondNote, fn = midi] = args;
 
-  if (args.length == 1) return (other, f = fn) => lower(a, other, f);
-  if (args.length == 2) return lower(a, b, fn);
+  if (args.length == 1) return (other, f = fn) => lower(firstNote, other, f);
+  if (args.length == 2) return lower(firstNote, secondNote, fn);
 
-  return fn(a) < fn(b) ? a : b;
+  return fn(firstNote) < fn(secondNote) ? firstNote : secondNote;
 };
 
+/** Check if two notes are equal */
 export const isEqual = (...args) => {
-  const [a, b, fn = midi] = args;
+  const [firstNote, secondNote, fn = midi] = args;
 
-  if (args.length == 1) return (other, f = fn) => isEqual(a, other, f);
-  if (args.length == 2) return isEqual(a, b, fn);
+  if (args.length == 1) return (other, f = fn) => isEqual(firstNote, other, f);
+  if (args.length == 2) return isEqual(firstNote, secondNote, fn);
 
-  return fn(a) === fn(b);
+  return fn(firstNote) === fn(secondNote);
 };
 
+/** Check if firstNote is strictly higher than secondNote */
 export const higherThan = (...args) => {
-  const [a, b, fn = midi] = args;
-  return isEqual(a, higher(...args)) && !isEqual(...args);
+  const [firstNote] = args;
+  return isEqual(firstNote, higher(...args));
 };
 
+/** Check if firstNote is strictly lower than secondNote */
 export const lowerThan = (...args) => {
-  const [a, b, fn = midi] = args;
-  return isEqual(a, lower(...args)) && !isEqual(...args);
+  const [firstNote] = args;
+  return isEqual(firstNote, lower(...args)) && !isEqual(...args);
 };
 
+/** Check if firstNote is higher or equal than secondNote */
 export const higherOrEqual = (...args) => {
-  const [a, b, fn = midi] = args;
-  return isEqual(a, higher(...args)) || isEqual(...args);
+  const [firstNote] = args;
+  return isEqual(firstNote, higher(...args)) || isEqual(...args);
 };
 
+/** Check if firstNote is lower or equal than secondNote */
 export const lowerOrEqual = (...args) => {
-  const [a, b, fn = midi] = args;
-  return isEqual(a, lower(...args)) || isEqual(...args);
+  const [firstNote] = args;
+  return isEqual(firstNote, lower(...args)) || isEqual(...args);
 };
 
+/** Check if firstNote < note < secondNote */
 export const isBetween = (...args) => {
-  const [a, b, note, fn = midi] = args;
+  const [firstNote, secondNote, note, fn = midi] = args;
 
-  if (args.length === 1) return (b, note, f = fn) => isBetween(a, b, note, f);
-  if (args.length === 2) return (n, f = fn) => isBetween(a, b, n, f);
-  if (args.length === 3) return isBetween(a, b, note, fn);
+  if (args.length === 1) return (second, note, f = fn) => isBetween(firstNote, second, note, f);
+  if (args.length === 2) return (n, f = fn) => isBetween(firstNote, secondNote, n, f);
+  if (args.length === 3) return isBetween(firstNote, secondNote, note, fn);
 
-  return allTrue(lowerThan(a, note), lowerThan(note, b, fn));
+  return allTrue(lowerThan(firstNote, note, fn), lowerThan(note, secondNote, fn));
 };
 
+/** Check if firstNote <= note <= secondNote */
 export const isInSegment = (...args) => {
-  const [a, b, note, fn = midi] = args;
+  const [firstNote, secondNote, note, fn = midi] = args;
 
-  if (args.length === 1) return (b, note, f = fn) => isInSegment(a, b, note, f);
-  if (args.length === 2) return (n, f = fn) => isInSegment(a, b, n, f);
-  if (args.length === 3) return isInSegment(a, b, note, fn);
+  if (args.length === 1) return (second, note, f = fn) => isInSegment(firstNote, second, note, f);
+  if (args.length === 2) return (n, f = fn) => isInSegment(firstNote, secondNote, n, f);
+  if (args.length === 3) return isInSegment(firstNote, secondNote, note, fn);
 
-  return allTrue(lowerOrEqual(a, note), lowerOrEqual(note, b, fn));
+  return allTrue(lowerOrEqual(firstNote, note, fn), lowerOrEqual(note, secondNote, fn));
 };

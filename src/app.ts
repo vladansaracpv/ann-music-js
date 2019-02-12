@@ -1,5 +1,5 @@
-import { getNoteProps, simplify, midi, step } from './note/properties';
+import { getNoteProps, simplify, midi, step, chroma, frequency } from './note/properties';
 import { distance } from './note/distance';
 
-const stepsFromC = distance(step, 'C4');
-console.log(stepsFromC('B4'));
+const stepsFromA = distance('A4', 'D4');
+console.log('fn: ', stepsFromA(midi));
