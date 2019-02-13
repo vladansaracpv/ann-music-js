@@ -1,4 +1,4 @@
-import { getNoteProps as noteProps, build as fromNote } from '../note/properties';
+import { getNoteProps as noteProps } from '../note/properties';
 import { getIntervalProps as iprops, build as ibuild } from '../interval/theory';
 
 // Map from letter step to number of fifths starting from "C":
@@ -83,7 +83,8 @@ export const transpose = (...args) => {
   if (n === null || i === null) return null;
   const tr = n.length === 1 ? [n[0] + i[0]] : [n[0] + i[0], n[1] + i[1]];
   console.log(tr);
-  return fromNote(decode(tr[0], tr[1], 1));
+  // return fromNote(decode(tr[0], tr[1], 1));
+  return decode(tr[0], tr[1], 1)
 };
 
 /**
@@ -107,7 +108,8 @@ export const trFifths = (...args) => {
   if (args.length === 1) return f => trFifths(args[0], f);
   const n = encodeNote(args[0]);
   if (n === null) return null;
-  return fromNote(decode(n[0] + args[1], 4, 1));
+  // return fromNote(decode(n[0] + args[1], 4, 1));
+  return decode(n[0] + args[1], 4, 1);
 };
 
 /**

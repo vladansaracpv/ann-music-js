@@ -127,7 +127,7 @@ type IntervalProps = {
 };
 
 /**
- * NoIntervalProps
+ *  NoIntervalProps
  *
  *  Empty Interval properties object
  */
@@ -145,7 +145,7 @@ type NoIntervalProps = {
 };
 
 /**
- * NO_INTERVAL
+ *  NO_INTERVAL
  *
  *  Immutable constant of empty interval properties object
  */
@@ -611,3 +611,4 @@ export const fromSemitones = (semitones: number): string => {
   const [chroma, octave] = [mod12(distance), div12(distance)];
   return direction * (IN[chroma] + 7 * octave) + IQ[chroma];
 };
+

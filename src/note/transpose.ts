@@ -1,73 +1,67 @@
 import { midi } from './properties';
 import { NAME } from './factories/name';
+import { inc, sub1, compose, add, sub } from '../helpers';
 
-/* Transpose @note by number of @semitones */
+const OCTAVE_REGEX = /^(octaves|octave|oct|o)?$/;
+const STEPS_REGEX = /^(steps|step|s)?$/;
+const SEMI_REGEX = /^(halfsteps|halves|half|semi|h)$/;
+
+const isOctave = (amount: string) => OCTAVE_REGEX.test(amount);
+const isStep = (amount: string) => STEPS_REGEX.test(amount);
+const isSemitone = (amount: string) => SEMI_REGEX.test(amount);
+const parseNum = (amount: string) => Number.parseInt(amount);
+
 export const semitones = (...args) => {
   const [semitones, note] = args;
-  if (args.length === 1) return note => semitones(semitones, note);
 
-  return NAME.fromMidi(midi(note) + semitones);
+  return args.length === 1
+    ? (note: string) => semitones(semitones, note)
+    : NAME.fromMidi(midi(note) + semitones);
 };
-
-/* Transpose @note by number of @tones */
 export const tones = (...args) => {
-  const [tones, note] = args;
-  if (args.length === 1) return tones => tones(tones, note);
+  const [amount, note] = args;
 
-  return semitones(2 * tones, note);
+  return args.length === 1
+    ? (amount: number) => tones(amount, note)
+    : semitones(2 * amount, note);
 };
-
-/* Transpose @note by number of @octaves */
 export const octaves = (...args) => {
-  const [octaves, note] = args;
-  if (args.length === 1) return octaves => octaves(octaves, note);
+  const [amount, note] = args;
 
-  return semitones(12 * octaves, note);
+  return args.length === 1
+    ? (amount: number) => octaves(amount, note)
+    : semitones(12 * amount, note);
 };
 
-/* Parse units used for transpose */
-export const parseAmount = amount => {
-  const OCTAVE_REGEX = /^(octaves|octave|oct|o)?$/;
-  const STEPS_REGEX = /^(steps|step|s)?$/;
-  const SEMI_REGEX = /^(halfsteps|halves|half|semi|h)$/;
-
+export const parseAmount = (amount: string): number => {
   if (amount.length === 0) return 1;
-  if (OCTAVE_REGEX.test(amount)) return 12;
-  if (STEPS_REGEX.test(amount)) return 6;
-  if (SEMI_REGEX.test(amount)) return 1;
+  if (isSemitone(amount)) return 1;
+  if (isStep(amount)) return 6;
+  if (isOctave(amount)) return 12;
 
   return 0;
 };
-
-/* Transpose note @note by ammount @by */
 export const transpose = (...args) => {
   const [by, note] = args;
-  if (args.length === 1) return note => transpose(by, note);
-
+  if (args.length === 1) return (note: string) => transpose(by, note);
   const unitAmount = by.split(' ');
-  const [amount, unit] = [
-    Number.parseInt(unitAmount[0]),
-    parseAmount(unitAmount[1])
-  ];
-  return semitones(amount * unit, note);
+  const [amount, unit] = unitAmount;
+
+  return semitones(parseNum(amount) * parseAmount(unit), note);
 };
-
-/* Get next note by incrementing MIDI */
-export const next = note => NAME.fromMidi(midi(note) + 1);
-
-/* Get prev note by decrementing MIDI */
-export const prev = note => NAME.fromMidi(midi(note) - 1);
-
-/* Get note @n steps ahead */
+export const next = (note: string) => compose(NAME.fromMidi, inc, midi)(note);
+export const prev = (note: string) => compose(NAME.fromMidi, sub1, midi)(note);
 export const nextBy = (...args) => {
   const [amount, note] = args;
 
-  if (args.length === 1) return note => nextBy(amount, note);
-
-  const newMidi = midi(note) + amount;
-
-  return NAME.fromMidi(newMidi);
+  return args.length === 1
+    ? (note: string) => nextBy(amount, note)
+    : compose(NAME.fromMidi, add(amount), midi)(note);
 };
+export const prevBy = (...args) => {
+  const [amount, note] = args;
 
-/* Get note @n steps behind */
-export const prevBy = (...args) => nextBy(...args);
+  return args.length === 1
+    ? (note: string) => prevBy(amount, note)
+    : compose(NAME.fromMidi, sub(amount), midi)(note);
+};

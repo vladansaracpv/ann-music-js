@@ -16,6 +16,8 @@ export const curry = fn => {
   };
 };
 
+export const pipe = (...fns) => x => fns.reduce((v, f) => f(v), x);
+
 // Array methods
 export const mapNTimes = (f, a, n) =>
   n == 0 ? a : mapNTimes(f, a.map(f), n - 1);
@@ -44,8 +46,18 @@ export const atLeast = (...args) => args.reduce((acc, x) => acc || x);
 // Operation methods
 export const add = a => b => a + b;
 export const add2 = (a, b) => a + b;
+export const sub = a => b => a - b;
 export const diff = ([a, b]) => a - b;
 export const diff2 = (a, b) => a - b;
+export const mod = n => x => x % n;
+export const mod12 = (n: number) => n % 12;
+export const div12 = (n: number) => n / 12;
+export const mul12 = (n: number) => n * 12;
+export const floor = (n: number) => Math.floor(n);
+export const sub1 = (n: number) => n - 1;
+export const sub69 = (n: number) => n - 69;
+export const pow2 = (n: number) => 2 ** n;
+export const inc = (n: number) => n + 1;
 
 // Transformation methods
 export const rest = (x, n = 1) => x.substring(n, x.length - 1);
