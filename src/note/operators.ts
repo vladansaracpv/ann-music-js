@@ -1,5 +1,5 @@
 import { midi } from './properties';
-import { allTrue } from '../helpers';
+import { andN } from '../helpers';
 
 export const higher = (...args) => {
   const [firstNote, secondNote, fn = midi] = args;
@@ -55,7 +55,7 @@ export const isBetween = (...args) => {
   if (args.length === 2) return (n: string, f = fn) => isBetween(firstNote, secondNote, n, f);
   if (args.length === 3) return isBetween(firstNote, secondNote, note, fn);
 
-  return allTrue(lowerThan(firstNote, note, fn), lowerThan(note, secondNote, fn));
+  return andN(lowerThan(firstNote, note, fn), lowerThan(note, secondNote, fn));
 };
 
 export const isInSegment = (...args) => {
@@ -65,5 +65,5 @@ export const isInSegment = (...args) => {
   if (args.length === 2) return (n: string, f = fn) => isInSegment(firstNote, secondNote, n, f);
   if (args.length === 3) return isInSegment(firstNote, secondNote, note, fn);
 
-  return allTrue(lowerOrEqual(firstNote, note, fn), lowerOrEqual(note, secondNote, fn));
+  return andN(lowerOrEqual(firstNote, note, fn), lowerOrEqual(note, secondNote, fn));
 };

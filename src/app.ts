@@ -1,5 +1,3 @@
-import { ic, getIntervalProps } from './interval/theory';
-import { getNoteProps } from './note/properties';
+import { unique, sort } from './helpers';
 
-const ivl = getNoteProps('A4')
-console.log(ivl);
+console.log(unique([1, 2, 2, 3, 1, 4]));

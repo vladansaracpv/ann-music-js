@@ -1,71 +1,196 @@
-import { name } from '../note/properties';
 
-// Functional programming methods
-export const compose = (...fns) => (...args) =>
-  fns.reduceRight((res, fn) => [fn.call(null, ...res)], args)[0];
+/** Functional Programming */
+
+export const id = (x: any): any => x;
+const applyFn = (res, fn) => [fn.call(null, ...res)]
+export const compose = (...fns) => (...args) => {
+  return fns.reduceRight(applyFn, args)[0];
+}
 
 export const curry = fn => {
   const arity = fn.length;
 
   return function $curry(...args) {
-    if (args.length < arity) {
-      return $curry.bind(null, ...args);
-    }
-
-    return fn.call(null, ...args);
+    return isEither(
+      $curry.bind(null, ...args),
+      fn.call(null, ...args),
+      lt(arity, args.length)
+    )
   };
 };
 
-export const pipe = (...fns) => x => fns.reduce((v, f) => f(v), x);
+/** Pipe: pipe(f1, f2, ..., fn)(x) = f1(x) | f2 | ... | fn */
+export const pipe = (...fns) => x => fns.reduce((v, fn) => fn(v), x);
 
-// Array methods
-export const mapNTimes = (f, a, n) =>
-  n == 0 ? a : mapNTimes(f, a.map(f), n - 1);
 
-export const callNTimes = (f, a, n) =>
-  n == 0 ? a : callNTimes(f, f(a), n - 1);
+/** Arithmetic operations (binary, C-urried, N-ary) */
+
+/** Addition */
+export const add = (a: number, b: number): number => a + b;
+export const addC = (b: number) => (a: number): number => a + b;
+export const addN = (...args: number[]): number => args.reduce(add);
+
+/** Subtraction */
+export const sub = (a: number, b: number): number => a - b;
+export const subC = (b: number) => (a: number): number => a - b;
+export const subN = (...args: number[]): number => args.reduce(sub);
+
+/** Division */
+export const div = (a: number, b: number): number => a / b;
+export const divC = (n: number) => (x: number): number => x / n;
+export const divN = (...args: number[]): number => args.reduce(div);
+
+/** Multiplication */
+export const mul = (a: number, b: number): number => a * b;
+export const mulC = (n: number) => (x: number): number => x * n;
+export const mulN = (...args: number[]): number => args.reduce(mul);
+
+
+
+
+
+/** Math functions */
+export const mod = (n: number) => (x: number): number => x % n;
+export const floor = (n: number) => Math.floor(n);
+export const abs = (n: number) => Math.abs(n);
+export const pow = (n: number) => (x: number): number => Math.pow(x, n);
+export const pow2 = (n: number) => 2 ** n;
+
+
+
+
+
+/** Relational operators */
+export const gt = (n: number, x: number): boolean => x > n;
+export const geq = (n: number, x: number): boolean => x >= n;
+export const lt = (n: number, x: number): boolean => x < n;
+export const leq = (n: number, x: number): boolean => x <= n;
+export const eq = (n: number, x: number): boolean => x === n;
+export const neq = (n: number, x: number): boolean => x !== n;
+
+
+
+
+
+/** Logical operators */
+
+/** AND */
+export const land = (a: boolean, b: boolean): boolean => a && b;
+export const andN = (...args: boolean[]): boolean => args.reduce(land);
+/** OR */
+export const lor = (a: boolean, b: boolean): boolean => a || b;
+export const orN = (...args: boolean[]): boolean => args.reduce(lor);
+
+
+
+
+
+/** Boolean methods */
+export const isInteger = (x: number): boolean => Number.isInteger(x);
+export const isNumber = (x: number): boolean => typeof x === 'number';
+export const isEmpty = (x: string | any[]) => eq(0, x.length);
+export const isMemberOf = (X: string | string[], el: any): boolean => andN(!isEmpty(el), geq(0, X.indexOf(el)));
+export const isMadeOfChar = (el: string): boolean => fillStr(el[0], el.length) === el;
+export const isInside = (a: number, b: number, x: number): boolean => andN(lt(x, a), gt(x, b));
+export const isBetween = (a: number, b: number, x: number): boolean => andN(leq(x, a), geq(x, b));
+export const isEither = (f, g, c) => { return c ? f : g };
+
+
+
+
+
+/** Array methods */
+export const mapN = (fn: any, array: any[], n: number) => {
+  return isEither(
+    array,
+    mapN(fn, array.map(fn), n - 1),
+    eq(0, n)
+  )
+}
+
+export const callN = (fn: any, array: any[], n: number) => {
+  return isEither(
+    array,
+    callN(fn, array.map(fn), n - 1),
+    eq(0, n)
+  )
+}
 
 export const fillStr = (s: string, n: number) => Array(Math.abs(n) + 1).join(s);
+export const split = (condition: string) => (str: string): string[] => str.split(condition);
+export const splitC = (condition: string) => (array: string[]): string[][] => array.map(split(condition));
+export const join = (condition: string) => (array: any[]): string => array.join(condition)
+export const joinC = (condition: string) => (array: any[]): string[] => array.map(join(condition));
+export const concat = (a: any[], b: any[]): any[] => [...a, ...b];
+export const concatN = (...args: any[]): any[] => args.reduce(concat);
+export const flatten = (array, depth = 2) => array.flat(depth);
+export const rangeUp = (start: number, l: number): number[] => Array(l).fill(start).map(add);
+export const rangeDown = (start: number, l: number): number[] => Array(l).fill(start).map(sub);
+export const range = (a: number, b: number): number[] => {
+  if (lor(!isInteger(a), !isInteger(b))) return [];
 
-export const splitArr = condition => arr => arr.map(q => q.split(condition));
-export const joinArr = condition => arr => arr.map(q => q.join(condition));
-export const flatArray = arr => arr.reduce((el, acc) => acc.concat(...el), []);
+  return isEither(
+    rangeUp(a, abs(b - a + 1)),
+    rangeDown(a, abs(a - b + 1)),
+    gt(a, b)
+  );
+};
+export const rotate = (n: number, array: any[]): any[] => {
+  const { length } = array;
+  const i = n % length;
+  return concat(array.slice(i, length), array.slice(0, i));
+};
+const notNull = n => n === 0 || n;
+export const compact = (array: number[]) => array.filter(notNull);
 
-// Boolean methods
-export const madeOfChar = el => el[0].repeat(el.length) === el;
-export const memberOf = (X: string | string[], el) =>
-  !isEmpty(el) && X.indexOf(el) > -1;
-export const inside = (a, b, x) => a <= x && x <= b;
-export const isInt = x => Number.isInteger(x);
-export const isNum = x => typeof x === 'number';
-export const isEmpty = x => x.length === 0;
-export const either = (f, g, c) => (c ? f : g);
-export const allTrue = (...args) => args.reduce((acc, x) => acc && x);
-export const atLeast = (...args) => args.reduce((acc, x) => acc || x);
+export const name = id;
 
-// Operation methods
-export const add = a => b => a + b;
-export const add2 = (a, b) => a + b;
-export const sub = a => b => a - b;
-export const diff = ([a, b]) => a - b;
-export const diff2 = (a, b) => a - b;
-export const mod = n => x => x % n;
-export const mod12 = (n: number) => n % 12;
-export const div12 = (n: number) => n / 12;
-export const mul12 = (n: number) => n * 12;
-export const floor = (n: number) => Math.floor(n);
-export const sub1 = (n: number) => n - 1;
-export const sub69 = (n: number) => n - 69;
-export const pow2 = (n: number) => 2 ** n;
-export const inc = (n: number) => n + 1;
 
-// Transformation methods
+export const sort = (src: any[], fn = id) => compact(src.map(name)).sort((a, b) => fn(a) - fn(b));
+
+const uniqueLocal = (n: any, i: number, a: any[]) => eq(i, 0) || neq(n, a[--i]);
+export const unique = (array: any[]) => sort(array).filter(uniqueLocal);
+
+export const swap = (arr: any[], a: number, b: number) => [arr[a], arr[b]] = [arr[b], arr[a]];
+export const shuffle = (array, rnd = Math.random) => {
+  let [i, n] = [0, array.length];
+
+  while (n) {
+    i = (rnd() * n--) | 0;
+    swap(array, n, i);
+  }
+
+  return array;
+};
+
+export const permutations = array => {
+  if (array.length === 0) return [[]];
+  return permutations(array.slice(1)).reduce((acc, perm) => {
+    return acc.concat(
+      array.map((e, pos) => {
+        const newPerm = [...perm];
+        newPerm.splice(pos, 0, array[0]);
+        return newPerm;
+      })
+    );
+  }, []);
+};
+
+
+
+
+
+/** String methods */
 export const rest = (x, n = 1) => x.substring(n, x.length - 1);
-export const flatten = X => [...[].concat(...[X])];
 export const glue = (...args) => args.reduce((acc, el) => acc + el);
-export const id = x => x;
-export const firstLetter = n => n[0];
-export const withTick = arr => arr.map(el => `'${el}'`);
+export const charAt = i => n => n[0];
+
+
+
+
+
+/** Transformation methods */
+export const withTick = array => array.map(el => `'${el}'`);
 export const or = (args, hasTick = false) => {
   const argsWithTick = hasTick ? args : withTick(args);
   return argsWithTick.join(' / ');
@@ -75,66 +200,5 @@ export const and = (args, hasTick = false) => {
   return `[ ${argsWithTick.join(', ')} ]`;
 };
 
-// export const fillStr = (s, n) => Array(Math.abs(n) + 1).join(s);
-export const flipCoin = n => Math.floor(Math.random() * n);
+export const flipCoin = (n: number): number => Math.floor(Math.random() * Math.floor(n));
 
-// ascending range (-2, 4) = [-2, -1, 0, 1]
-const rangeUp = (start, l) =>
-  Array(l)
-    .fill(start)
-    .map((v, i) => v + i);
-
-// descending range (2, 4) = [2, 1, 0, -1]
-const rangeDown = (start, l) =>
-  Array(l)
-    .fill(start)
-    .map((v, i) => v - i);
-
-export const range = (a, b) => {
-  if (a === null || b === null) return [];
-  return a < b ? rangeUp(a, b - a + 1) : rangeDown(a, a - b + 1);
-};
-
-export const rotate = (n, arr) => {
-  const len = arr.length;
-  const i = ((n % len) + len) % len;
-  return arr.slice(i, len).concat(arr.slice(0, i));
-};
-
-export const compact = arr => arr.filter(n => n === 0 || n);
-
-// const height = name => {
-//   const m = props(name).midi;
-//   return m !== null ? m : props(name + '-100').midi;
-// };
-
-// export const sort = src =>
-//   compact(src.map(name)).sort((a, b) => height(a) > height(b));
-
-// export const unique = arr =>
-//   sort(arr).filter((n, i, a) => i === 0 || n !== a[i - 1]);
-
-export const shuffle = (arr, rnd = Math.random) => {
-  let i, t;
-  let m = arr.length;
-  while (m) {
-    i = (rnd() * m--) | 0;
-    t = arr[m];
-    arr[m] = arr[i];
-    arr[i] = t;
-  }
-  return arr;
-};
-
-export const permutations = arr => {
-  if (arr.length === 0) return [[]];
-  return permutations(arr.slice(1)).reduce(function (acc, perm) {
-    return acc.concat(
-      arr.map(function (e, pos) {
-        var newPerm = perm.slice();
-        newPerm.splice(pos, 0, arr[0]);
-        return newPerm;
-      })
-    );
-  }, []);
-};

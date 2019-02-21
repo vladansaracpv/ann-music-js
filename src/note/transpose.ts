@@ -1,6 +1,6 @@
 import { midi } from './properties';
 import { NAME } from './factories/name';
-import { inc, sub1, compose, add, sub } from '../helpers';
+import { compose, addC, subC } from '../helpers';
 
 const OCTAVE_REGEX = /^(octaves|octave|oct|o)?$/;
 const STEPS_REGEX = /^(steps|step|s)?$/;
@@ -10,6 +10,8 @@ const isOctave = (amount: string) => OCTAVE_REGEX.test(amount);
 const isStep = (amount: string) => STEPS_REGEX.test(amount);
 const isSemitone = (amount: string) => SEMI_REGEX.test(amount);
 const parseNum = (amount: string) => Number.parseInt(amount);
+const sub1 = subC(1);
+const add1 = addC(1);
 
 export const semitones = (...args) => {
   const [semitones, note] = args;
@@ -49,19 +51,19 @@ export const transpose = (...args) => {
 
   return semitones(parseNum(amount) * parseAmount(unit), note);
 };
-export const next = (note: string) => compose(NAME.fromMidi, inc, midi)(note);
+export const next = (note: string) => compose(NAME.fromMidi, add1, midi)(note);
 export const prev = (note: string) => compose(NAME.fromMidi, sub1, midi)(note);
 export const nextBy = (...args) => {
   const [amount, note] = args;
 
   return args.length === 1
     ? (note: string) => nextBy(amount, note)
-    : compose(NAME.fromMidi, add(amount), midi)(note);
+    : compose(NAME.fromMidi, addC(amount), midi)(note);
 };
 export const prevBy = (...args) => {
   const [amount, note] = args;
 
   return args.length === 1
     ? (note: string) => prevBy(amount, note)
-    : compose(NAME.fromMidi, sub(amount), midi)(note);
+    : compose(NAME.fromMidi, subC(amount), midi)(note);
 };

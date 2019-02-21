@@ -1,4 +1,4 @@
-import { compose, splitArr, joinArr, flipCoin } from '../helpers';
+import { compose, splitC, joinC, flipCoin } from '../helpers';
 
 const division = {
   w: ['w', 'h-h', 'h.-q'],
@@ -18,9 +18,9 @@ const mapRandDivide = arr => arr.map(q => randDivide(q));
 const printBar = bar => bar.reduce((acc, el, i) => `| ${el} ${acc}`, '|');
 const shuffleBeat = arr =>
   compose(
-    joinArr('-'),
+    joinC('-'),
     mapRandDivide,
-    splitArr('-')
+    splitC('-')
   )(arr);
 
 const bar = ['q', 'q', 'q', 'q'];
