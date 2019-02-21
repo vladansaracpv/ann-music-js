@@ -49,7 +49,7 @@ export class Note {
   inSegment = (a, b, f = midi) => Op.isInSegment(a.name, b.name, this.name, f);
 
   /* Transpose */
-  transpose = (amount: string) => Transpose.transpose(this.name, amount);
-  next = (n = 1) => Transpose.nextBy(this.name, n);
-  prev = (n = 1) => Transpose.prevBy(this.name, n);
+  transpose = (amount: string) => Transpose.semitones(amount, this.name);
+  next = (n = 1) => Transpose.next(n, this.name);
+  prev = (n = 1) => Transpose.prev(n, this.name);
 }
