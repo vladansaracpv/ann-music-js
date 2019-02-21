@@ -5,8 +5,6 @@ import { isStep } from '../validator';
 import { PC } from '../factories/pc';
 import { MIDI } from '../factories/midi';
 
-
-
 const STEP = {
   fromLetter: letter => LETTERS.indexOf(letter),
   fromStep: step => LETTERS[step],
@@ -23,10 +21,5 @@ const STEP = {
 
 export const STEP_FACTORY = ({ fromProperty, withValue }) => {
   const step = STEP[fromProperty](withValue);
-
-  return isEither(
-    step,
-    undefined,
-    isStep(step)
-  );
+  return isEither(step, undefined, isStep(step));
 };

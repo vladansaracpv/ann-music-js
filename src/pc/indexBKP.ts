@@ -1,16 +1,21 @@
 import { chroma as notechr } from '../note/properties';
 import { chroma as ivlchr } from '../interval/theory';
-import { rotate, range, compact, isArray, eq, gt, land, neq, isEither } from '../helpers';
-import { isNumber } from 'util';
+import { rotate, range, compact } from '../helpers';
 
 const chr = str => notechr(str) || ivlchr(str) || 0;
 const pcsetNum = set => parseInt(chroma(set), 2);
 const clen = chroma => chroma.replace(/0/g, '').length;
-const IVLS = '1P 2m 2M 3m 3M 4P 5d 5P 6m 6M 7m 7M'.split(' ');
 
 const REGEX = /^[01]{12}$/;
-
-export const isChroma = (set: string) => REGEX.test(set);
+/**
+ * Test if the given string is a pitch class set chroma.
+ * @param {String} chroma - the pitch class set chroma
+ * @return {Boolean} true if its a valid pcset chroma
+ * @example
+ * PcSet.isChroma("101010101010") // => true
+ * PcSet.isChroma("101001") // => false
+ */
+export const isChroma = set => REGEX.test(set);
 
 /**
  * Get chroma of a pitch class set. A chroma identifies each set uniquely.
@@ -25,21 +30,25 @@ export const isChroma = (set: string) => REGEX.test(set);
  * PcSet.chroma(["C", "D", "E"]) // => "101010000000"
  */
 export const chroma = set => {
-  if (isChroma(set)) return set;
-  if (!isArray(set)) return '';
-  let b = Array(12).fill(0);
-  set.map(chr).forEach(i => (b[i] = 1));
-  return b.join('');
+    if (isChroma(set)) return set;
+    if (!Array.isArray(set)) return '';
+    let b = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    set.map(chr).forEach(i => (b[i] = 1));
+    return b.join('');
 };
 
 let all = null;
+/**
+ * Get a list of all possible chromas (all possible scales)
+ * More information: http://allthescales.org/
+ * @return {Array} an array of possible chromas from '10000000000' to '11111111111'
+ *
+ */
 export const chromas = n => {
-  all = all || range(2048, 4095).map(n => n.toString(2));
-  return isEither(
-    all.filter(chroma => clen(chroma) === n),
-    all.slice(),
-    isNumber(n)
-  );
+    all = all || range(2048, 4095).map(n => n.toString(2));
+    return typeof n === 'number'
+        ? all.filter(chroma => clen(chroma) === n)
+        : all.slice();
 };
 
 /**
@@ -57,16 +66,17 @@ export const chromas = n => {
  * PcSet.modes(["C", "D", "E"]).map(PcSet.intervals)
  */
 export const modes = (set, normalize = true) => {
-  normalize = normalize !== false;
-  const binary = chroma(set).split('');
-  return compact(
-    binary.map((val, i) => {
-      let r = rotate(i, binary);
-      return isEither(null, r.join(''), land(normalize, eq(r[0], '0')))
-    })
-  );
+    normalize = normalize !== false;
+    const binary = chroma(set).split('');
+    return compact(
+        binary.map((_, i) => {
+            let r = rotate(i, binary);
+            return normalize && r[0] === '0' ? null : r.join('');
+        })
+    );
 };
 
+const IVLS = '1P 2m 2M 3m 3M 4P 5d 5P 6m 6M 7m 7M'.split(' ');
 /**
  * Given a pcset (notes or chroma) return it"s intervals
  * @param {String|Array} pcset - the pitch class set (notes or chroma)
@@ -75,8 +85,8 @@ export const modes = (set, normalize = true) => {
  * PcSet.intervals("1010100000000") => ["1P", "2M", "3M"]
  */
 export const intervals = set => {
-  if (!isChroma(set)) return [];
-  return compact(set.split('').map((d, i) => (d === '1' ? IVLS[i] : null)));
+    if (!isChroma(set)) return [];
+    return compact(set.split('').map((d, i) => (d === '1' ? IVLS[i] : null)));
 };
 
 /**
@@ -89,8 +99,8 @@ export const intervals = set => {
  * PcSet.isEqual(["c2", "d3"], ["c5", "d2"]) // => true
  */
 export const isEqual = (...args) => {
-  if (eq(args.length, 1)) return s => isEqual(args[0], s);
-  return eq(chroma(args[0]), chroma(args[1]));
+    if (args.length === 1) return s => isEqual(args[0], s);
+    return chroma(args[0]) === chroma(args[1]);
 };
 
 /**
@@ -108,12 +118,12 @@ export const isEqual = (...args) => {
  * inCMajor(["e6", "c4", "d3"]) // => false
  */
 export const isSubsetOf = (...args) => {
-  if (gt(1, args.length)) return isSubsetOf(args[0])(args[1]);
-  const set = pcsetNum(args[0]);
-  return notes => {
-    notes = pcsetNum(notes);
-    return land(neq(notes, set), eq((notes & set), notes));
-  };
+    if (args.length > 1) return isSubsetOf(args[0])(args[1]);
+    const set = pcsetNum(args[0]);
+    return notes => {
+        notes = pcsetNum(notes);
+        return notes !== set && (notes & set) === notes;
+    };
 };
 
 /**
@@ -129,12 +139,12 @@ export const isSubsetOf = (...args) => {
  * extendsCMajor(["c6", "e4", "g3"]) // => false
  */
 export const isSupersetOf = (...args) => {
-  if (gt(1, args.length)) return isSupersetOf(args[0])(args[1]);
-  const set = pcsetNum(args[0]);
-  return notes => {
-    notes = pcsetNum(notes);
-    return land(neq(notes, set), eq((notes | set), notes));
-  };
+    if (args.length > 1) return isSupersetOf(args[0])(args[1]);
+    const set = pcsetNum(args[0]);
+    return notes => {
+        notes = pcsetNum(notes);
+        return notes !== set && (notes | set) === notes;
+    };
 };
 
 /**
@@ -147,9 +157,9 @@ export const isSupersetOf = (...args) => {
  * PcSet.includes(["C", "D", "E"], "C#4") // => false
  */
 export const includes = (...args) => {
-  if (gt(1, args.length)) return includes(args[0])(args[1]);
-  const set = chroma(args[0]);
-  return note => eq(set[chr(note)], '1');
+    if (args.length > 1) return includes(args[0])(args[1]);
+    const set = chroma(args[0]);
+    return note => set[chr(note)] === '1';
 };
 
 /**
@@ -164,6 +174,6 @@ export const includes = (...args) => {
  * PcSet.filter(["C2"], ["c2", "c#2", "d2", "c3", "c#3", "d3"]) // => [ "c2", "c3" ])
  */
 export const filter = (...args) => {
-  if (eq(args.length, 1)) return n => filter(args[0], n);
-  return args[1].filter(includes(args[0]));
+    if (args.length === 1) return n => filter(args[0], n);
+    return args[1].filter(includes(args[0]));
 };

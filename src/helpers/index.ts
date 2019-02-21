@@ -96,17 +96,17 @@ export const flipCoin = (n: number): number => Math.floor(Math.random() * Math.f
  * Relational operators 
  * 
  */
-export const gt = (n: number, x: number): boolean => x > n;
+export const gt = (n: any, x: any): boolean => x > n;
 
-export const geq = (n: number, x: number): boolean => x >= n;
+export const geq = (n: any, x: any): boolean => x >= n;
 
-export const lt = (n: number, x: number): boolean => x < n;
+export const lt = (n: any, x: any): boolean => x < n;
 
-export const leq = (n: number, x: number): boolean => x <= n;
+export const leq = (n: any, x: any): boolean => x <= n;
 
-export const eq = (n: number, x: number): boolean => x === n;
+export const eq = (n: any, x: any): boolean => x === n;
 
-export const neq = (n: number, x: number): boolean => x !== n;
+export const neq = (n: any, x: any): boolean => x !== n;
 
 
 
@@ -140,11 +140,17 @@ export const orN = (...args: boolean[]): boolean => args.reduce(lor);
  */
 export const isInteger = (x: number): boolean => Number.isInteger(x);
 
-export const isNumber = (x: number): boolean => typeof x === 'number';
+export const isNumber = (x: any): boolean => typeof x === 'number';
+
+export const isString = (x: any): boolean => typeof x === 'string';
+
+export const isArray = (x: any): boolean => Array.isArray(x);
 
 export const isEmpty = (x: string | any[]) => eq(0, x.length);
 
 export const isMemberOf = (X: string | string[], el: any): boolean => andN(!isEmpty(el), geq(0, X.indexOf(el)));
+
+export const isIn = str => n => str.includes(n[1]);
 
 export const isMadeOfChar = (el: string): boolean => fillStr(el[0], el.length) === el;
 

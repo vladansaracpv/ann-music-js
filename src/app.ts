@@ -1,5 +1,3 @@
-import { unique, sort } from './helpers';
-import { STEP_FACTORY } from './note/factories/step'
-import { FactoryParams } from './note/factories';
+import { chroma, intervals } from './pc';
 
-console.log(STEP_FACTORY(FactoryParams('pc', 'Eb')));
+console.log(intervals("111111111111"));

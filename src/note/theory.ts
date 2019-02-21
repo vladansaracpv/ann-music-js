@@ -1,4 +1,28 @@
 
+interface NoteProps {
+  name: string;
+  letter: string;
+  step: number;
+  accidental: string;
+  alteration: number;
+  octave: number;
+  pc: string;
+  chroma: number;
+  midi: number;
+  frequency: number;
+};
+
+/** Helper methods for Note types*/
+const contains = (char: string) => str => str.includes(char);
+const isChar = (str: string) => str.length === 1;
+const notFlat = (note: string) => FLATS.indexOf(note) < 0;
+const notSharp = (note: string) => SHARPS.indexOf(note) < 0;
+
+/** Helper parser fn */
+const capitalize = (l: string) => l.toUpperCase();
+const substitute = (str: string, regex: RegExp, char: string) => str.replace(regex, char);
+const parseOctave = (octave?: string) => octave ? +octave : 4;
+
 export const KEYS = [
   'name',
   'letter',
@@ -11,19 +35,6 @@ export const KEYS = [
   'midi',
   'frequency'
 ];
-
-type NoteProps = {
-  name: string;
-  letter: string;
-  step: number;
-  accidental: string;
-  alteration: number;
-  octave: number;
-  pc: string;
-  chroma: number;
-  midi: number;
-  frequency: number;
-};
 
 export const EMPTY_NOTE = {
   name: undefined,
@@ -46,11 +57,6 @@ export const LETTERS = 'CDEFGAB';
 export const ACCIDENTALS = ['b', '#'];
 export const ALL_NOTES = 'C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B'.split(' ');
 
-/** Helper methods for Note types*/
-const contains = (char: string) => str => str.includes(char);
-const isChar = (str: string) => str.length === 1;
-const notFlat = (note: string) => FLATS.indexOf(note) < 0;
-const notSharp = (note: string) => SHARPS.indexOf(note) < 0;
 
 /** Note types */
 export const SHARPS = ALL_NOTES.filter(contains('#'));
@@ -60,10 +66,7 @@ export const WITH_SHARPS = ALL_NOTES.filter(notFlat);
 export const WITH_FLATS = ALL_NOTES.filter(notSharp);
 export const WHITES = [0, 2, 4, 5, 7, 9, 11];
 
-/** Helper parser fn */
-const capitalize = (l: string) => l.toUpperCase();
-const substitute = (str: string, regex: RegExp, char: string) => str.replace(regex, char);
-const parseOctave = (octave?: string) => octave ? +octave : 4;
+
 
 /** Tokenize note given by string */
 export const parseNote = (note: string) => {

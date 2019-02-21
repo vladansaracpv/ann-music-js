@@ -1,4 +1,4 @@
-import { curry, glue, isEither, compose, addC, mod, divC, mulC, floor, subC, pow2 } from '../helpers';
+import { curry, glue, isEither, compose, addC, addN, mod, divC, mulC, floor, subC, pow2, eq, geq } from '../helpers';
 import { EMPTY_NOTE, parseNote, LETTERS, WHITES, WITH_SHARPS, WITH_FLATS } from './theory';
 
 
@@ -9,8 +9,8 @@ const sub1 = subC(1);
 const sub69 = subC(69);
 const add1 = addC(1);
 const getStepForLetter = (LETTERS: string, letter: string): number => LETTERS.indexOf(letter);
-const getAccidentalValue = (acc: string) => isEither(-acc.length, acc.length, acc[0] === 'b');
-const getChroma = (WHITES: number[], step: number, alteration: number): number => mod12(WHITES[step] + alteration + 12);
+const getAccidentalValue = (acc: string) => isEither(-acc.length, acc.length, eq(acc[0], 'b'));
+const getChroma = (WHITES: number[], step: number, alteration: number): number => mod12(addN(WHITES[step], alteration, 12));
 const getPc = (letter: string, accidental: string): string => glue(letter, accidental);
 const getName = (pc: string, octave: number): string => glue(pc, octave);
 const getMidi = (chroma: number, octave: number): number => compose(addC(chroma), mul12, add1)(octave);
@@ -67,7 +67,7 @@ export const frequency = (note: string) => getNoteProps(note).frequency;
 
 export const simplify = (note: string, withSameAccidentals = true): string => {
   const [midi, alteration] = getNoteProps(note);
-  const hasSharps = alteration >= 0;
+  const hasSharps = geq(0, alteration);
   const useSharps = isEither(hasSharps, !hasSharps, withSameAccidentals);
 
   return getNameFromMidi(midi, WITH_SHARPS, WITH_FLATS, useSharps);
