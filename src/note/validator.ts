@@ -1,4 +1,4 @@
-import { KEYS, LETTERS, parseNote } from './theory';
+import { KEYS, LETTERS, parse } from './theory';
 import {
   isMemberOf,
   isInteger,
@@ -43,7 +43,7 @@ const isFrequency = (freq: number): boolean => allTrue(isNumber(freq), gt(0, fre
 /** Valid name contains valid {letter, accidental, octave} */
 const isName = (name: string): boolean => {
 
-  const tokens = parseNote(name);
+  const tokens = parse(name);
   if (!tokens) return false;
 
   const { letter, accidental, octave, ...rest } = tokens;

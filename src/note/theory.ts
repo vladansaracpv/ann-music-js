@@ -51,9 +51,9 @@ export const EMPTY_NOTE = {
 
 export const NO_NOTE = Object.freeze(EMPTY_NOTE);
 
-/**  */
 export const REGEX = /^([a-gA-G]?)(#{1,}|b{1,}|x{1,}|)(-?\d*)\s*(.*)$/;
 export const LETTERS = 'CDEFGAB';
+export const WHITES = [0, 2, 4, 5, 7, 9, 11];
 export const ACCIDENTALS = ['b', '#'];
 export const ALL_NOTES = 'C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B'.split(' ');
 
@@ -64,12 +64,11 @@ export const FLATS = ALL_NOTES.filter(contains('b'));
 export const NATURALS = ALL_NOTES.filter(isChar);
 export const WITH_SHARPS = ALL_NOTES.filter(notFlat);
 export const WITH_FLATS = ALL_NOTES.filter(notSharp);
-export const WHITES = [0, 2, 4, 5, 7, 9, 11];
 
 
 
 /** Tokenize note given by string */
-export const parseNote = (note: string) => {
+export const parse = (note: string) => {
 
   const [T_Letter, T_Accidental, T_Octave, T_Rest] = REGEX.exec(note).slice(1)
   if (!T_Letter || T_Rest) return undefined;

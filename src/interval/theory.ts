@@ -66,16 +66,17 @@ export const KEYS = [
   'octave'
 ];
 
-const isPerfectIvl = (type: string, quality: string) => land(eq(quality, 'P'), eq(type, 'P'));
-const isMajorIvl = (type: string, quality: string) => land(eq(quality, 'M'), eq(type, 'M'));
-const isMinorIvl = (type: string, quality: string) => land(eq(quality, 'm'), eq(type, 'M'));
-const isAugmentedIvl = (quality: string) => /^A+$/.test(quality);
-const isDiminishedIvl = (quality: string) => /^d+$/.test(quality);
-const perfectIvlLength = (type: string, quality: string) => isEither(-quality.length, -(quality.length + 1), eq(type, 'P'));
+const isPerfect = (type: string, quality: string) => land(eq(quality, 'P'), eq(type, 'P'));
+const isP8 = (number: number) => eq(8, Math.abs(number))
+const isMajor = (type: string, quality: string) => land(eq(quality, 'M'), eq(type, 'M'));
+const isMinor = (type: string, quality: string) => land(eq(quality, 'm'), eq(type, 'M'));
+const isAugmented = (quality: string) => /^A+$/.test(quality);
+const isDiminished = (quality: string) => /^d+$/.test(quality);
+const perfectIvlLength = (type: string, quality: string) => isEither(-quality.length, -add1(quality.length), eq(type, 'P'));
 
-const numToStep = (num: number) => compose(mod7, decrement, Math.abs)(num);
-const stepToType = (step: number): IntervalType => TYPES[step] as IntervalType;
-const numToDir = (num: number): IntervalDirection => isEither(-1, 1, lt(0, num));
+const getStepFromNumber = (num: number) => compose(mod7, decrement, Math.abs)(num);
+const getTypeAtStep = (step: number): IntervalType => TYPES[step] as IntervalType;
+const getDirectionFromNumber = (number: number): IntervalDirection => isEither(-1, 1, lt(0, number));
 
 const add1 = addC(1);
 const add12 = addC(12);
@@ -87,7 +88,6 @@ const mul12 = mulC(12);
 const mul7 = mulC(7);
 const mod7 = mod(7);
 const mod12 = mod(12);
-const toInt = s => +s;
 
 const cache = {} as { [key: string]: IntervalProps | NoIntervalProps };
 
@@ -99,6 +99,8 @@ export const SIZES = [0, 2, 4, 5, 7, 9, 11];
 export const TYPES = 'PMMPPMM';
 export const CLASSES = [0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1, 0];
 export const NAMES = '1P 2m 2M 3m 3M 4P A4 5P 6m 6M 7m 7M 8P'.split(' ');
+export const IN = [1, 2, 2, 3, 3, 4, 5, 5, 6, 6, 7, 7];
+export const IQ = 'P m M m M P d P m M m M'.split(' ');
 
 export const names = (qualities?: IntervalName | IntervalName[]) => {
   return isString(qualities)
@@ -112,16 +114,16 @@ export const parseInterval = (str?: IntervalName) => {
   return isEither([m[1], m[2]], [m[4], m[3]], m[1]) as [string, string];
 };
 
-export const qToAlt = (type: string, quality: string) => {
-  if (isMajorIvl(type, quality)) return 0;
-  if (isPerfectIvl(type, quality)) return 0;
-  if (isMinorIvl(type, quality)) return -1;
-  if (isAugmentedIvl(quality)) return quality.length;
-  if (isDiminishedIvl(quality)) return perfectIvlLength(type, quality);
+export const qualityToAlteration = (type: string, quality: string) => {
+  if (isPerfect(type, quality)) return 0;
+  if (isMajor(type, quality)) return 0;
+  if (isMinor(type, quality)) return -1;
+  if (isAugmented(quality)) return quality.length;
+  if (isDiminished(quality)) return perfectIvlLength(type, quality);
   return null;
 };
 
-export const altToQ = (type: string, alteration: number) => {
+export const qualityFromAlteration = (type: string, alteration: number) => {
   if (eq(0, alteration)) return isEither('M', 'P', eq(type, 'M'));
   if (land(eq(-1, alteration), eq(type, 'M'))) return 'm';
   if (gt(0, alteration)) return fillStr('A', alteration);
@@ -129,12 +131,13 @@ export const altToQ = (type: string, alteration: number) => {
   return null;
 };
 
+const getIntervalWidth = (step: number, alteration: number, octave: number) => addN(SIZES[step], alteration, mul12(octave));
+
 const properties = (str?: string) => {
   const t = parseInterval(str);
-  // If there's no number or quality, then we have no interval
   if (!t) return NO_INTERVAL;
   const [number, quality] = t;
-  // Assign initial props for interval of width: 0
+
   const p = {
     number: 0,
     quality: 'd',
@@ -150,24 +153,23 @@ const properties = (str?: string) => {
     ic: 0
   } as IntervalProps;
 
-  p.number = toInt(number);
+  p.number = +number;
   p.quality = quality as IntervalQuality;
-  p.step = numToStep(p.number);
-  p.type = stepToType(p.step);
+  p.step = getStepFromNumber(p.number);
+  p.type = getTypeAtStep(p.step);
   if (land(eq(p.type, 'M'), eq(p.quality, 'P'))) return NO_INTERVAL;
   p.name = glue('', p.number, p.quality);
-  p.direction = numToDir(p.number);
+  p.direction = getDirectionFromNumber(p.number);
   p.simple = isEither(
     p.number,
     mul(p.direction, add1(p.step)),
-    lor(eq(p.number, 8), eq(p.number, -8))
+    isP8(p.number)
   ) as IntervalSimplifiedNumber;
-  p.alteration = qToAlt(p.type, p.quality) as number;
+  p.alteration = qualityToAlteration(p.type, p.quality) as number;
   p.octave = compose(Math.floor, div7, sub1, Math.abs)(p.number)
-  p.semitones = mul(p.direction, addN(SIZES[p.step], p.alteration, mul12(p.octave)));
+  p.semitones = mul(p.direction, getIntervalWidth(p.step, p.alteration, p.octave));
   const a = mod12(mul(p.direction, add(SIZES[p.step], p.alteration)));
-  const b = compose(mod12, add12)(a);
-  p.chroma = b as IntervalChroma;
+  p.chroma = compose(mod12, add12)(a) as IntervalChroma;
   return Object.freeze(p);
 };
 
@@ -191,34 +193,38 @@ export const build = ({ number, step, alteration, octave = 1, direction } = {} a
   if (eq(number, undefined)) return null;
   if (!isNumber(alteration)) return null;
   let d = isEither('', isEither('-', '', lt(0, direction)), !isNumber(direction));
-  const type = TYPES[numToStep(number)];
-  return glue(d, number, altToQ(type, alteration)) as IntervalName;
+  const type = TYPES[getStepFromNumber(number)];
+  return glue(d, number, qualityFromAlteration(type, alteration)) as IntervalName;
 };
 
 export const simplify = (str: IntervalName) => {
-  const p = getIntervalProps(str);
-  if (p === NO_INTERVAL) return null;
-  const { simple, quality } = p as Partial<IntervalProps>;
+  const props = getIntervalProps(str);
+  if (props === NO_INTERVAL) return null;
+  const { simple, quality } = props as Partial<IntervalProps>;
 
   return glue('', simple, quality);
 };
 
 export const invert = (str: IntervalName) => {
-  const p = getIntervalProps(str);
-  if (p === NO_INTERVAL) return null;
-  const ivlProps = p as IntervalProps;
-  const { step, type, alteration, direction, octave } = ivlProps;
+  const props = getIntervalProps(str) as IntervalProps;
+  if (props === NO_INTERVAL) return null;
+  const { step, type, alteration, direction, octave } = props;
   const invStep = mod7(sub(7, step));
-  const invAlt = isEither(-alteration, -(alteration + 1), eq(type, 'P'));
+  const invAlt = isEither(-alteration, -add1(alteration), eq(type, 'P'));
   return build({ step: invStep, alteration: invAlt, octave, direction });
 };
 
-export const IN = [1, 2, 2, 3, 3, 4, 5, 5, 6, 6, 7, 7];
-export const IQ = 'P m M m M P d P m M m M'.split(' ');
+
+const widthInOctaves = (distance: number) => compose(Math.floor, div12)(distance);
+const widthInSemitones = (semitones: number) => Math.abs(semitones);
+const chromaFromWidth = (distance: number) => mod12(distance);
+const numberForOffset = (direction: number, chroma: number, octave: number) => mul(direction, add(IN[chroma], mul7(octave)));
+const getIntervalFrom = (number: number, quality: string) => glue('', number, quality);
 
 export const fromSemitones = (semitones: number): string => {
-  const [direction, distance] = [numToDir(semitones), Math.abs(semitones)];
-  const [chroma, octave] = [mod12(distance), compose(Math.floor, div12)(distance)];
-  return glue('', mul(direction, add(IN[chroma], mul7(octave))), IQ[chroma]);
+  const [direction, distance] = [getDirectionFromNumber(semitones), widthInSemitones(semitones)];
+  const [chroma, octave] = [chromaFromWidth(distance), widthInOctaves(distance)];
+  const number = numberForOffset(direction, chroma, octave);
+  return getIntervalFrom(number, IQ[chroma])
 };
 

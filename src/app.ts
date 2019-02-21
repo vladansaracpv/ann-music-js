@@ -1,3 +1,6 @@
-import { chroma, intervals } from './pc';
+import { getIntervalProps, NAMES } from './interval/theory';
+import { parse, WITH_SHARPS } from './note/theory';
 
-console.log(intervals("111111111111"));
+// console.log(parse('C#4'));
+console.log(WITH_SHARPS);
+
