@@ -1,4 +1,4 @@
-import { curry, isEither, compose, floor, subC, pow2, normalize, isPositive, isString, isEmpty, isMadeOfChar, eq, fillStr } from '../helpers';
+import { compose, floor, subC, decrement, pow2, normalize, isString, isEmpty, isMadeOfChar } from '../helpers';
 import { EMPTY_NOTE, parse, LETTERS, ALL_NOTES, WHITE_KEYS, WITH_SHARPS, WITH_FLATS, NO_NOTE } from './theory';
 
 interface ACCIDENTAL_TYPE {
@@ -19,6 +19,13 @@ interface FREQUENCY_TYPE {
 interface PITCH_TYPE {
   name: string,
   index: number
+};
+
+interface BASIC_TONE_TYPE {
+  tone: string,
+  index: number,
+  position: number,
+  step: number
 };
 
 const ACCIDENTAL_FACTORY = {
@@ -48,19 +55,19 @@ const ACCIDENTAL_FACTORY = {
   },
 
   getTypeValue: function (type = '') {
-    return this.VALUES[type] || null;
+    return this.VALUES[type] || 0;
   },
 
   getOffset: function (accident = ' ') {
     if (!this.isValid(accident)) return null;
-    return accident.length * this.getTypeValue(accident[0]) || 0;
+    return accident.length * this.getTypeValue(this.getType(accident));
   },
 
   create: function (acc: string): ACCIDENTAL_TYPE {
     if (!this.isValid(acc)) return null;
     return {
       value: acc,
-      type: acc[0] || '',
+      type: this.getType(acc),
       alteration: this.getOffset(acc)
     }
   }
@@ -81,7 +88,7 @@ const PITCH_CLASS_FACTORY = {
   getChroma: function (letter, accidental) {
     return accidental === 'b'
       ? this.CLASSES.FLAT.indexOf(letter + accidental)
-      : this.CLASSES.SHARP.indexOf(letter + accidental)
+      : this.CLASSES.SHARP.indexOf(letter + accidental);
   },
 
   fromChroma: function (chroma: number, type: string) {
@@ -125,7 +132,9 @@ const PITCH_FACTORY = {
   simplify: function (note: string, withSameAccidentals = true) {
     const tokens = parse(note);
     const { letter, accident, octave } = tokens;
-    const chroma = PITCH_CLASS_FACTORY.getChroma(letter, accident);
+    const offset = BASIC_TONE_FACTORY.naturalToneIndex(letter) % 12;
+    const alteration = ACCIDENTAL_FACTORY.getOffset(accident);
+    const chroma = (offset + alteration) % 12;
 
     const isSharp = ACCIDENTAL_FACTORY.isSharp(accident);
     const type = isSharp ? 'SHARP' : 'FLAT';
@@ -150,23 +159,25 @@ const PITCH_FACTORY = {
   }
 }
 
-const decrement = subC(1);
-const whiteKeyIndex = (tone: string) => LETTERS.indexOf(tone);
-const naturalToneIndex = (tone: string) => WHITE_KEYS[whiteKeyIndex(tone)];
+const BASIC_TONE_FACTORY = {
+  whiteKeyIndex: function (tone: string) { return LETTERS.indexOf(tone); },
+  naturalToneIndex: function (tone: string) { return WHITE_KEYS[this.whiteKeyIndex(tone)]; },
 
-const getNaturalTone = (tone: string) => ({
-  tone,
-  index: whiteKeyIndex(tone),
-  position: naturalToneIndex(tone),
-  step: whiteKeyIndex(tone) + 1
-});
+  create: function (letter) {
+    return {
+      tone: letter,
+      index: this.whiteKeyIndex(letter),
+      position: this.naturalToneIndex(letter),
+      step: this.whiteKeyIndex(letter) + 1
+    }
+  }
+}
 
 export const getNoteProps = (noteName: string): any => {
   const tokens = parse(noteName);
   if (!tokens) { return EMPTY_NOTE; }
-
   const { letter, accident, octave } = tokens;
-  const natural = getNaturalTone(letter);
+  const natural = BASIC_TONE_FACTORY.create(letter);
   const accidental = ACCIDENTAL_FACTORY.create(accident);
   const pc = PITCH_CLASS_FACTORY.create(letter, accidental.type);
   const pitch = PITCH_FACTORY.create(pc, octave);
@@ -190,7 +201,8 @@ export const properties = (str?: string) => {
   return cache[str] || (cache[str] = getNoteProps(str));
 };
 
-console.log(PITCH_FACTORY.enharmonic('A##4'));
+console.log(getNoteProps('G#4'));
+
 
 // // Properties
 // export const property = curry((name: string, note: string) => getNoteProps(note)[name]);

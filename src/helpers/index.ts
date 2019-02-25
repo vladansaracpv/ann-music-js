@@ -48,6 +48,8 @@ export const sub = (a: number, b: number): number => a - b;
 
 export const subC = (b: number) => (a: number): number => a - b;
 
+export const decrement = subC(1);
+
 export const subN = (...args: number[]): number => args.reduce(sub);
 
 
