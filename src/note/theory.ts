@@ -1,4 +1,3 @@
-
 interface NoteProps {
   name: string;
   letter: string;
@@ -12,16 +11,6 @@ interface NoteProps {
   frequency: number;
 };
 
-/** Helper methods for Note types*/
-const contains = (char: string) => str => str.includes(char);
-const isChar = (str: string) => str.length === 1;
-const notFlat = (note: string) => FLATS.indexOf(note) < 0;
-const notSharp = (note: string) => SHARPS.indexOf(note) < 0;
-
-/** Helper parser fn */
-const capitalize = (l: string) => l.toUpperCase();
-const substitute = (str: string, regex: RegExp, char: string) => str.replace(regex, char);
-const parseOctave = (octave?: string) => octave ? +octave : 4;
 
 export const KEYS = [
   'name',
@@ -51,21 +40,32 @@ export const EMPTY_NOTE = {
 
 export const NO_NOTE = Object.freeze(EMPTY_NOTE);
 
-export const REGEX = /^([a-gA-G]?)(#{1,}|b{1,}|x{1,}|)(-?\d*)\s*(.*)$/;
+const either = (truthy, falsy, condition) => condition ? truthy : falsy;
+const naturals = (value: string, index: number) => either(index, null, value.length === 1);
+const altered = (value: string, index: number) => either(index, null, value.length > 1);
+const numbers = (value: any) => Number.isInteger(value);
+
+/** Helper parser fn */
+const capitalize = (l: string) => l.toUpperCase();
+const substitute = (str: string, regex: RegExp, char: string) => str.replace(regex, char);
+const parseOctave = (octave?: string) => octave ? +octave : 4;
+
 export const LETTERS = 'CDEFGAB';
-export const WHITES = [0, 2, 4, 5, 7, 9, 11];
 export const ACCIDENTALS = ['b', '#'];
+
 export const ALL_NOTES = 'C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B'.split(' ');
 
+export const WITH_SHARPS = 'C C# D D# E F F# G G# A A# B'.split(' ');
+export const WITH_FLATS = 'C Db D Eb E F Gb G Ab A Bb B'.split(' ');
 
-/** Note types */
-export const SHARPS = ALL_NOTES.filter(contains('#'));
-export const FLATS = ALL_NOTES.filter(contains('b'));
-export const NATURALS = ALL_NOTES.filter(isChar);
-export const WITH_SHARPS = ALL_NOTES.filter(notFlat);
-export const WITH_FLATS = ALL_NOTES.filter(notSharp);
+export const NATURALS = LETTERS.split('');
+export const SHARPS = WITH_SHARPS.filter(altered);
+export const FLATS = WITH_FLATS.filter(altered);
 
+export const WHITE_KEYS = WITH_SHARPS.map(naturals).filter(numbers);
+export const BLACK_KEYS = WITH_SHARPS.map(altered).filter(numbers);
 
+export const REGEX = /^([a-gA-G]?)(#{1,}|b{1,}|x{1,}|)(-?\d*)\s*(.*)$/;
 
 /** Tokenize note given by string */
 export const parse = (note: string) => {
@@ -73,12 +73,10 @@ export const parse = (note: string) => {
   const [T_Letter, T_Accidental, T_Octave, T_Rest] = REGEX.exec(note).slice(1)
   if (!T_Letter || T_Rest) return undefined;
 
-  const [letter, accidental, octave, rest] = [
-    capitalize(T_Letter),
-    substitute(T_Accidental, /x/g, '##'),
-    parseOctave(T_Octave),
-    T_Rest
-  ];
-
-  return { letter, accidental, octave, rest }
+  return {
+    letter: capitalize(T_Letter),
+    accident: substitute(T_Accidental, /x/g, '##'),
+    octave: parseOctave(T_Octave),
+    rest: T_Rest
+  };
 };

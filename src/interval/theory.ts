@@ -1,4 +1,5 @@
 import { divC, mod, sub, subC, addC, add, addN, isEither, isNumber, isString, fillStr, isIn, compose, eq, neq, gt, lt, lor, land, glue, mulC, mul } from '../helpers';
+import { midi } from '../note/properties';
 
 type IntervalName = string;
 type IntervalQuality = 'dddd' | 'ddd' | 'dd' | 'd' | 'm' | 'M' | 'P' | 'A' | 'AA' | 'AAA' | 'AAAA';
@@ -228,3 +229,50 @@ export const fromSemitones = (semitones: number): string => {
   return getIntervalFrom(number, IQ[chroma])
 };
 
+const distance = (a, b, fn = midi) => Math.abs(fn(b) - fn(a));
+
+export const cents = (freq1: number, freq2: number): number => (
+  eq(0, freq1)
+    ? null
+    : 1200 * Math.log2(freq2 / freq1)
+);
+
+export const chromatic = (a: string, b: string): any => ({
+  number: distance(a, b),
+  name: glue('i', distance(a, b))
+});
+
+export const generic = (a: string, b: string): any => ({
+
+});
+
+// Pitch: C#4, D3, C4...
+// Pitch Space: C#2, D4, Bb2, ...
+// Pitch Class: C, F#, G, ..., B
+// Pitch class space: [0, ..., 11]
+// Octave equivalence: C3 = C4
+// Enharmonic equivalence: C#3 = Db3
+
+/**
+ *
+ *  Pitch Interval: pi<G4, A#5> = 15
+ *   - Ordered
+ *      opi<G4, A#5> = 15
+ *      opi<A#5, G4> = -15
+ *   - Unordered
+ *      upi<G4><A#4> = min(G4-A#5, A#5-G4) % 12
+ * 
+ *  Pitch Class Interval pci<G4, A#5> = pci<G, A#> = 3
+ *   - Ordered
+ *      opci<G, A#> = 3
+ *      opci<A#, G> = 9
+ *   - Unordered
+ *      upci<G, A#> = min(opci<G,A#>, opci<A#, G>) = 3
+ * 
+ */
+
+
+console.log(getIntervalProps('6m'));
+
+// console.log(cents(400, 520))
+// console.log(chromatic('C4', 'A4'))

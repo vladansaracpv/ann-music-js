@@ -40,29 +40,29 @@ const isMidi = (midi: number): boolean => isInteger(midi);
 /** Valid frequency is positive number */
 const isFrequency = (freq: number): boolean => allTrue(isNumber(freq), gt(0, freq));
 
-/** Valid name contains valid {letter, accidental, octave} */
+/** Valid name contains valid {letter, accident, octave} */
 const isName = (name: string): boolean => {
 
   const tokens = parse(name);
   if (!tokens) return false;
 
-  const { letter, accidental, octave, ...rest } = tokens;
+  const { letter, accident, octave, ...rest } = tokens;
 
-  return allTrue(isLetter(letter), isAccidental(accidental), isOctave(octave));
+  return allTrue(isLetter(letter), isAccidental(accident), isOctave(octave));
 };
 
-/** Valid accidental is either '' or multiple of #/b */
-const isAccidental = (accidental: string): boolean => {
-  // '' is valid accidental value
-  if (isEmpty(accidental)) { return true; }
+/** Valid accident is either '' or multiple of #/b */
+const isAccidental = (accident: string): boolean => {
+  // '' is valid accident value
+  if (isEmpty(accident)) { return true; }
 
   // '#' or 'bbb' are valid, but '#b' is not
-  if (!isMadeOfChar(accidental)) { return false; }
+  if (!isMadeOfChar(accident)) { return false; }
 
-  return '#b'.indexOf(accidental[0]) > -1;
+  return '#b'.indexOf(accident[0]) > -1;
 };
 
-/** Valid pc is made up from valid {letter, accidental} */
+/** Valid pc is made up from valid {letter, accident} */
 const isPc = (pc: string): boolean => {
   return pc.length === 1
     ? isLetter(pc)

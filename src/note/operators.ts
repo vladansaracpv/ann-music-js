@@ -55,7 +55,6 @@ export const isBetween = (...args) => {
   const [firstNote, secondNote, note, fn = midi] = args;
   const { length } = args;
 
-
   if (length === 1) return (second: string, note: string, f = fn) => isBetween(firstNote, second, note, f);
   if (length === 2) return (n: string, f = fn) => isBetween(firstNote, secondNote, n, f);
   if (length === 3) return isBetween(firstNote, secondNote, note, fn);
@@ -66,7 +65,6 @@ export const isBetween = (...args) => {
 export const isInSegment = (...args) => {
   const [firstNote, secondNote, note, fn = midi] = args;
   const { length } = args;
-
 
   if (length === 1) return (second: string, note: string, f = fn) => isInSegment(firstNote, second, note, f);
   if (length === 2) return (n: string, f = fn) => isInSegment(firstNote, secondNote, n, f);

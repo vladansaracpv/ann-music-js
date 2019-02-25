@@ -83,10 +83,11 @@ export const abs = (n: number) => Math.abs(n);
 
 export const pow = (n: number) => (x: number): number => Math.pow(x, n);
 
-export const pow2 = (n: number) => 2 ** n;
+export const pow2 = (exp: number) => 2 ** exp;
 
 export const flipCoin = (n: number): number => Math.floor(Math.random() * Math.floor(n));
 
+export const normalize = divC(12);
 
 
 
@@ -139,6 +140,8 @@ export const orN = (...args: boolean[]): boolean => args.reduce(lor);
  * 
  */
 export const isInteger = (x: number): boolean => Number.isInteger(x);
+
+export const isPositive = (x: number): boolean => geq(0, x);
 
 export const isNumber = (x: any): boolean => typeof x === 'number';
 
