@@ -46,9 +46,9 @@ const isName = (name: string): boolean => {
   const tokens = parse(name);
   if (!tokens) return false;
 
-  const { letter, accident, octave, ...rest } = tokens;
+  const { letter, accidental, octave, ...rest } = tokens;
 
-  return allTrue(isLetter(letter), isAccidental(accident), isOctave(octave));
+  return allTrue(isLetter(letter), isAccidental(accidental), isOctave(octave));
 };
 
 /** Valid accident is either '' or multiple of #/b */

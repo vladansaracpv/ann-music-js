@@ -75,7 +75,7 @@ export const parse = (note: string) => {
 
   return {
     letter: capitalize(T_Letter),
-    accident: substitute(T_Accidental, /x/g, '##'),
+    accidental: substitute(T_Accidental, /x/g, '##'),
     octave: parseOctave(T_Octave),
     rest: T_Rest
   };
