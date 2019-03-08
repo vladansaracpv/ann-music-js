@@ -1,21 +1,10 @@
 
-class Accidental {
-    type: string;
-    alteration: number;
-
-    static types: string[] = ['b', '', '#'];
-
-    static values = {
-        'b': -1,
-        '#': 1,
-        '': 0
-    };
-
+class AccidentalTheory {
     /**
- *  Check if given accidental type is valid
- *  @param {string} - Accidental type
- *  @return {boolean} - Accidental type validity
- */
+     *  Check if given accidental type is valid
+     *  @param {string} - Accidental type
+     *  @return {boolean} - Accidental type validity
+     */
     static isValid = (accident: string): boolean => {
         // '' is valid accident value
         if (accident.length === 0) { return true; }
@@ -24,6 +13,19 @@ class Accidental {
         if (Array(Math.abs(accident.length) + 1).join(accident[0]) !== accident) return false;
 
         return '#b'.indexOf(accident[0]) > -1;
+    };
+}
+
+export class Accidental extends AccidentalTheory {
+    type: string;
+    value: number;
+
+    static types: string[] = ['b', '', '#'];
+
+    static values = {
+        'b': -1,
+        '#': 1,
+        '': 0
     };
 
     /**
@@ -73,12 +75,12 @@ class Accidental {
             : Accidental.valueType(value).repeat(value);
     }
 
-
     /**
      *  Create Accidental object from {string} type
      *  @param {string} - Accidental type
      */
     static fromType = (type: string): Accidental => {
+        if (!Accidental.isValid(type)) return null;
         return new Accidental(type);
     };
 
@@ -87,27 +89,37 @@ class Accidental {
      *  @param {number} - Alteration
      * 
      */
-    static fromAlteration = (alteration: number): Accidental => {
+    static fromValue = (alteration: number): Accidental => {
         const type = Accidental.typeFromValue(alteration);
+        if (!Accidental.isValid(type)) return null;
         return new Accidental(type);
     }
 
     /**
-     * Create Accidental object from {string} type | {number} alteration
-     * @param property 
+     * Create Accidental object from {string} type | {number} value
      */
     static create(property: string | number): Accidental {
         if (!['number', 'string'].includes(typeof property)) return null;
 
         return typeof property === 'string'
             ? Accidental.fromType(property)
-            : Accidental.fromAlteration(property);
-
+            : Accidental.fromValue(property);
     }
 
     private constructor(type: string) {
-        if (!Accidental.isValid(type)) return null;
+        super();
         this.type = type;
-        this.alteration = Accidental.valueFromType(type);
+        this.value = Accidental.valueFromType(type);
     }
+
+    toType = (): string => this.type;
+    toValue = (): number => this.value;
+    isSharp = (): boolean => this.type[0] === '#'
+    isFlat = (): boolean => this.type[0] === 'b';
+    isNatural = (): boolean => this.type.length === 0;
 }
+
+// const acc = Accidental.create('#');
+// console.log(acc);
+// console.log(Accidental);
+

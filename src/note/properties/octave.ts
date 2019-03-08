@@ -2,12 +2,26 @@
 const isBetween = (a, b, x) => a <= x && x <= b;
 const either = (truthy, falsy, condition) => condition ? truthy : falsy;
 
-class Octave {
-    value: number;
-
+class OctaveTheory {
     static isValid = (octave: number) => {
         return Number.isInteger(octave);
     }
+
+    static semitones = (octave: number): number => {
+        if (!Octave.isValid(octave)) return null;
+        if (octave < 0) return Math.abs(octave) * 12;
+        return either(12, (Math.abs(octave) + 1) * 12, octave === 0);
+
+    }
+
+    static containsMidi = (midi: number, octave: number): boolean => {
+        const [a, b] = [(octave + 1) * 12, (octave + 2) * 12 - 1];
+        return isBetween(a, b, midi);
+    }
+}
+
+class Octave extends OctaveTheory {
+    value: number;
 
     static fromName = (name: string): Octave => {
         return new Octave(4);
@@ -32,21 +46,17 @@ class Octave {
             ? Octave.fromName(property)
             : Octave.fromNumericValue(property, isOctave)
     }
+
     private constructor(octave: number) {
+        super();
         if (!Octave.isValid(octave)) return null;
         this.value = octave;
     }
 
-    static semitones = (octave: number): number => {
-        if (!Octave.isValid(octave)) return null;
-        if (octave < 0) return Math.abs(octave) * 12;
-        return either(12, (Math.abs(octave) + 1) * 12, octave === 0);
+    toValue = (): number => this.value;
 
-    }
+    semitones = (): number => Octave.semitones(this.value);
 
-    static containsMidi = (midi: number, octave: number): boolean => {
-        const [a, b] = [(octave + 1) * 12, (octave + 2) * 12 - 1];
-        return isBetween(a, b, midi);
-    }
+    containsMidi = (midi: number): boolean => Octave.containsMidi(midi, this.value);
 }
 

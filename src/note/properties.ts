@@ -15,20 +15,11 @@ interface NoteProps {
   frequency: number;
 };
 
-export const Accidental = {
 
-  type: ['b', '', '#'],
-
-  VALUES: { 'b': -1, '#': 1, ' ': 0 },
-
-  value: function (acc) {
-    return this.VALUES[acc] || 0;
-  },
-
-  alteration: function (acc) {
-    return acc.length * this.value(acc[0]);
-  },
-
+const props = (name: string) => {
+  const tokens = parse(name);
+  if (!tokens) { return EMPTY_NOTE; }
+  let { letter, accidental, octave } = tokens;
 }
 
 const letterIndex = (letter) => WITH_SHARPS.indexOf(letter);
@@ -90,73 +81,6 @@ export const simplify = (note, sameSign = true) => {
 
 const enharmonic = (note) => simplify(note, false);
 
-
-
-
-// interface AccidentalType {
-//   value: string,
-//   type: string,
-//   alteration: number
-// };
-
-// export const Accidental = {
-
-//   TYPES: ['b', '', '#'],
-
-//   NAMES: {
-//     'b': 'flat',
-//     '#': 'sharp',
-//     ' ': 'natural'
-//   },
-
-//   VALUES: {
-//     'b': -1,
-//     '#': 1,
-//     ' ': 0
-//   },
-
-//   isValid: function (accident: string): boolean {
-//     if (isEmpty(accident)) { return true; }
-//     if (!isMadeOfChar(accident)) { return false; }
-//     return this.TYPES.indexOf(accident[0]) > -1;
-//   },
-
-//   getType: function (accident: string): string {
-//     if (!this.isValid(accident)) return null;
-//     return accident[0];
-//   },
-
-//   isSharp: function (accident: string): boolean {
-//     return eq(this.getType(accident), '#')
-//   },
-
-//   isFlat: function (accident: string): boolean {
-//     return eq(this.getType(accident), 'b');
-//   },
-
-//   isNatural: function (accident: string): boolean {
-//     return eq(this.getType(accident), ' ');
-//   },
-
-//   getValue: function (type: string): number {
-//     if (!this.isValid(type)) return null;
-//     return this.VALUES[type[0]] || 0;
-//   },
-
-//   getOffset: function (accident: string): number {
-//     if (!this.isValid(accident)) return null;
-//     return accident.length * this.getValue(this.getType(accident));
-//   },
-
-//   build: function (acc: string): AccidentalType {
-//     if (!this.isValid(acc)) return null;
-//     return {
-//       value: acc,
-//       type: this.getType(acc),
-//       alteration: this.getOffset(acc)
-//     }
-//   }
-// };
 
 // interface PitchClassType {
 //   name: string,

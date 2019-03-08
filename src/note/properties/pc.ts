@@ -1,7 +1,5 @@
 
-class Pc {
-    pc: string;
-
+class PcTheory {
     static PITCH_CLASSES = 'C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B'.split(' ');
     static PC_SHARPS = 'C C# D D# E F F# G G# A A# B'.split(' ');
     static PC_FLATS = 'C Db D Eb E F Gb G Ab A Bb B'.split(' ');
@@ -9,6 +7,10 @@ class Pc {
     static isValid = (pc: string): boolean => {
         return Pc.PITCH_CLASSES.includes(pc);
     }
+}
+
+class Pc extends PcTheory {
+    pc: string;
 
     static fromStringValue = (str: string): Pc => {
         const oct = str[str.length - 1];
@@ -49,9 +51,13 @@ class Pc {
     }
 
     private constructor(pc: string) {
+        super();
         if (!Pc.isValid(pc)) return null;
         this.pc = pc;
     }
+
+    toValue = (): string => this.pc;
+
 }
 
 console.log(Pc);
