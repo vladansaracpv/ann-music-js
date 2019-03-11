@@ -1,89 +1,187 @@
-import { values } from "ramda";
 
+/**
+ *  Note durations. 
+ *  Can be either: 
+ *  - 1/1:  w(hole)
+ *  - 1/2:  h(alf)
+ *  - 1/4:  q(uarter)
+ *  - 1/8:  e(ighth)
+ *  - 1/16: s(ixteenth)
+ *  - 1/32: t(hirtysecondth)
+ */
 class Duration {
-  static VALUES = 'whqes'.split('');
-  static partition = ['simple', 'compound'];
+  static VALUES = 'whqest'.split('');
 
-  value: string;
-  withDot: boolean;
-  simple: string;
+  value: string;    // base value (without dots)
+  level: number;    // division (exponent) level. q = 2 <=> 1/4 = 2 ** -2
+  withDot: boolean; // is it dotted value
+  simple: string;   // duration in most simple form (with dot). Ex: 'q.', 'w', ...
+  numeric: number;  // integer value. Ex: q = 0.25, h. = 0.75, ...
 
-  divide = (compound = false): Duration[] => {
-    const divisionLevel = Duration.VALUES.indexOf(this.value) + 1;
-    const halfValue = Duration.VALUES[divisionLevel];
-    const willContainDot = this.withDot && compound;
-    const parts = willContainDot ? 2 : (this.withDot ? 3 : 2);
-    return halfValue.repeat(parts).split('').map(value => new Duration(value, willContainDot));
+  /**
+   *  Return this duration in terms of other duration
+   *  Ex1: 'h.'.in('q') = 3. As 'h.' = 'qqq'
+   *  Ex2: 'q.'.in('h') = 0.75, because 3/8 : 4/8 = 3:4 == .75
+   */
+  in = (value: string): number => {
+    const i = this.numeric;
+    const iv = new Duration(value).numeric;
+    return i / iv;
   }
 
-  constructor(value: string, withDot = false) {
-    this.value = value;
-    this.withDot = withDot;
-    this.simple = this.value + (this.withDot ? '.' : '');
+  half = (): string => Duration.VALUES[this.level + 1] + (this.withDot ? '.' : '');
+  double = (): string => Duration.VALUES[this.level - 1] + (this.withDot ? '.' : '');
+
+  /**
+   *  Return duration from numeric value.
+   *  Ex1: Duration(0.0625) = 's'
+   *  Ex2: Duration(0.1875) = 'e.'
+   */
+  static fromNumber = (value: number): Duration => {
+    const isDotted = Number.isInteger(Math.log2(value / 3));
+    const type = isDotted ? -Math.log2(value * 2 / 3) : -Math.log2(value);
+    if (!Number.isInteger(type)) return null;
+    const duration = Duration.VALUES[type];
+    return new Duration(duration + (isDotted ? '.' : ''));
+  }
+
+  /**
+   *  Returns duration from {string} value.
+   *  Ex: Duration('q')
+   */
+  static fromString = (value: string): Duration => new Duration(value);
+
+  static from = (value: number | string): Duration => {
+    if (['number', 'string'].indexOf(typeof value) < 0) return null;
+    if (typeof value === 'number') return Duration.fromNumber(value);
+    return Duration.fromString(value);
+  }
+
+  private constructor(value: string) {
+    this.value = value[0];
+    this.withDot = value[1] === '.' ? true : false;
+    this.simple = this.withDot ? value : this.value;
+    this.level = Duration.VALUES.indexOf(this.value);
+    this.numeric = this.withDot ? 3 * 2 ** -(this.level + 1) : 2 ** -this.level;
   }
 
 }
 
 class Beat {
-  value: Duration[] = [];
+  values: Duration[];
+  simple: string;
+  numeric: number;
 
-  formated = () => this.value.map(val => val.simple).join('-');
+  in = (value: string): number[] => this.values.map(duration => duration.in(value));
 
-  split = (compound = false) => this.value.map(duration => duration.divide(compound)).reduce((acc, val) => [...acc, ...val]);
+  print = (sheet: string) => {
+    // this.values.map(val => val.in(sheet)).reduce((val, acc) => )
+  }
 
-  constructor(value: Duration[]) {
-    this.value = value;
+  static from = (value: string | string[]) => {
+    // if (typeof value === 'string') return Beat.fromString(value);
+    // return new Beat(value);
+  }
+
+  constructor(value: string) {
+    this.simple = value;
+    this.values = Array.from(value.split('-'), note => Duration.from(note));
+    this.numeric = this.values.map(duration => duration.numeric).reduce((val, acc) => acc + val);
   }
 }
 
+class TimeSignature {
+  num: number;
+  value: number;
+  type: Duration;
+  numeric: number;
+
+  toString = () => `${this.num}/${this.value}`;
+
+  constructor(beats: number, value: number) {
+    this.num = beats;
+    this.value = value;
+    this.type = Duration.from(1 / value);
+    this.numeric = beats / value;
+  }
+}
+
+class Tempo {
+  bpm: number;
+  beat: string;
+  type: Duration;
+
+  toString = (): string => `${this.bpm}:${this.beat}`;
+
+  duration = (notes: string): number => {
+    const beat = new Beat(notes);
+    const valueInType = beat.numeric / this.type.numeric;
+    return valueInType * 60 / this.bpm;
+  }
+
+  constructor(bpm: number, beat: string) {
+    this.bpm = bpm;
+    this.beat = beat;
+    this.type = Duration.from(this.beat);
+  }
+}
+
+
 class Bar {
   beats: Beat[];
-  meter: Meter;
+  meter: TimeSignature;
   sheetLevel: string;
+  simple: string;
 
-  constructor(beats: Beat[], meter: Meter, sheetLevel: string = 'q') {
+  in = (value: string): any => {
+    return this.beats
+      .map(beat => beat.in(value))
+      .reduce((val, acc) => [...val, ...acc])
+    // .reduce((acc, val, i, arr) => i === arr.length - 1 ? acc : [...acc, acc[i] + val], [0]);
+    // .map((val, i) => console.log(`${i}:${val}`))
+  }
+
+  // [ 2, 2, 4, 1, 1, 1, 1, 1, 1, 2 ] 
+
+  print = (level: string) => {
+    const inDuration = this.in(level);
+    const noLines = inDuration.map(v => v - 1);
+    const notes = this.simple.split('-');
+    const sheet = notes.map((note, i) => `${notes[i]}${'-'.repeat(noLines[i])}`);
+    console.log(sheet.join(''));
+    // console.log(places);
+  }
+
+  constructor(beats: Beat[], meter: TimeSignature, sheetLevel: string = 'q') {
     this.beats = beats;
     this.meter = meter;
+    this.simple = this.beats.map(beat => beat.simple).join('-');
     this.sheetLevel = sheetLevel;
   }
 }
 
+const b1 = new Beat('e-e');
+const b2 = new Beat('q');
+const b3 = new Beat('s-s-s-s');
+const b4 = new Beat('s-s-e');
 
-class Meter {
-  beats: number;
-  value: number;
+const ts = new TimeSignature(4, 4);
+const b = new Bar([b1, b2, b3, b4], ts);
+b.print('t')
+// console.log(b.in('s'));
+// console.log(b.simple);
+// console.log(b.in('t'));
 
-  print = () => console.log(`${this.beats} / ${this.value}`);
 
-  sheet = (level: number = 4) => {
-    const width = level / this.value;
-    const suffix = width === 2 ? '&' : width === 1 ? '' : '&ea';
-    const tap = [1, 2, 3, 4].map(val => ` ${val}${suffix}`).join('') + '\n';
-    const beat = `|o${' '.repeat(width - 1)}`;
-    const rhytm = beat.repeat(this.beats) + '|\n';
-
-    const top = `+${'-'.repeat(width)}`.repeat(this.beats) + '+\n';
-    const bottom = `+${'-'.repeat(width)}`.repeat(this.beats) + '+\n';
-    // const bottom = '+----'.repeat(this.beats) + '+\n';
-
-    console.log(tap + top + rhytm + bottom);
-  }
-
-  constructor(beats: number, value: number) {
-    this.beats = beats;
-    this.value = value;
-  }
-}
-
-const c = new Meter(4, 4);
-c.sheet(16);
+// const c = new TimeSignature(4, 4);
+// c.sheet(16);
 // console.log(c.sheet());
 
 // class Bar {
-//   meter: Meter;
+//   meter: TimeSignature;
 //   beats: Beat[];
 
-//   constructor(meter: Meter, beats: Beat[]) {
+//   constructor(meter: TimeSignature, beats: Beat[]) {
 //     this.meter = meter;
 //     this.beats = beats;
 //   }
