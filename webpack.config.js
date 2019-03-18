@@ -17,12 +17,6 @@ module.exports = {
             },
         ]
     },
-    // devServer: {
-    //     openPage: '/dist',
-    //     hot: true,
-    //     inline: true,
-    //     port: 3000
-    // },
     resolve: {
         extensions: [".ts", ".tsx", ".js"],
     },
