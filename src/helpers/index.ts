@@ -114,8 +114,6 @@ export const neq = (n: any, x: any): boolean => x !== n;
 
 
 
-
-
 /** 
  * 
  * Logical operators 

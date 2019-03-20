@@ -1,40 +1,44 @@
-import { NoteValue, NoteValueType } from './duration';
+import { NoteValueType, NoteValue } from "./duration";
 
-interface MetreType {
-    type: string;
-    beats: number;
-    measure: NoteValueType;
+const Division = {
+    'simple': [2, 3, 4],
+    'compound': [6, 9, 12],
+    'odd': [5, 7, 8, 10, 11, 13, 14, 15, 16]
+}
+
+export interface MetreType {
+    count: number;
+    unit: NoteValueType;
     duration: number;
-    toString(): string;
+    beat: {
+        count: number,
+        unit: NoteValueType
+    };
 }
 
-const METRES = ['simple', 'compound', 'complex'];
-const SIMPLE_METRES = [2, 3, 4];
-const COMPOUND_METRES = [6, 9, 12];
-const COMPLEX_METRES = [5, 7, 8, 10, 11, 13, 14, 15, 16];
+export const isSimple = (beats: number) => Division.simple.includes(beats);
+export const isCompound = (beats: number) => Division.compound.includes(beats);
+export const isOdd = (beats: number) => Division.odd.includes(beats);
 
-const metreType = (beats: number): string => {
-    if (beats <= 4) return 'simple';
-    if (beats % 3 === 0) return 'compound';
-    return 'complex';
+export const createMetre = (count: number, value: string | NoteValueType): MetreType => {
+
+    const unit = (typeof value === 'string')
+        ? NoteValue.create(value)
+        : value;
+
+    const beat = isCompound(count)
+        ? { count: count / 3, unit: NoteValue.double(`${unit.relative}${unit.type}.`) }
+        : { count, unit };
+
+    const duration = count * unit.duration;
+
+    return { count, unit, duration, beat }
 }
 
-const Metre = (beats: number, noteType: string): MetreType => {
-    const type = metreType(beats);
-    const measure = NoteValue(noteType);
-    const duration = beats * measure.duration;
-    const toString = () => `${beats}/${measure.type}`;
+export const Metre = {
 
-    return {
-        type,
-        beats,
-        measure,
-        duration,
-        toString
-    }
-};
-
-export {
-    Metre,
-    MetreType
+    simple: isSimple,
+    compound: isCompound,
+    odd: isOdd,
+    create: createMetre
 }

@@ -1,31 +1,30 @@
-import { Beat } from './beat';
-import { NoteValue } from './duration';
 
-interface TempoType {
+import { NoteValueType, NoteValue } from './duration';
+
+export interface TempoType {
     bpm: number;
-    measure: string;
-    duration(notes: string): number;
-    toString(): string;
+    beat: NoteValueType;
+    tick: number;
 };
 
-const Tempo = (bpm: number, measure: string): TempoType => {
-    const toString = () => `${bpm}:${measure}`;
-    const duration = (notes: string) => {
-        const durationOfNotes = Beat(notes).duration;
-        const durationOfMeasure = NoteValue(measure).duration;
-        const valueInType = durationOfNotes / durationOfMeasure;
-        return valueInType * 60 / bpm;
-    }
+export const createTempo = (bpm: number, note: string | NoteValueType): TempoType => {
 
-    return {
-        bpm,
-        measure,
-        duration,
-        toString,
-    }
+    const beat = (typeof note === 'string')
+        ? NoteValue.create(note)
+        : note;
+
+    const tick = 60 / bpm;
+
+    return { bpm, beat, tick }
 };
 
-export {
-    Tempo,
-    TempoType
+export const noteValueInSeconds = (tempo: TempoType, note: string | NoteValueType) => {
+    const unit = (typeof note === 'string') ? NoteValue.create(note) : note;
+    const relativeValue = NoteValue.relativeTo(unit, tempo.beat);
+    return relativeValue * tempo.tick;
+}
+
+export const Tempo = {
+    create: createTempo,
+    noteDuration: noteValueInSeconds
 }
