@@ -51,7 +51,7 @@ const substitute = (str: string, regex: RegExp, char: string) => str.replace(reg
 const parseOctave = (octave?: string) => octave ? +octave : 4;
 
 export const LETTERS = 'CDEFGAB';
-export const ACCIDENTALS = ['b', '#'];
+export const ACCIDENTALS = 'b#'.split('');
 
 export const ALL_NOTES = 'C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B'.split(' ');
 
@@ -68,7 +68,7 @@ export const BLACK_KEYS = WITH_SHARPS.map(altered).filter(numbers);
 export const REGEX = /^([a-gA-G]?)(#{1,}|b{1,}|x{1,}|)(-?\d*)\s*(.*)$/;
 
 /** Tokenize note given by string */
-export const parse = (note: string) => {
+export const tokenize = (note: string) => {
 
   const [T_Letter, T_Accidental, T_Octave, T_Rest] = REGEX.exec(note).slice(1)
   if (!T_Letter || T_Rest) return undefined;

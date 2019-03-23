@@ -1,5 +1,5 @@
 import { isString } from '../helpers';
-import { EMPTY_NOTE, parse, WITH_SHARPS, WITH_FLATS, NO_NOTE } from './theory';
+import { EMPTY_NOTE, tokenize, WITH_SHARPS, WITH_FLATS, NO_NOTE } from './theory';
 
 
 interface NoteProps {
@@ -15,18 +15,11 @@ interface NoteProps {
   frequency: number;
 };
 
-
-const props = (name: string) => {
-  const tokens = parse(name);
-  if (!tokens) { return EMPTY_NOTE; }
-  let { letter, accidental, octave } = tokens;
-}
-
 const letterIndex = (letter) => WITH_SHARPS.indexOf(letter);
 const tuneNote = (index, tuning = 440) => 440 * 2 ** ((index - 69) / 12);
 
 export const getProperties = (noteName: string): any => {
-  const tokens = parse(noteName);
+  const tokens = tokenize(noteName);
   if (!tokens) { return EMPTY_NOTE; }
   let { letter, accidental, octave } = tokens;
 
@@ -143,7 +136,7 @@ const enharmonic = (note) => simplify(note, false);
 //   },
 
 //   simplify: function (note: string, withSameAccidentals = true): PitchType {
-//     const tokens = parse(note);
+//     const tokens = tokenize(note);
 //     const { letter, accident, octave } = tokens;
 
 //     const chroma = (PitchClass.getChroma(letter, '') + Accidental.getOffset(accident)) % 12;
@@ -207,7 +200,7 @@ const enharmonic = (note) => simplify(note, false);
 // }
 
 // export const getNoteProps = (noteName: string): any => {
-//   const tokens = parse(noteName);
+//   const tokens = tokenize(noteName);
 //   if (!tokens) { return EMPTY_NOTE; }
 //   const { letter, accident, octave } = tokens;
 //   const natural = BasicTone.build(letter);

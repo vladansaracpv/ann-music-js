@@ -1,3 +1,6 @@
+const gsum = (a1: number, r: number, n: number): number => a1 * (1 - r ** n) / (1 - r);
+
+const tokenize = (str: string, regex: string | RegExp) => str.match(regex) ? str.match(regex)['groups'] : null;
 
 /**
  * 
