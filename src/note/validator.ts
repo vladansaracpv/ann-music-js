@@ -1,4 +1,4 @@
-import { KEYS, LETTERS, parseNote } from './theory';
+import { KEYS, LETTERS, parseNote, NoteProps } from './theory';
 import {
   isMemberOf,
   isInteger,
@@ -10,7 +10,6 @@ import {
   gt
 } from '../helpers';
 
-import { NoteProps } from './properties';
 
 /** 
  * Valid key is from the KEYS array 

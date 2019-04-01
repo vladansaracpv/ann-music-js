@@ -1,9 +1,10 @@
 
-import { NoteStatic as Note, NoteProps } from './properties';
+import { NoteStatic as Note } from './properties';
 import { Operators as O, OperatorsType } from './operators';
 import { distance as distanceTo } from './distance';
 import { either, andN } from '../helpers';
 import { isNote, isKey } from './validator';
+import { NoteProps } from './theory';
 
 
 interface NoteType extends NoteProps, OperatorsType {

@@ -1,7 +1,6 @@
-import { NoteFactory } from './note/index';
+import { parseInterval, NAMES } from './interval/theory';
+import { fromName } from './interval/properties';
 
-const c = NoteFactory({ name: "C4" });
-const d = NoteFactory({ name: "D4" });
-const e = NoteFactory({ name: "D#4" });
+// console.log(makeInterval('-2m'));
 
-console.log(d);
+NAMES.map(fromName).map(int => console.log(`${int.chroma}: ${int.semitones}: ${int.name} : ${int.ic}`));

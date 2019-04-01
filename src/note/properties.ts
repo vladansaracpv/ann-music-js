@@ -1,21 +1,8 @@
 import { glue, either, charAtEq, len, pipe, curry, mod, dec, lt } from '../helpers';
-import { EMPTY_NOTE, parseNote, WITH_SHARPS, WITH_FLATS, NO_NOTE, LETTERS, OCTAVE_SIZE } from './theory';
+import { NoteProps, EMPTY_NOTE, parseNote, WITH_SHARPS, WITH_FLATS, NO_NOTE, LETTERS, OCTAVE_SIZE } from './theory';
 
 
-/** INTERFACES */
 
-export interface NoteProps {
-  name: string;
-  letter: string;
-  step: number;
-  accidental: string;
-  alteration: number;
-  octave: number;
-  pc: string;
-  chroma: number;
-  midi: number;
-  frequency: number;
-};
 
 
 

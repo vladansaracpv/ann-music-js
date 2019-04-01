@@ -1,71 +1,94 @@
+
+
+export interface IvlProps {
+    name: string,
+    num: number,
+    quality: string,
+    alteration: number,
+    step: number,
+    direction: number,
+    type: string,
+    simple: number,
+    semitones: number,
+    chroma: number,
+    octave: number,
+    ic: number
+}
+
+export const KEYS = [
+    'name',
+    'num',
+    'quality',
+    'step',
+    'alteration',
+    'direction',
+    'type',
+    'simple',
+    'semitones',
+    'chroma',
+    'octave',
+    'ic'
+];
+
+export const EMPTY_INTERVAL = {
+    name: undefined,
+    num: undefined,
+    quality: undefined,
+    step: undefined,
+    alteration: undefined,
+    direction: undefined,
+    type: undefined,
+    simple: undefined,
+    semitones: undefined,
+    chroma: undefined,
+    octave: undefined,
+    ic: undefined
+};
+
+export const NO_INTERVAL = Object.freeze(EMPTY_INTERVAL);
+
+
+export const INTERVAL_TONAL = '(?<tn>[-+]?\\d+)(?<tq>d{1,4}|m|M|P|A{1,4})';
+export const INTERVAL_QUALITY = '(?<qq>d{1,4}|m|M|P|A{1,4})(?<qn>[-+]?\\d+)';
+export const REGEX = new RegExp(`^${INTERVAL_TONAL}|${INTERVAL_QUALITY}$`);
+
+// 0 2 4 5 7 9 11
+// C D E F G A B
+export const SIZES = [0, 2, 4, 5, 7, 9, 11];
+
+// 0 2 4 5 7 9 11
+// C D E F G A B
+// P M M P P M M
+export const TYPES = 'PMMPPMM';
+
+export const CLASSES = [0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1, 0];
+
+// '1P-2m-2M-3m-3M-4P-A4-5P-6m-6M-7m-7M-8P'
+// 'C -Db-D -Eb- E-F -Gb-G -Ab-A -Bb-B -C '
+// 'C -C#-D -D#- E-F -F#-G -G#-A -A#-B -C '
+export const NAMES = '1P 2m 2M 3m 3M 4P A4 5P 6m 6M 7m 7M 8P'.split(' ');
+export const NUMBERS = [1, 2, 2, 3, 3, 4, 5, 5, 6, 6, 7, 7];
+export const QUALITIES = 'P m M m M P d P m M m M'.split(' ');
+
+
+const tokenize = (str: string, regex: string | RegExp) => str.match(regex) ? str.match(regex)['groups'] : null;
+
+export const parseInterval = (interval: string) => {
+    const tokens = tokenize(interval, REGEX);
+    const num = +tokens['tn'] || +tokens['qn'];
+    const quality = tokens['tq'] || tokens['qq'];
+    if (!num && !quality) return null;
+
+    return {
+        num,
+        quality
+    }
+}
+
+
 // import { divC, mod, sub, subC, addC, add, addN, isEither, isNumber, isString, fillStr, isIn, compose, eq, neq, gt, lt, lor, land, glue, mulC, mul } from '../helpers';
 // import { midi } from '../note/properties';
 
-// type IntervalName = string;
-// type IntervalQuality = 'dddd' | 'ddd' | 'dd' | 'd' | 'm' | 'M' | 'P' | 'A' | 'AA' | 'AAA' | 'AAAA';
-// type IntervalAlteration = number;
-// type IntervalStep = number;
-// type IntervalDirection = 1 | -1;
-// type IntervalSimplifiedNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-// type IntervalType = 'P' | 'M';
-// type IntervalChroma = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
-// type IntervalClass = 0 | 1 | 2 | 3 | 4 | 5 | 6;
-
-// interface IntervalProps {
-//   name: IntervalName;
-//   number: number;
-//   quality: IntervalQuality;
-//   step: IntervalStep;
-//   alteration: IntervalAlteration;
-//   direction: IntervalDirection;
-//   type: IntervalType;
-//   simple: IntervalSimplifiedNumber;
-//   semitones: number;
-//   chroma: IntervalChroma;
-//   octave: number;
-//   ic: IntervalClass;
-// };
-
-// interface NoIntervalProps {
-//   name: null;
-//   number: null;
-//   quality: null;
-//   step: null;
-//   alteration: null;
-//   direction: null;
-//   type: null;
-//   simple: null;
-//   semitones: null;
-//   chroma: null;
-// };
-
-// export const NO_INTERVAL = Object.freeze({
-//   name: null,
-//   number: null,
-//   quality: null,
-//   step: null,
-//   alteration: null,
-//   direction: null,
-//   type: null,
-//   simple: null,
-//   semitones: null,
-//   chroma: null,
-//   octave: null
-// } as NoIntervalProps);
-
-// export const KEYS = [
-//   'name',
-//   'number',
-//   'quality',
-//   'step',
-//   'alteration',
-//   'direction',
-//   'type',
-//   'simple',
-//   'semitones',
-//   'chroma',
-//   'octave'
-// ];
 
 // const isPerfect = (type: string, quality: string) => land(eq(quality, 'P'), eq(type, 'P'));
 // const isP8 = (number: number) => eq(8, Math.abs(number))
@@ -92,16 +115,6 @@
 
 // const cache = {} as { [key: string]: IntervalProps | NoIntervalProps };
 
-// const INTERVAL_TONAL = '([-+]?\\d+)(d{1,4}|m|M|P|A{1,4})';
-// const INTERVAL_QUALITY = '(AA|A|P|M|m|d|dd)([-+]?\\d+)';
-// const REGEX = new RegExp(`^${INTERVAL_TONAL}|${INTERVAL_QUALITY}$`);
-
-// export const SIZES = [0, 2, 4, 5, 7, 9, 11];
-// export const TYPES = 'PMMPPMM';
-// export const CLASSES = [0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1, 0];
-// export const NAMES = '1P 2m 2M 3m 3M 4P A4 5P 6m 6M 7m 7M 8P'.split(' ');
-// export const IN = [1, 2, 2, 3, 3, 4, 5, 5, 6, 6, 7, 7];
-// export const IQ = 'P m M m M P d P m M m M'.split(' ');
 
 // export const names = (qualities?: IntervalName | IntervalName[]) => {
 //   return isString(qualities)

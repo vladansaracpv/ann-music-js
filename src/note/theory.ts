@@ -1,5 +1,7 @@
 
-interface NoteProps {
+/** INTERFACES */
+
+export interface NoteProps {
   name: string;
   letter: string;
   step: number;
