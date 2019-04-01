@@ -1,4 +1,4 @@
-import { KEYS, LETTERS, parse } from './theory';
+import { KEYS, LETTERS, parseNote } from './theory';
 import {
   isMemberOf,
   isInteger,
@@ -9,6 +9,8 @@ import {
   isMadeOfChar,
   gt
 } from '../helpers';
+
+import { NoteProps } from './properties';
 
 /** 
  * Valid key is from the KEYS array 
@@ -42,11 +44,10 @@ const isFrequency = (freq: number): boolean => allTrue(isNumber(freq), gt(0, fre
 
 /** Valid name contains valid {letter, accident, octave} */
 const isName = (name: string): boolean => {
+  const tokens = parseNote(name);
+  if (!tokens.letter) return false;
 
-  const tokens = parse(name);
-  if (!tokens) return false;
-
-  const { letter, accidental, octave, ...rest } = tokens;
+  const { letter, accidental, octave } = tokens;
 
   return allTrue(isLetter(letter), isAccidental(accidental), isOctave(octave));
 };
@@ -69,16 +70,30 @@ const isPc = (pc: string): boolean => {
     : allTrue(isLetter(pc[0]), isAccidental(pc[1]));
 };
 
+const isNote = (note: NoteProps): boolean => allTrue(
+  isName(note.name),
+  isLetter(note.letter),
+  isStep(note.step),
+  isAccidental(note.accidental),
+  isAlteration(note.alteration),
+  isOctave(note.octave),
+  isPc(note.pc),
+  isChroma(note.chroma),
+  isMidi(note.midi),
+  isFrequency(note.frequency)
+);
+
 export {
   isKey,
   isName,
   isLetter,
+  isStep,
   isAccidental,
   isAlteration,
   isOctave,
   isPc,
-  isStep,
   isChroma,
   isMidi,
-  isFrequency
+  isFrequency,
+  isNote
 };

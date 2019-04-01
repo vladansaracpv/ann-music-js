@@ -2,11 +2,11 @@ const gsum = (a1: number, r: number, n: number): number => a1 * (1 - r ** n) / (
 
 const tokenize = (str: string, regex: string | RegExp) => str.match(regex) ? str.match(regex)['groups'] : null;
 
-/**
- * 
- * Functional Programming
- * 
- */
+export const charAtEq = (position: number, eqTo: string, str: string): boolean => str.length >= position && str[position] === eqTo;
+export const len = (str: string) => str.length;
+
+/** Functional Programming */
+
 const id = (x: any): any => x;
 const applyFn = (res, fn) => [fn.call(null, ...res)]
 
@@ -28,35 +28,43 @@ export const curry = fn => {
 
 export const pipe = (...fns) => x => fns.reduce((v, fn) => fn(v), x);
 
+export const pipe_debug = (...functions) => (value) => {
+  debugger;
+  return functions
+    .reduce((currentValue, currentFunction) => {
+      debugger;
+      return currentFunction(currentValue);
+    }, value)
+}
 
-
-
-
-/** 
- * 
- * Arithmetic operations (binary, C-urried, N-ary) 
- * 
- */
+/** Arithmetic operations (binary, C-urried, N-ary) */
 
 /** Addition */
+
 export const add = (a: number, b: number): number => a + b;
 
 export const addC = (b: number) => (a: number): number => a + b;
 
 export const addN = (...args: number[]): number => args.reduce(add);
 
+export const inc = (n: number): number => n + 1;
+
 
 /** Subtraction */
+
 export const sub = (a: number, b: number): number => a - b;
 
 export const subC = (b: number) => (a: number): number => a - b;
 
 export const decrement = subC(1);
 
+export const dec = (n: number): number => n - 1;
+
 export const subN = (...args: number[]): number => args.reduce(sub);
 
 
 /** Division */
+
 export const div = (a: number, b: number): number => a / b;
 
 export const divC = (n: number) => (x: number): number => x / n;
@@ -65,6 +73,7 @@ export const divN = (...args: number[]): number => args.reduce(div);
 
 
 /** Multiplication */
+
 export const mul = (a: number, b: number): number => a * b;
 
 export const mulC = (n: number) => (x: number): number => x * n;
@@ -75,11 +84,8 @@ export const mulN = (...args: number[]): number => args.reduce(mul);
 
 
 
-/** 
- * 
- * Math functions
- * 
- */
+/** Math functions */
+
 export const mod = (n: number) => (x: number): number => x % n;
 
 export const floor = (n: number) => Math.floor(n);
@@ -98,11 +104,8 @@ export const normalize = divC(12);
 
 
 
-/** 
- * 
- * Relational operators 
- * 
- */
+/** Relational operators */
+
 export const gt = (n: any, x: any): boolean => x > n;
 
 export const geq = (n: any, x: any): boolean => x >= n;
@@ -117,11 +120,7 @@ export const neq = (n: any, x: any): boolean => x !== n;
 
 
 
-/** 
- * 
- * Logical operators 
- * 
- */
+/** Logical operators */
 
 /** AND */
 export const land = (a: boolean, b: boolean): boolean => a && b;
@@ -138,11 +137,8 @@ export const orN = (...args: boolean[]): boolean => args.reduce(lor);
 
 
 
-/** 
- * 
- * Boolean methods 
- * 
- */
+/** Boolean methods */
+
 export const isInteger = (x: number): boolean => Number.isInteger(x);
 
 export const isPositive = (x: number): boolean => geq(0, x);
@@ -167,15 +163,12 @@ export const isBetween = (a: number, b: number, x: number): boolean => andN(leq(
 
 export const isEither = (f, g, c) => { return c ? f : g };
 
+export const either = (f: any, g: any, cond: boolean): any => cond ? f : g;
 
 
 
+/** Array methods */
 
-/** 
- * 
- * Array methods 
- * 
- */
 const name = id;
 const notNull = n => n === 0 || n;
 const uniqueLocal = (n: any, i: number, a: any[]) => eq(i, 0) || neq(n, a[--i]);
@@ -263,11 +256,8 @@ export const callN = (fn: any, array: any[], n: number) => {
 
 
 
-/** 
- * 
- * String methods 
- * 
- */
+/** String methods */
+
 export const rest = (x: string, n = 1) => x.substring(n);
 
 export const glue = (...args) => args.reduce((acc, el) => acc + el);
@@ -280,11 +270,8 @@ export const capitalize = (str: string): string => glue('from', str[0].toUpperCa
 
 
 
-/** 
- * 
- * Transformation methods 
- * 
- */
+/** Transformation methods */
+
 export const withTick = array => array.map(el => `'${el}'`);
 
 export const or = (args, hasTick = false) => {

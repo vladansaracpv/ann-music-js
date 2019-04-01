@@ -1,55 +1,67 @@
-// import { getNoteProps, enharmonic, midi } from './properties';
-// import { distance } from './distance';
-// import * as Op from './operators';
-// import * as Transpose from './transpose';
-// import { compose } from '../helpers';
-// import { NOTE_PROP_FACTORY } from './factories';
 
-// export class Note {
-//   name: string;
-//   letter: string;
-//   step: number;
-//   accidental: string;
-//   alteration: number;
-//   octave: number;
-//   pc: string;
-//   chroma: number;
-//   midi: number;
-//   frequency: number;
-//   enharmonic: string;
+import { NoteStatic as Note, NoteProps } from './properties';
+import { Operators as O, OperatorsType } from './operators';
+import { distance as distanceTo } from './distance';
+import { either, andN } from '../helpers';
+import { isNote, isKey } from './validator';
 
-//   private constructor(note_name: string) {
-//     compose(
-//       Object.freeze,
-//       Object.assign
-//     )(this, {
-//       ...getNoteProps(note_name),
-//       enharmonic: enharmonic(note_name)
-//     });
-//   }
 
-//   static create(withValue: any, fromProp = 'name') {
-//     const name = NOTE_PROP_FACTORY('name', fromProp, withValue);
-//     if (!name) return undefined;
-//     return new Note(name);
-//   }
+interface NoteType extends NoteProps, OperatorsType {
+    simple: string,
+    enharmonic: string,
+    transpose: (semitones: number) => NoteType,
+    distance: (note: Partial<NoteProps>, absolute?: boolean) => number,
+}
 
-//   /* Distance between two notes */
-//   // distanceFrom = (n: Note, fn = midi) => distance(midi, this.name, n.name);
 
-//   /* Equality operators */
-//   higher = (other, f = midi) => Op.higher(this.name, other.name, f);
-//   lower = (other, f = midi) => Op.lower(this.name, other.name, f);
-//   higherThan = (other, f = midi) => Op.higherThan(this.name, other.name, f);
-//   higherEq = (other, f = midi) => Op.higherOrEqual(this.name, other.name, f);
-//   equal = (other, f = midi) => Op.isEqual(this.name, other.name, f);
-//   lowerThan = (other, f = midi) => Op.lowerThan(this.name, other.name, f);
-//   lowerEq = (other, f = midi) => Op.lowerOrEqual(this.name, other.name, f);
-//   inInterval = (a, b, f = midi) => Op.isBetween(a.name, b.name, this.name, f);
-//   inSegment = (a, b, f = midi) => Op.isInSegment(a.name, b.name, this.name, f);
 
-//   /* Transpose */
-//   transpose = (amount: string) => Transpose.semitones(amount, this.name);
-//   next = (n = 1) => Transpose.next(n, this.name);
-//   prev = (n = 1) => Transpose.prev(n, this.name);
-// }
+
+
+/** NOTE OBJECT */
+
+export const NoteFactory = (props: Partial<NoteProps>): NoteType => {
+
+    const data = Note.create(props);
+
+    if (!data.name || !isNote(data)) return null;
+
+    const simple = Note.simplify(data.name);
+    const enharmonic = Note.enharmonic(data.name);
+
+    const transpose = (semitones: number): NoteType => NoteFactory({ midi: data.midi + semitones });
+
+    const distance = (to: Partial<NoteType>, absolute = false): number => {
+        const note = NoteFactory(to);
+        if (!note.name || !isNote(note)) return null;
+        const from = distanceTo(note.midi);
+
+        return either(
+            Math.abs(from(data.midi)),
+            from(data.midi),
+            absolute
+        );
+    }
+
+    const comparable = (op: string, note: Partial<NoteType>, prop = 'midi'): boolean => {
+        return isKey(prop) && O[op](Note.create(note)[prop])(data[prop])
+    }
+
+    const operators = {
+        leq: (note: Partial<NoteType>, prop?: string) => comparable('lte', note, prop),
+        lt: (note: Partial<NoteType>, prop?: string) => comparable('lt', note, prop),
+        eq: (note: Partial<NoteType>, prop?: string) => comparable('eq', note, prop),
+        gt: (note: Partial<NoteType>, prop?: string) => comparable('gt', note, prop),
+        geq: (note: Partial<NoteType>, prop?: string) => comparable('geq', note, prop),
+        inInterval: (a: Partial<NoteType>, b: Partial<NoteType>, prop?: string) => andN(comparable('gt', a, prop), comparable('lt', b, prop)),
+        inSegment: (a: Partial<NoteType>, b: Partial<NoteType>, prop?: string) => andN(comparable('geq', a, prop), comparable('leq', b, prop)),
+    };
+
+    return Object.freeze({
+        ...data,
+        simple,
+        enharmonic,
+        ...operators,
+        transpose,
+        distance,
+    })
+}
