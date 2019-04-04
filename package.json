@@ -12,7 +12,8 @@
     "devts": "tsc-watch --onSuccess \"webpack-dev-server --mode development\"",
     "build:old": "tsc -p .",
     "build:live": "nodemon --watch 'src/**/*.ts' --exec ts-node src/app.ts",
-    "test": "mocha -r ts-node/register src/**/*.spec.ts"
+    "test": "mocha -r ts-node/register src/**/*.spec.ts",
+    "docs": "typedoc --out docs/ src/"
   },
   "keywords": [],
   "author": "",

@@ -1,4 +1,5 @@
-import { KEYS, LETTERS, parseNote, NoteProps } from './theory';
+import { LETTERS } from './theory';
+import { KEYS, NoteType, parseNote } from './properties';
 import {
   isMemberOf,
   isInteger,
@@ -69,7 +70,7 @@ const isPc = (pc: string): boolean => {
     : allTrue(isLetter(pc[0]), isAccidental(pc[1]));
 };
 
-const isNote = (note: NoteProps): boolean => allTrue(
+const isNote = (note: NoteType): boolean => allTrue(
   isName(note.name),
   isLetter(note.letter),
   isStep(note.step),

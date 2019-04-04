@@ -1,26 +1,85 @@
+/**
+ * Collect and export all files from module
+ *
+ * note (type)
+ * --factories (for creating NoteProperty type)
+ *   -- accidental
+ *   -- alteration
+ *   -- chroma
+ *   -- frequency
+ *   -- letter
+ *   -- midi
+ *   -- name
+ *   -- octave
+ *   -- pc
+ *   -- step
+ * --properties (for manipulating NoteProperty)
+ *
+ */
 
-import { NoteStatic as Note } from './properties';
+
+
+/**
+ * -Theory
+ * -Types
+ * -Properties
+ * -Methods
+ */
+
+
+namespace Theory {
+    /**
+ * Theory constants
+ */
+
+    export const OCTAVE_SIZE = 12;
+
+    export const LETTERS = 'CDEFGAB';
+
+    export const ACCIDENTALS = 'b#'.split('');
+
+    export const ALL_NOTES = 'C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B'.split(' ');
+
+    export const NATURALS = LETTERS.split('');
+
+    export const SHARP_NOTES = 'C# D# F# G# A#'.split(' ');
+
+    export const FLAT_NOTES = 'Db Eb Gb Ab Bb'.split(' ');
+
+    export const WITH_SHARP_NOTES = 'C C# D D# E F F# G G# A A# B'.split(' ');
+
+    export const WITH_FLAT_NOTES = 'C Db D Eb E F Gb G Ab A Bb B'.split(' ');
+
+    export const WHITE_KEYS = [0, 2, 4, 5, 7, 9, 11];
+
+    export const BLACK_KEYS = [1, 3, 6, 8, 10];
+
+    export const NOTE_REGEX = /^(?<letter>[a-gA-G]?)(?<accidental>#{1,}|b{1,}|x{1,}|)(?<octave>-?\d*)\s*(?<rest>.*)$/;
+
+
+
+
+}
+
+import { NoteStatic as Note, NoteType } from './properties';
 import { Operators as O, OperatorsType } from './operators';
 import { distance as distanceTo } from './distance';
 import { either, andN } from '../helpers';
 import { isNote, isKey } from './validator';
-import { NoteProps } from './theory';
+import { Frequency } from './properties/frequency';
 
 
-interface NoteType extends NoteProps, OperatorsType {
+interface Note extends NoteType, OperatorsType {
     simple: string,
     enharmonic: string,
     transpose: (semitones: number) => NoteType,
-    distance: (note: Partial<NoteProps>, absolute?: boolean) => number,
-}
-
-
-
-
+    distance: (note: Partial<NoteType>, absolute?: boolean) => number,
+    toProperty: (property: string) => any
+};
 
 /** NOTE OBJECT */
 
-export const NoteFactory = (props: Partial<NoteProps>): NoteType => {
+export const NoteFactory = (props: Partial<Note>): Note => {
 
     const data = Note.create(props);
 
@@ -57,6 +116,10 @@ export const NoteFactory = (props: Partial<NoteProps>): NoteType => {
         inSegment: (a: Partial<NoteType>, b: Partial<NoteType>, prop?: string) => andN(comparable('geq', a, prop), comparable('leq', b, prop)),
     };
 
+    const toProperty = (key: string) => {
+        if (key === 'frequency') return Frequency.create(data.frequency);
+    }
+
     return Object.freeze({
         ...data,
         simple,
@@ -64,5 +127,6 @@ export const NoteFactory = (props: Partial<NoteProps>): NoteType => {
         ...operators,
         transpose,
         distance,
+        toProperty
     })
 }

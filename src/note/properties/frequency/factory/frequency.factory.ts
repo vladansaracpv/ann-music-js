@@ -1,7 +1,9 @@
+
 // import { curry, and, or } from '../../helpers';
 // import { FactoryError as ERROR } from '../../error';
 // import { isFrequency } from '../validator';
 // import { frequency } from '../properties';
+
 
 // export class FREQUENCY {
 //   static fromMidi = (midi, tuning = 440) => 2 ** ((midi - 69) / 12) * tuning;
