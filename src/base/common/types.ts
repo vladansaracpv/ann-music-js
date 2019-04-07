@@ -17,6 +17,45 @@ enum type {
 
 
 /**
+ * In **contrast** to just checking `typeof` this will return `false` for `NaN`.
+ * @returns whether the provided parameter is a JavaScript Number or not.
+ */
+export function isNumber(obj: any): obj is number {
+    if ((typeof (obj) === type.number || obj instanceof Number) && !isNaN(obj)) {
+        return true;
+    }
+
+    return false;
+}
+
+
+/**
+ * @returns whether the provided parameter is a JavaScript String or not.
+ */
+export function isString(str: any): str is string {
+    if (typeof (str) === type.string || str instanceof String) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * @returns whether the provided parameter is undefined.
+ */
+export function isUndefined(obj: any): obj is undefined {
+    return typeof (obj) === type.undefined;
+}
+
+/**
+ * @returns whether the provided parameter is undefined or null.
+ */
+export function isUndefinedOrNull(obj: any): obj is undefined | null {
+    return isUndefined(obj) || obj === null;
+}
+
+
+/**
  * @returns whether the provided parameter is a JavaScript Array or not.
  */
 export function isArray(array: any): array is any[] {
@@ -25,17 +64,6 @@ export function isArray(array: any): array is any[] {
     }
 
     if (array && typeof (array.length) === type.number && array.constructor === Array) {
-        return true;
-    }
-
-    return false;
-}
-
-/**
- * @returns whether the provided parameter is a JavaScript String or not.
- */
-export function isString(str: any): str is string {
-    if (typeof (str) === type.string || str instanceof String) {
         return true;
     }
 
@@ -65,17 +93,6 @@ export function isObject(obj: any): obj is Object {
         && !(obj instanceof Date);
 }
 
-/**
- * In **contrast** to just checking `typeof` this will return `false` for `NaN`.
- * @returns whether the provided parameter is a JavaScript Number or not.
- */
-export function isNumber(obj: any): obj is number {
-    if ((typeof (obj) === type.number || obj instanceof Number) && !isNaN(obj)) {
-        return true;
-    }
-
-    return false;
-}
 
 /**
  * @returns whether the provided parameter is a JavaScript Boolean or not.
@@ -84,19 +101,6 @@ export function isBoolean(obj: any): obj is boolean {
     return obj === true || obj === false;
 }
 
-/**
- * @returns whether the provided parameter is undefined.
- */
-export function isUndefined(obj: any): obj is undefined {
-    return typeof (obj) === type.undefined;
-}
-
-/**
- * @returns whether the provided parameter is undefined or null.
- */
-export function isUndefinedOrNull(obj: any): obj is undefined | null {
-    return isUndefined(obj) || obj === null;
-}
 
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
