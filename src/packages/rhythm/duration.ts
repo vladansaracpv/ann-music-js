@@ -1,5 +1,6 @@
 import { gsum } from '../../base/math';
 import { tokenize } from '../../base/strings';
+import { CustomError, ErrorCode } from '../../error';
 
 /**
  * Note Value Model
@@ -20,9 +21,8 @@ interface DurationProps {
   length: number; // 0.75
 }
 
-interface Duration {
-  props: DurationProps;
-  half(): DurationProps;
+interface Duration extends DurationProps {
+  split(parts?: number): DurationProps | DurationProps[];
   double(): DurationProps;
 }
 
@@ -36,10 +36,12 @@ const NOTE_VALUE_REGEX = /^(?<kind>([whqest]|1|2|4|8|16|32){1})(?<dots>\.{0,2})(
 const NOTE_DURATION_KEYS = 'w h q e s t'.split(' ');
 const NOTE_DURATION_VALUES = [1, 2, 4, 8, 16, 32];
 
-export const isValidDuration = (note: string): boolean => NOTE_VALUE_REGEX.test(note);
+export const Validate = {
+  Duration: (note: string): boolean => NOTE_VALUE_REGEX.test(note),
+};
 
 export const DurationProps = (note: string): DurationProps => {
-  if (!isValidDuration(note)) return null;
+  if (!Validate.Duration(note)) return CustomError(ErrorCode.InvalidDuration, note);
 
   const tokens = tokenize(note, NOTE_VALUE_REGEX);
   const { kind, dots, type } = tokens;
@@ -61,8 +63,12 @@ export const DurationProps = (note: string): DurationProps => {
 export const Duration = (note: string | DurationProps): Duration => {
   const props = typeof note === 'string' ? DurationProps(note) : note;
 
-  const half = () => DurationProps(`${props.relative * 2}${props.dots}:${props.type}`);
+  const split = (parts = 2) => {
+    if (parts % 2 === 1) return CustomError(ErrorCode.InvalidSplitValue, parts);
+    const newDuration = DurationProps(`${props.relative * parts}${props.dots}:${props.type}`);
+    return Array(parts).fill(newDuration);
+  };
   const double = () => DurationProps(`${props.relative / 2}${props.dots}:${props.type}`);
 
-  return Object.freeze({ props, half, double });
+  return Object.freeze({ ...props, split, double });
 };

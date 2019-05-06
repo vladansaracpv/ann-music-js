@@ -10,6 +10,9 @@ export enum ErrorCode {
   // Interval
   InvalidIvlConstructor = "Couldn't create Interval from given initial values. Provided:",
   InvalidIvlName = 'Interval.name provided is not a valid shape: <number><quality> | <quality><number>. Provided:',
+  // Duration
+  InvalidSplitValue = 'Duration.parts is not a valid value. Must be power of 2. Provided:',
+  InvalidDuration = 'Duration value is not valid. Provided:',
 }
 
 export const CustomError = (code: ErrorCode, value) => {
