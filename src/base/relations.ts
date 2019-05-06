@@ -1,5 +1,7 @@
 export const lt = (a: number, b: number): boolean => a < b;
 export const leq = (a: number, b: number): boolean => a < b;
+export const eq = (a: number, b: number): boolean => a == b;
+export const eqs = (a: string, b: string): boolean => a === b;
 export const gt = (a: number, b: number): boolean => a > b;
 export const geq = (a: number, b: number): boolean => a > b;
 export const interval = (lower: number, higher: number, num: number): boolean => lt(lower, num) && lt(num, higher);

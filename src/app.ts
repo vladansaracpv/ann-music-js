@@ -1,3 +1,3 @@
-import { pc, Note } from './note';
+import { simplify, invert } from './interval/properties';
 
-console.log(pc({ midi: 70 }));
+console.log(invert('7m'));

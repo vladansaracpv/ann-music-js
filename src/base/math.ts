@@ -1,13 +1,11 @@
-
 // import { curry } from './functional';
 // /**
-//  * 
+//  *
 //  * binary: (fn, a, b) => fn(a,b)
 //  * n-ary: (fn, args) => args.map(fn)
 //  * curry: (fn, ...args) => curry(fn)(args)
-//  * 
+//  *
 //  */
-
 
 // export const unary = (fn: Function) => (...args: any[]) => curry(fn, args);
 // export const binary = (fn: Function) => (one: any, other: any) => fn(one, other);
@@ -24,10 +22,7 @@
 // /** Addition */
 // export const add = (one: number, other: number): number => one + other;
 
-
-
 // export const inc = (n: number) => n + 1;
-
 
 // /** Subtraction */
 
@@ -37,23 +32,21 @@
 
 // export const decrement = subC(1);
 
-// export const dec = (n: number): number => n - 1;
+export const dec = (n: number): number => n - 1;
 
 // export const subN = (...args: number[]): number => args.reduce(sub);
-
 
 // /** Division */
 
 // export const div = (one: number, other: number): number => a / b;
 
-// export const divC = (n: number) => (x: number): number => x / n;
+export const div = (n: number) => (x: number): number => x / n;
 
 // export const divN = (...args: number[]): number => args.reduce(div);
 
-
 // /** Multiplication */
 
-// export const mul = (one: number, other: number): number => a * b;
+export const mul = (a: number, b: number): number => a * b;
 
 // export const mulC = (n: number) => (x: number): number => x * n;
 
@@ -61,10 +54,9 @@
 
 // const gsum = (a1: number, r: number, n: number): number => a1 * (1 - r ** n) / (1 - r);
 
-
 // /** Math functions */
 
-// export const mod = (n: number) => (x: number): number => x % n;
+export const mod = (n: number) => (x: number): number => x % n;
 
 // export const floor = (n: number) => Math.floor(n);
 

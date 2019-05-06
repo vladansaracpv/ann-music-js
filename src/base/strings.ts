@@ -16,3 +16,5 @@ export const tokenize = (str: string, regex: string | RegExp) => (str.match(rege
 
 export const capitalize = (l: string) => l.toUpperCase();
 export const substitute = (str: string, regex: RegExp, char: string) => str.replace(regex, char);
+
+export const fillStr = (s: string, n: number) => Array(Math.abs(n) + 1).join(s);

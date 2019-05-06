@@ -1,11 +1,14 @@
 /** Error handling */
 export enum ErrorCode {
+  // Note
   InvalidConstructor = "Couldn't create Note from given initial values. Provided:",
   EmptyConstructor = "Couldn't create Note from nothing. Provide name | midi | frequency. Provided:",
   InvalidNoteProperty = 'Note property provided is not valid. Provided:',
   InvalidName = 'Note.name provided is not a valid shape: <letter><accidental?><?octave>. Provided:',
   InvalidMidi = 'Note.midi provided is not valid. Must hold: 0 < midi < 128. Provided:',
   InvalidChroma = 'Chroma number provided is not valid. Must hold: 0 <= chroma < 12. Provided:',
+  // Interval
+  InvalidIvlName = 'Interval.name provided is not a valid shape: <number><quality> | <quality><number>. Provided:',
 }
 
 export const CustomError = (code: ErrorCode, value) => {
