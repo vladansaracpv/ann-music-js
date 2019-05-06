@@ -8,6 +8,7 @@ export enum ErrorCode {
   InvalidMidi = 'Note.midi provided is not valid. Must hold: 0 < midi < 128. Provided:',
   InvalidChroma = 'Chroma number provided is not valid. Must hold: 0 <= chroma < 12. Provided:',
   // Interval
+  InvalidIvlConstructor = "Couldn't create Interval from given initial values. Provided:",
   InvalidIvlName = 'Interval.name provided is not a valid shape: <number><quality> | <quality><number>. Provided:',
 }
 

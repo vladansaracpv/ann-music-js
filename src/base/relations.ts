@@ -1,25 +1,20 @@
-export const lt = (a: number, b: number): boolean => a < b;
-export const leq = (a: number, b: number): boolean => a < b;
-export const eq = (a: number, b: number): boolean => a == b;
-export const eqs = (a: string, b: string): boolean => a === b;
-export const gt = (a: number, b: number): boolean => a > b;
-export const geq = (a: number, b: number): boolean => a > b;
+export type Comparable = number | string;
+
+export const lt = (a: Comparable, b: Comparable): boolean => a < b;
+export const leq = (a: Comparable, b: Comparable): boolean => a <= b;
+export const eq = (a: Comparable, b: Comparable): boolean => a === b;
+export const neq = (a: Comparable, b: Comparable): boolean => a !== b;
+export const gt = (a: Comparable, b: Comparable): boolean => a > b;
+export const geq = (a: Comparable, b: Comparable): boolean => a >= b;
 export const interval = (lower: number, higher: number, num: number): boolean => lt(lower, num) && lt(num, higher);
 export const segment = (lower: number, higher: number, num: number): boolean => leq(lower, num) && leq(num, higher);
+export const isPositive = (x: number): boolean => geq(0, x);
 
-// export interface IComparable {
-//     value: number;
-// }
-// /** Relational operators */
-
-// export export const gt = (one: IComparable, other: IComparable): boolean => one.value > other.value;
-
-// export export const geq = (one: IComparable, other: IComparable): boolean => one.value >= other.value;
-
-// export export const lt = (one: IComparable, other: IComparable): boolean => one.value < other.value;
-
-// export export const leq = (one: IComparable, other: IComparable): boolean => one.value <= other.value;
-
-// export export const eq = (one: IComparable, other: IComparable): boolean => one.value === other.value;
-
-// export export const neq = (one: IComparable, other: IComparable): boolean => one.value !== other.value;
+export const ltc = (b: Comparable) => (a: Comparable): boolean => a < b;
+export const leqc = (b: Comparable) => (a: Comparable): boolean => a <= b;
+export const eqc = (b: Comparable) => (a: Comparable): boolean => a === b;
+export const neqc = (b: Comparable) => (a: Comparable): boolean => a !== b;
+export const gtc = (b: Comparable) => (a: Comparable): boolean => a > b;
+export const geqc = (b: Comparable) => (a: Comparable): boolean => a >= b;
+export const intervalc = (a: Comparable, b: Comparable) => (x: Comparable): boolean => ltc(x)(a) && ltc(b)(x);
+export const segmentc = (a: Comparable, b: Comparable) => (x: Comparable): boolean => leqc(x)(a) && leqc(b)(x);

@@ -11,12 +11,11 @@
 //   gt
 // } from '../helpers';
 
-
-// /** 
-//  * Valid key is from the KEYS array 
-//  *  
+// /**
+//  * Valid key is from the KEYS array
+//  *
 //  * @param key - key to be checked
-//  * 
+//  *
 //  */
 // const allTrue = andN;
 // const isKey = (key: string): boolean => isMemberOf(KEYS, key);

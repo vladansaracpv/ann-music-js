@@ -1,70 +1,68 @@
-const gsum = (a1: number, r: number, n: number): number => a1 * (1 - r ** n) / (1 - r);
-
-const tokenize = (str: string, regex: string | RegExp) => str.match(regex) ? str.match(regex)['groups'] : null;
+import { gsum } from '../../base/math';
+import { tokenize } from '../../base/strings';
 
 /**
  * Note Value Model
- * 
- * @name      {string} full name for given note value string
+ *
+ * @short     {string} name without @type: <key><?dots>
+ * @value       {string} duration value string: w|h|q|e|s|t
  * @relative  {number} quotient in respect to whole note. 2 - means half, 4 - means quarter, etc
- * @kind      {string}  n | t | r | value kind can represent note, triplet or rest
+ * @type      {string}  n | ttt | p | value kind can represent note, triplet or pause
  * @dots      {string} dotted part
- * @value     relative duration. 2n = 0.5, 4n = 0.25, 2n. = 0.75
+ * @length     relative duration. 2n = 0.5, 4n = 0.25, 2n. = 0.75
  */
-interface NoteValueType {
-    short: string;
-    name: string;     // '2n.'
-    relative: number; // 2
-    kind: string;     // 'n'
-    dots: string;     // '.'
-    value: number;    // 0.75
+interface DurationProps {
+  short: string; // h.
+  value: string; // h
+  relative: number; // 2
+  type: string; // 'n'
+  dots: string; // '.'
+  length: number; // 0.75
 }
 
-
-interface NoteValue {
-    props: NoteValueType,
-    half(): NoteValueType
-    double(): NoteValueType
+interface Duration {
+  props: DurationProps;
+  half(): DurationProps;
+  double(): DurationProps;
 }
 
+const DURATION_TYPES = {
+  n: 'note',
+  tr: 'triplet',
+  p: 'rest',
+};
 
-const NOTE_VALUE_REGEX = /^(?<relative>(1|2|4|8|16|32){1})(?<kind>[nts]{1})(?<dots>\.{0,2})/;
-const SHORT_NAMES = { 1: 'w', 2: 'h', 4: 'q', 8: 'e', 16: 's', 32: 't' }
+const NOTE_VALUE_REGEX = /^(?<kind>([whqest]|1|2|4|8|16|32){1})(?<dots>\.{0,2})(?<type>:(n|tr|p){1})$/;
+const NOTE_DURATION_KEYS = 'w h q e s t'.split(' ');
+const NOTE_DURATION_VALUES = [1, 2, 4, 8, 16, 32];
 
-const isNoteValue = (note: string): boolean => NOTE_VALUE_REGEX.test(note);
+export const isValidDuration = (note: string): boolean => NOTE_VALUE_REGEX.test(note);
 
+export const DurationProps = (note: string): DurationProps => {
+  if (!isValidDuration(note)) return null;
 
-const NoteValueModel = (note: string): NoteValueType => {
+  const tokens = tokenize(note, NOTE_VALUE_REGEX);
+  const { kind, dots, type } = tokens;
+  const value = Number.parseInt(kind) ? NOTE_DURATION_KEYS[NOTE_DURATION_VALUES.indexOf(+kind)] : kind;
+  const relative = Number.parseInt(kind) ? +kind : NOTE_DURATION_VALUES[NOTE_DURATION_KEYS.indexOf(kind)];
+  const short = '' + relative + type.slice(1) + dots;
+  const length = gsum(1 / relative, 1 / 2, tokens.dots.length + 1);
 
-    if (!isNoteValue(note)) return null;
+  return Object.freeze({
+    short,
+    value,
+    relative,
+    type: type.slice(1),
+    dots,
+    length,
+  });
+};
 
-    const tokens = tokenize(note, NOTE_VALUE_REGEX);
-    const name = note;
-    const relative = +tokens.relative;
-    const short = SHORT_NAMES[relative];
-    const value = gsum(1 / relative, 1 / 2, tokens.dots.length + 1);
-    const data: NoteValueType = { ...tokens, name, relative, short, value }
+export const Duration = (note: string | DurationProps): Duration => {
+  const props = typeof note === 'string' ? DurationProps(note) : note;
 
-    return Object.freeze(data);
-}
+  const half = () => DurationProps(`${props.relative * 2}${props.dots}:${props.type}`);
+  const double = () => DurationProps(`${props.relative / 2}${props.dots}:${props.type}`);
 
-
-const NoteValueFactory = (note: string | NoteValueType): NoteValue => {
-
-    const props = (typeof note === 'string')
-        ? NoteValueModel(note)
-        : note;
-
-    const half = () => NoteValueModel(`${props.relative * 2}${props.kind}${props.dots}`);
-    const double = () => NoteValueModel(`${props.relative / 2}${props.kind}${props.dots}`);
-
-    return Object.freeze({ props, half, double });
-}
-
-// export {
-//     NoteValueType,
-//     NoteValue,
-//     isNoteValue,
-//     NoteValueModel,
-//     NoteValueFactory,
-// }
+  return Object.freeze({ props, half, double });
+};

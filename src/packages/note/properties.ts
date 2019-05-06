@@ -1,9 +1,9 @@
-import { tokenize, capitalize, substitute } from '../base/strings';
-import { interval, segment, gt } from '../base/relations';
-import { both } from '../base/boolean';
-import { isInteger, isNumber } from '../base/types';
-import { ErrorCode, CustomError } from '../error/index';
-import { curry } from '../base/functional';
+import { tokenize, capitalize, substitute } from '../../base/strings';
+import { interval, segment, gt } from '../../base/relations';
+import { both } from '../../base/boolean';
+import { isInteger, isNumber } from '../../base/types';
+import { ErrorCode, CustomError } from '../../error/index';
+import { curry } from '../../base/functional';
 
 /** Note Constants */
 export const A_440 = 440.0;
@@ -141,7 +141,7 @@ export function simplifyNote(note: string, sameAccidental = true): string {
 
 export const enharmonicNote = (note: string) => simplifyNote(note, false);
 
-interface NoteInitProp {
+export interface NoteInitProp {
   name?: string;
   midi?: number;
   frequency?: number;

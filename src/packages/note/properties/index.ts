@@ -1,23 +1,6 @@
 // import { glue, either, charAtEq, len, pipe, curry, mod, dec, lt, tokenize } from '../helpers';
 // import { WITH_SHARP_NOTES, WITH_FLAT_NOTES, LETTERS, OCTAVE_SIZE, NOTE_REGEX } from './theory';
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // module Accidental {
 //   // import { compose, curry } from '../../helpers';
 //   // import { FactoryError as ERROR } from '../../error';
@@ -147,7 +130,6 @@
 
 // export const NO_NOTE = Object.freeze(EMPTY_NOTE);
 
-
 // /** HELPER FUNCTIONS */
 
 // const mod12 = mod(12);
@@ -171,7 +153,6 @@
 // const capitalize = (l: string) => l.toUpperCase();
 // const substitute = (str: string, regex: RegExp, char: string) => str.replace(regex, char);
 
-
 // /** Tokenize note given by string */
 // export const parseNote = (note: string) => {
 
@@ -186,7 +167,6 @@
 //   };
 
 // };
-
 
 // /** FACTORY FUNCTIONS */
 
@@ -264,11 +244,6 @@
 //   return NO_NOTE;
 // }
 
-
-
-
-
-
 // /** NOTE STATIC METHODS */
 
 // const cache = {} as { [key: string]: NoteType };
@@ -295,7 +270,6 @@
 // };
 // const enharmonic = (name: string): string => simplify(name, false);
 
-
 // export const NoteStatic = {
 //   fromName,
 //   fromMidi,
@@ -307,10 +281,6 @@
 //   enharmonic,
 //   property
 // }
-
-
-
-
 
 // /** NOTE PROPERTY METHODS */
 
@@ -324,9 +294,3 @@
 // export const chroma = (note: string) => property('chroma', note);
 // export const midi = (note: string) => property('midi', note);
 // export const frequency = (note: string) => property('frequency', note);
-
-
-
-
-
-
