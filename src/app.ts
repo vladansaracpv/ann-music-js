@@ -1,1 +1,3 @@
-// import * as Strings from './base/common/strings';
+import { pc, Note } from './note';
+
+console.log(pc({ midi: 70 }));

@@ -61,10 +61,10 @@ const NoteValueFactory = (note: string | NoteValueType): NoteValue => {
     return Object.freeze({ props, half, double });
 }
 
-export {
-    NoteValueType,
-    NoteValue,
-    isNoteValue,
-    NoteValueModel,
-    NoteValueFactory,
-}
+// export {
+//     NoteValueType,
+//     NoteValue,
+//     isNoteValue,
+//     NoteValueModel,
+//     NoteValueFactory,
+// }
