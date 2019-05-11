@@ -1,4 +1,3 @@
-
 // import { NoteValueType, NoteValueModel } from './duration';
 // import { Meter } from './meter';
 // import { Tempo } from './tempo';
@@ -28,10 +27,6 @@
 //     return { notes, meter, tempo };
 // }
 
-
-
-
-
 // /**
 //  *
 //     1        2        3            beats
@@ -53,7 +48,6 @@
 //  *  4/4(s)| 1 - e - & - a - 2 - e - & - a - 3 - e - & - a - 4 - e - & - a
 //  */
 
-
 // export {
 //     Measure,
 //     isValidMeasure,
@@ -67,8 +61,6 @@
 // // }
 
 // // const timelineNode = ({ start: 0, duration: 0, end: 0 });
-
-
 
 // // // export const timeline = (durations: number[]): TimelineNodeType[] => durations
 // // //     .reduce((acc, val, i) =>
@@ -105,5 +97,3 @@
 // // //     minValue: minNoteValue,
 // // //     maxValue: maxNoteValue
 // // // }
-
-
