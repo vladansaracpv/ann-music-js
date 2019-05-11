@@ -1,8 +1,6 @@
 import { SimplePlayer, SequenceParser } from './packages/player';
 import { Parser } from './packages/parser/parser';
 
-const samplesURL = '../src/assets/Samples/Grand Piano/';
-
 let audioContext = new AudioContext();
 
 /** START: It's gonna rain */
@@ -38,6 +36,8 @@ const fetchSampleItsGonnaRain = () => {
 /** END: It's gonna rain */
 
 /** START: Music for Airports */
+const samplesURL = '../src/assets/samples/Grand Piano/';
+
 const SAMPLE_LIBRARY = {
   'Grand Piano': [
     { note: 'A', octave: 4, file: samplesURL + 'piano-f-a4.wav' },
@@ -110,22 +110,40 @@ function getSample(instrument, noteAndOctave) {
   }));
 }
 
-function playSample(instrument, note, delaySeconds = 0) {
+function playSample(instrument, note, destination, delaySeconds = 0) {
   getSample(instrument, note).then(({ audioBuffer, distance }) => {
     let playbackRate = Math.pow(2, distance / 12);
     let bufferSource = audioContext.createBufferSource();
+
     bufferSource.buffer = audioBuffer;
     bufferSource.playbackRate.value = playbackRate;
-    bufferSource.connect(audioContext.destination);
+
+    bufferSource.connect(destination);
     bufferSource.start(audioContext.currentTime + delaySeconds);
   });
 }
 
-function startLoop(instrument, note, loopLengthSeconds, delaySeconds) {
-  playSample(instrument, note, delaySeconds);
-  setInterval(() => playSample(instrument, note, delaySeconds), loopLengthSeconds * 1000);
+function startLoop(instrument, note, destination, loopLengthSeconds, delaySeconds) {
+  playSample(instrument, note, destination, delaySeconds);
+  setInterval(() => playSample(instrument, note, destination, delaySeconds), loopLengthSeconds * 1000);
 }
 
-// startLoop('Grand Piano', 'C4', 20, 5);
+const start = () => {
+  fetchSample('../src/assets/samples/AirportTerminal.wav').then(convolverBuffer => {
+    let convolver = audioContext.createConvolver();
+    convolver.buffer = convolverBuffer;
+    convolver.connect(audioContext.destination);
+
+    startLoop('Grand Piano', 'F4', convolver, 19.7, 4.0);
+    startLoop('Grand Piano', 'Ab4', convolver, 17.8, 8.1);
+    startLoop('Grand Piano', 'C5', convolver, 21.3, 5.6);
+    startLoop('Grand Piano', 'Db5', convolver, 22.1, 12.6);
+    startLoop('Grand Piano', 'Eb5', convolver, 18.4, 9.2);
+    startLoop('Grand Piano', 'F5', convolver, 20.0, 14.1);
+    startLoop('Grand Piano', 'Ab5', convolver, 17.7, 3.1);
+  });
+};
+
+// start();
 
 /** END: Music for Airports */

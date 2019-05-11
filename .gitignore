@@ -1,6 +1,7 @@
 /node_modules
 /build
 /dist
-/src/assets
+/src/assets/
+assets/
 *.js
 *.map
