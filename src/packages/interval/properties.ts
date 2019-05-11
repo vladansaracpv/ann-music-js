@@ -81,7 +81,7 @@ export interface IvlProps {
 
 // export const NO_INTERVAL = Object.freeze(EMPTY_INTERVAL);
 
-export const Validate = {
+export const Validator = {
   Perfect: (type: string, quality: string) => eq(quality, 'P'),
   Major: (type: string, quality: string) => eq(quality, 'M'),
   Minor: (type: string, quality: string) => eq(quality, 'm'),
@@ -99,12 +99,14 @@ const widthInOctaves = (distance: number) => Math.floor(distance / 12);
 
 const widthInSemitones = (semitones: number) => Math.abs(semitones);
 const chromaFromWidth = (distance: number) => mod12(distance);
-const numberForOffset = (direction: number, chroma: number, octave: number) =>
-  mul(direction, INTERVAL_NUMBERS[chroma] + mul7(octave));
+const numberForOffset = (direction: number, chroma: number, octave: number) => {
+  return mul(direction, INTERVAL_NUMBERS[chroma] + mul7(octave));
+};
 const getStepFromNumber = (num: number) => dec(Math.abs(num)) % 7;
 
-const getIntervalWidth = (step: number, alteration: number, octave: number) =>
-  BASE_INTERVAL_SIZES[step] + alteration + 12 * dec(octave);
+const getIntervalWidth = (step: number, alteration: number, octave: number) => {
+  return BASE_INTERVAL_SIZES[step] + alteration + 12 * dec(octave);
+};
 
 export function perfectIvlLength(type: string, quality: string) {
   const len = quality.length;
@@ -112,10 +114,10 @@ export function perfectIvlLength(type: string, quality: string) {
 }
 
 export function qualityToAlteration(type: string, quality: string) {
-  if (Validate.Perfect(type, quality) || Validate.Major(type, quality)) return 0;
-  if (Validate.Minor(type, quality)) return -1;
-  if (Validate.Augmented(quality)) return quality.length;
-  if (Validate.Diminished(quality)) return perfectIvlLength(type, quality);
+  if (Validator.Perfect(type, quality) || Validator.Major(type, quality)) return 0;
+  if (Validator.Minor(type, quality)) return -1;
+  if (Validator.Augmented(quality)) return quality.length;
+  if (Validator.Diminished(quality)) return perfectIvlLength(type, quality);
   return null;
 }
 

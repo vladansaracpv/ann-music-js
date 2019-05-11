@@ -7,7 +7,7 @@ import { curry } from './functional';
  *
  */
 
-export const unary = fn => (...args: any[]) => curry(fn, args);
+export const unary = fn => (...args: any[]) => curry(fn)(args);
 export const binary = fn => (one: any, other: any) => fn(one, other);
 export const nary = fn => (...args: any[]) => args.reduce(fn);
 
@@ -21,6 +21,8 @@ export const arity = {
 
 /** Addition */
 export const add = (one: number, other: number): number => one + other;
+export const addC = (b: number) => (a: number): number => a + b;
+export const addN = (...args: number[]): number => args.reduce(add);
 
 export const inc = (n: number) => n + 1;
 

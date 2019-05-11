@@ -2,6 +2,9 @@ import { gsum } from '../../base/math';
 import { tokenize } from '../../base/strings';
 import { CustomError, ErrorCode } from '../../error';
 
+const TimeUnits = ['n', 't', 'r'];
+const TimeValues = [1, 2, 4, 8, 16, 32];
+
 /**
  * Note Value Model
  *
@@ -26,22 +29,16 @@ interface Duration extends DurationProps {
   double(): DurationProps;
 }
 
-const DURATION_TYPES = {
-  n: 'note',
-  tr: 'triplet',
-  p: 'rest',
-};
-
 const NOTE_VALUE_REGEX = /^(?<kind>([whqest]|1|2|4|8|16|32){1})(?<dots>\.{0,2})(?<type>:(n|tr|p){1})$/;
 const NOTE_DURATION_KEYS = 'w h q e s t'.split(' ');
 const NOTE_DURATION_VALUES = [1, 2, 4, 8, 16, 32];
 
-export const Validate = {
+export const Validator = {
   Duration: (note: string): boolean => NOTE_VALUE_REGEX.test(note),
 };
 
 export const DurationProps = (note: string): DurationProps => {
-  if (!Validate.Duration(note)) return CustomError(ErrorCode.InvalidDuration, note);
+  if (!Validator.Duration(note)) return CustomError(ErrorCode.InvalidDuration, note);
 
   const tokens = tokenize(note, NOTE_VALUE_REGEX);
   const { kind, dots, type } = tokens;

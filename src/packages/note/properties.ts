@@ -34,7 +34,7 @@ interface NoteProps {
 }
 
 /** Validators */
-export const Validate = {
+export const Validator = {
   Name: (name: string): boolean => NOTE_REGEX.test(name) === true,
   Midi: (midi: number): boolean => both(isInteger(midi), interval(0, 128, midi)),
   Chroma: (chroma: number): boolean => both(isInteger(chroma), segment(0, 11, chroma)),
@@ -42,20 +42,34 @@ export const Validate = {
 };
 
 /** Cleanup later */
+class Midi {
+  public static toFrequency = (key: number, tuning = A_440) => tuning * 2 ** ((key - MIDDLE_KEY) / OCTAVE_RANGE);
+}
 
-const frequencyFromMidi = (key: number, tuning = A_440): number => tuning * 2 ** ((key - MIDDLE_KEY) / OCTAVE_RANGE);
-const alterationValue = (accidental: string): number => {
-  const len = accidental.length;
-  return len * (accidental[0] === 'b' ? -1 : 1);
-};
-const letterStep = (letter: string): number => NOTE_LETTERS.indexOf(letter);
-const letterIndex = letter => WITH_SHARPS.indexOf(letter);
-const midiFromFreq = (freq, tuning = A_440) => Math.ceil(OCTAVE_RANGE * Math.log2(freq / tuning) + MIDDLE_KEY);
-const parseOctave = (octave?: string) => (octave ? +octave : STANDARD_OCTAVE);
+class Frequency {
+  public static toMidi = (freq, tuning = A_440) => Math.ceil(OCTAVE_RANGE * Math.log2(freq / tuning) + MIDDLE_KEY);
+}
+
+class Accidental {
+  public static value = (accidental: string): number => {
+    const len = accidental.length;
+    return len * (accidental[0] === 'b' ? -1 : 1);
+  };
+}
+
+class Letter {
+  public static step = (letter: string): number => NOTE_LETTERS.indexOf(letter);
+  public static index = letter => WITH_SHARPS.indexOf(letter);
+}
+
+class Octave {
+  public static parse = (octave?: string) => (octave ? +octave : STANDARD_OCTAVE);
+}
 
 interface CacheObj {
   [key: string]: any;
 }
+
 const cache: CacheObj = {};
 
 function getSetCache(name: string, properties: NoteProps) {
@@ -69,16 +83,16 @@ export function createNoteFromName(name: string): NoteProps {
   if (!tokens || tokens.rest) return CustomError(ErrorCode.InvalidName, name);
 
   const { letter, accidental, oct, rest } = tokens;
-  const step = letterStep(letter);
-  const alteration = alterationValue(accidental);
-  const offset = letterIndex(letter);
+  const step = Letter.step(letter);
+  const alteration = Accidental.value(accidental);
+  const offset = Letter.index(letter);
   const altered = offset + alteration;
   const alteredOct = Math.floor(altered / OCTAVE_RANGE);
-  const octave = parseOctave(oct);
+  const octave = Octave.parse(oct);
   const pc = letter + accidental;
   const chroma = alteredOct < 0 ? (altered - alteredOct * OCTAVE_RANGE) % OCTAVE_RANGE : altered % OCTAVE_RANGE;
   const midi = (octave + 1) * OCTAVE_RANGE + chroma;
-  const frequency = frequencyFromMidi(midi);
+  const frequency = Midi.toFrequency(midi);
 
   return Object.freeze({
     name: capitalize(name),
@@ -95,16 +109,16 @@ export function createNoteFromName(name: string): NoteProps {
 }
 
 export function createNoteFromMidi(midi: number, useSharps = true) {
-  if (!Validate.Midi(midi)) return CustomError(ErrorCode.InvalidMidi, midi);
+  if (!Validator.Midi(midi)) return CustomError(ErrorCode.InvalidMidi, midi);
 
   const octave = Math.floor(midi / OCTAVE_RANGE) - 1;
   const chroma = midi - OCTAVE_RANGE * (octave + 1);
-  const frequency = frequencyFromMidi(midi);
+  const frequency = Midi.toFrequency(midi);
   const pc = useSharps ? WITH_SHARPS[chroma] : WITH_FLATS[chroma];
   const name = pc + octave;
   const { letter, accidental } = tokenize(name, NOTE_REGEX);
-  const alteration = alterationValue(accidental);
-  const step = letterStep(letter);
+  const alteration = Accidental.value(accidental);
+  const step = Letter.step(letter);
   return Object.freeze({
     name,
     letter,
@@ -120,7 +134,7 @@ export function createNoteFromMidi(midi: number, useSharps = true) {
 }
 
 export function createNoteFromFreq(freq: number, tuning = A_440) {
-  const midi = midiFromFreq(freq, tuning);
+  const midi = Frequency.toMidi(freq, tuning);
   return createNoteFromMidi(midi);
 }
 
@@ -157,9 +171,9 @@ export function Note(note: NoteInitProp): NoteProps {
   const { name, midi, frequency: freq } = note;
   let noteObj = {};
 
-  if (name && Validate.Name(name)) noteObj = createNoteFromName(name);
-  if (midi && Validate.Midi(midi)) noteObj = createNoteFromMidi(midi);
-  if (freq && Validate.Frequency(freq)) noteObj = createNoteFromFreq(freq);
+  if (name && Validator.Name(name)) noteObj = createNoteFromName(name);
+  if (midi && Validator.Midi(midi)) noteObj = createNoteFromMidi(midi);
+  if (freq && Validator.Frequency(freq)) noteObj = createNoteFromFreq(freq);
 
   if (noteObj['name']) return getSetCache(noteObj['name'], noteObj as NoteProps);
 
