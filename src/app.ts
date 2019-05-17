@@ -1,8 +1,9 @@
 import { SequenceParser, SimplePlayer } from './packages/player';
-import { createNoteFromName } from './packages/note';
+import { createNoteFromMidi, name } from './packages/note';
 import { addC, inc, add2 } from './base/math';
+import { compose } from './base/functional';
 
-console.log(createNoteFromName('A4'));
+console.log(createNoteFromMidi(69));
 
 // player.play(
 //   sequenceParser.parse([
