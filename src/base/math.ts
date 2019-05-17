@@ -1,67 +1,53 @@
 import { curry } from './functional';
-/**
- *
- * binary: (fn, a, b) => fn(a,b)
- * n-ary: (fn, args) => args.map(fn)
- * curry: (fn, ...args) => curry(fn)(args)
- *
- */
-
-export const unary = fn => (...args: any[]) => curry(fn)(args);
-export const binary = fn => (one: any, other: any) => fn(one, other);
-export const nary = fn => (...args: any[]) => args.reduce(fn);
-
-export const arity = {
-  one: unary,
-  two: binary,
-  n: nary,
-};
 
 /** Arithmetic operations (binary, C-urried, N-ary) */
+type BinCurryFn = (b: number) => (a: number) => number;
 
 /** Addition */
-export const add = (one: number, other: number): number => one + other;
-export const addC = (b: number) => (a: number): number => a + b;
-export const addN = (...args: number[]): number => args.reduce(add);
+export const add2 = (a: number, b: number): number => a + b;
 
-export const inc = (n: number) => n + 1;
+export const addN = (...args: number[]): number => args.reduce(add2);
+
+export const addC = curry(add2) as BinCurryFn;
+
+export const inc = addC(1);
 
 /** Subtraction */
+export const sub2 = (a: number, b: number): number => a - b;
 
-export const sub = (a: number, b: number): number => a - b;
+export const subN = (...args: number[]): number => args.reduce(sub2);
 
-export const subC = (b: number) => (a: number): number => a - b;
+export const subC = curry(sub2) as BinCurryFn;
 
-export const dec = (n: number): number => n - 1;
-
-export const subN = (...args: number[]): number => args.reduce(sub);
+export const dec = subC(1);
 
 /** Division */
+export const div2 = (a: number, b: number): number => a / b;
 
-export const div = (a: number, b: number): number => a / b;
+export const divN = (...args: number[]): number => args.reduce(div2);
 
-export const divC = (n: number) => (x: number): number => x / n;
-
-export const divN = (...args: number[]): number => args.reduce(div);
+export const divC = curry(div2) as BinCurryFn;
 
 /** Multiplication */
+export const mul2 = (a: number, b: number): number => a * b;
 
-export const mul = (a: number, b: number): number => a * b;
+export const mulN = (...args: number[]): number => args.reduce(mul2);
 
-export const mulC = (n: number) => (x: number): number => x * n;
-
-export const mulN = (...args: number[]): number => args.reduce(mul);
+export const mulC = curry(mul2) as BinCurryFn;
 
 /** Math functions */
-export const mod = (n: number) => (x: number): number => x % n;
+export const mod2 = (n: number, a: number): number => a % n;
+export const modC = curry(mod2) as BinCurryFn;
 
-export const floor = (n: number) => Math.floor(n);
+export const floor = (n: number): number => Math.floor(n);
 
-export const abs = (n: number) => Math.abs(n);
+export const ceil = (n: number): number => Math.ceil(n);
 
-export const pow = (n: number) => (x: number): number => Math.pow(x, n);
+export const abs = (n: number): number => Math.abs(n);
 
-export const pow2 = (exp: number) => 2 ** exp;
+export const pow = (n: number) => (a: number): number => Math.pow(a, n);
+
+export const pow2 = (n: number): number => 2 ** n;
 
 export const sign = (n: number): number => (n < 0 ? -1 : 1);
 

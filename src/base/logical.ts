@@ -1,11 +1,9 @@
-/** Logical operators */
+/** Logical operators (binary, N-ary) */
 
-/** AND */
-export const land = (a: boolean, b: boolean): boolean => a && b;
+/** Logical AND  */
+export const and2 = (a: boolean, b: boolean): boolean => a && b;
+export const andN = (...args: boolean[]): boolean => args.reduce(and2);
 
-export const andN = (...args: boolean[]): boolean => args.reduce(land);
-
-/** OR */
-export const lor = (a: boolean, b: boolean): boolean => a || b;
-
-export const orN = (...args: boolean[]): boolean => args.reduce(lor);
+/** Logical OR */
+export const or2 = (a: boolean, b: boolean): boolean => a || b;
+export const orN = (...args: boolean[]): boolean => args.reduce(or2);

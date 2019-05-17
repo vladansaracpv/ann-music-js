@@ -3,16 +3,20 @@
 const id = (x: any): any => x;
 const applyFn = (res: any[], fn) => [fn.call(null, ...res)];
 
-export const compose = (...fns) => (...args) => fns.reduceRight(applyFn, args)[0];
+export const partial = (fn, ...first) => (...rest) => fn(...first, ...rest);
 
 export const curry = fn =>
   (function curried(cargs) {
     return cargs.length >= fn.length ? fn.apply(this, cargs) : (...args) => curried([...cargs, ...args]);
   })([]);
 
-export const pipe = (...fns) => (...args) => fns.reduce(applyFn, args)[0];
+// export const compose = (...fns) => (...args) => fns.reduceRight(applyFn, args)[0];
 
-export const partial = (fn, first) => (...rest) => fn(first, ...rest);
+// export const pipe = (...fns) => (...args) => fns.reduce(applyFn, args)[0];
+
+export const compose2 = (f, g) => (...args) => f(g(...args));
+export const compose = (...fns) => fns.reduce(compose2);
+export const pipe = (...fns) => fns.reduceRight(compose2);
 
 export const pipeDebug = (...fns) => value => {
   debugger;

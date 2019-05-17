@@ -1,45 +1,41 @@
-// import { chroma as notechr } from '../note/properties';
-// import { chroma as ivlchr } from '../interval/theory';
-// import { rotate, range, compact, isArray, eq, gt, land, neq, isEither } from '../helpers';
-// import { isNumber } from 'util';
+import { chroma as notechr } from '../note';
+import { chroma as ivlchr } from '../interval';
+// import { rotate, range, compact, isArray, eq, gt, land, neq, either } from '../helpers';
+import { isArray, isNumber } from '../../base/types';
 
-// const chr = str => notechr(str) || ivlchr(str) || 0;
-// const pcsetNum = set => parseInt(chroma(set), 2);
-// const clen = chroma => chroma.replace(/0/g, '').length;
-// const IVLS = '1P 2m 2M 3m 3M 4P 5d 5P 6m 6M 7m 7M'.split(' ');
+const chr = (str: string) => ivlchr(str) || notechr({ name: str }) || 0;
+const pcsetNum = set => parseInt(chr(set), 2);
+const clen = chroma => chroma.replace(/0/g, '').length;
+const IVLS = '1P 2m 2M 3m 3M 4P 5d 5P 6m 6M 7m 7M'.split(' ');
 
-// const REGEX = /^[01]{12}$/;
+const REGEX = /^[01]{12}$/;
 
-// export const isChroma = (set: string) => REGEX.test(set);
+export const isChroma = (set: string) => REGEX.test(set);
 
-// /**
-//  * Get chroma of a pitch class set. A chroma identifies each set uniquely.
-//  * It"s a 12-digit binary each presenting one semitone of the octave.
-//  *
-//  * Note that this function accepts a chroma as parameter and return it
-//  * without modification.
-//  *
-//  * @param {Array|String} set - the pitch class set
-//  * @return {String} a binary representation of the pitch class set
-//  * @example
-//  * PcSet.chroma(["C", "D", "E"]) // => "101010000000"
-//  */
-// export const chroma = set => {
-//   if (isChroma(set)) return set;
-//   if (!isArray(set)) return '';
-//   let b = Array(12).fill(0);
-//   set.map(chr).forEach(i => (b[i] = 1));
-//   return b.join('');
-// };
+/**
+ * Get chroma of a pitch class set. A chroma identifies each set uniquely.
+ * It"s a 12-digit binary each presenting one semitone of the octave.
+ *
+ * Note that this function accepts a chroma as parameter and return it
+ * without modification.
+ *
+ * @param {Array|String} set - the pitch class set
+ * @return {String} a binary representation of the pitch class set
+ * @example
+ * PcSet.chroma(["C", "D", "E"]) // => "101010000000"
+ */
+export const chroma = set => {
+  if (isChroma(set)) return set;
+  if (!isArray(set)) return '';
+  let b = Array(12).fill(0);
+  set.map(chr).forEach(i => (b[i] = 1));
+  return b.join('');
+};
 
 // let all = null;
 // export const chromas = n => {
 //   all = all || range(2048, 4095).map(n => n.toString(2));
-//   return isEither(
-//     all.filter(chroma => clen(chroma) === n),
-//     all.slice(),
-//     isNumber(n)
-//   );
+//   return isNumber(n) ? all.filter(chroma => clen(chroma) === n) : all.slice();
 // };
 
 // /**
@@ -62,7 +58,7 @@
 //   return compact(
 //     binary.map((val, i) => {
 //       let r = rotate(i, binary);
-//       return isEither(null, r.join(''), land(normalize, eq(r[0], '0')))
+//       return either(null, r.join(''), land(normalize, eq(r[0], '0')))
 //     })
 //   );
 // };

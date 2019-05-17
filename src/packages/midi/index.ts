@@ -60,7 +60,7 @@ const SHEET_URL = '../src/assets/';
 export const loadJSON = (fileURL: string, callback) => {
   var xobj = new XMLHttpRequest();
   xobj.overrideMimeType('application/json');
-  xobj.open('GET', SHEET_URL + fileURL, true);
+  xobj.open('GET', fileURL, true);
   xobj.onreadystatechange = function() {
     if (xobj.readyState == 4 && xobj.status == 200) {
       callback(xobj.responseText);
@@ -83,11 +83,45 @@ window.onload = event => {
   // });
 };
 
-function playSheet(sheet: Midi) {
+function makeSynth() {
+  let envelope = {
+    attack: 0.1,
+    release: 4,
+    releaseCurve: 'linear',
+  };
+  let filterEnvelope = {
+    baseFrequency: 200,
+    octaves: 2,
+    attack: 0,
+    decay: 0,
+    release: 1000,
+  };
+
+  return new Tone.DuoSynth({
+    harmonicity: 1,
+    voice0: {
+      oscillator: { type: 'sawtooth' },
+      envelope,
+      filterEnvelope,
+    },
+    voice1: {
+      oscillator: { type: 'sine' },
+      envelope,
+      filterEnvelope,
+    },
+    vibratoRate: 0.5,
+    vibratoAmount: 0.1,
+  });
+}
+
+// let leftSynth = makeSynth();
+
+export function playSheet(sheet: Midi) {
   let i = 220;
   const { tracks } = sheet;
   const { notes, length } = tracks[1];
-  const synth = new Tone.Synth().toMaster();
+  // const synth = new Tone.Synth().toMaster();
+  const synth = makeSynth().toMaster();
 
   const playNote = (note: MidiNote) => {
     synth.triggerAttackRelease(note.name, note.duration * 1000);
