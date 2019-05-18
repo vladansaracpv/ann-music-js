@@ -2,10 +2,39 @@ import { tokenize, fillStr } from '../../base/strings';
 import { ErrorCode, CustomError } from '../../error/index';
 import { compose } from '../../base/functional';
 import { and2 } from '../../base/logical';
-import { modC, dec, divC, mul2, mulC } from '../../base/math';
+import { modC, dec, divC, mul2, mulC, inc } from '../../base/math';
 import { eq, lt, gt } from '../../base/relations';
 import { isNumber, isString } from '../../base/types';
-import { midi, NoteInitProp } from '../note/index';
+import { midi, NoteName } from '../note/index';
+import { either } from '../../base/boolean';
+
+type IvlName = string;
+type IvlNumber = number;
+type IvlQuality = 'd' | 'm' | 'M' | 'P' | 'A';
+type IvlAlteration = number;
+type IvlStep = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+type IvlDirection = -1 | 1;
+type IvlType = 'M' | 'P';
+type IvlSimpleNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+type IvlSemitones = number;
+type IvlChroma = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
+type IvlOctave = number;
+type IvlClass = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+export interface IvlProps {
+  name: IvlName;
+  num: IvlNumber;
+  quality: IvlQuality;
+  alteration: IvlAlteration;
+  step: IvlStep;
+  direction: IvlDirection;
+  type: IvlType;
+  simple: IvlSimpleNumber;
+  semitones: IvlSemitones;
+  chroma: IvlChroma;
+  octave: IvlOctave;
+  ic: IvlClass;
+}
 
 export const INTERVALL_QUALITIES = {
   d: { long: 'diminished', short: 'd', abbr: '°' },
@@ -14,6 +43,22 @@ export const INTERVALL_QUALITIES = {
   P: { long: 'Perfect', short: 'P', abbr: 'P' },
   A: { long: 'Augmented', short: 'A', abbr: '+' },
 };
+
+/**
+  +----+----+----+----+----+----+----+----+----+----+----+----+----+
+  | 0  | 1  | 2  | 3  | 4  | 5  | 6  | 7  | 8  | 9  | 10 | 11 | 12 |
+  | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+  | C  | C# | D  | D# | E  | F  | F# | G  | G# | A  | A# | B  | C  |
+  | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+  | P1 | A1 | M2 | A2 | M3 | P4 | A4 | P5 | A5 | M6 | A6 | M7 | P8 |
+  | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+  | C  | Db | D  | Eb | E  | F  | Gb | G  | Ab | A  | Bb | B  | C  |
+  | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+  | P1 | m2 | M2 | m3 | M3 | P4 | d5 | P5 | m6 | M6 | m7 | M7 | P8 |
+  | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+  | d2 | A1 | d3 | A2 | d4 | A3 |d5A4| d6 | A5 | d7 | A6 | d8 | A7 |
+  +----+----+----+----+----+----+----+----+----+----+----+----|----+
+*/
 
 export const BASE_INTERVAL_TYPES = 'PMMPPMM';
 export const BASE_INTERVAL_SIZES = [0, 2, 4, 5, 7, 9, 11];
@@ -27,59 +72,9 @@ export const INTERVAL_REGEX = new RegExp(`^${INTERVAL_TONAL}|${INTERVAL_QUALITY}
 
 export const INTERVAL_CLASSES = [0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1];
 
-export const INTERVAL_NAMES = '1P 2m 2M 3m 3M 4P A4 5P 6m 6M 7m 7M 8P'.split(' ');
-export const INTERVAL_NUMBERS = [1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 8];
+export const INTERVAL_NAMES = '1P 2m 2M 3m 3M 4P A4 5P 6m 6M 7m 7M'.split(' ');
+export const INTERVAL_NUMBERS = [1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7];
 export const INTERVAL_QUALITIES = 'P m M m M P d P m M m M'.split(' ');
-
-export const INTERVAL_ALT_NAMES = '2d 1A 3d 2A 4d 3A 5d 6d 5A 7d 6A 8d 7A'.split(' ');
-export const INTERVAL_ALT_NUMBERS = [2, 1, 3, 2, 4, 3, 5, 6, 5, 7, 6, 8, 7];
-export const INTERVAL_ALT_QUALITIES = 'd A d A d A d d A d A d A'.split(' ');
-
-export interface IvlProps {
-  name: string;
-  num: number;
-  quality: string;
-  alteration: number;
-  step: number;
-  direction: number;
-  type: string;
-  simple: number;
-  semitones: number;
-  chroma: number;
-  octave: number;
-  ic: number;
-}
-// export const KEYS = [
-//   'name',
-//   'num',
-//   'quality',
-//   'step',
-//   'alteration',
-//   'direction',
-//   'type',
-//   'simple',
-//   'semitones',
-//   'chroma',
-//   'octave',
-//   'ic',
-// ];
-
-// export const EMPTY_INTERVAL = {
-//   name: undefined,
-//   num: undefined,
-//   quality: undefined,
-//   step: undefined,
-//   alteration: undefined,
-//   direction: undefined,
-//   type: undefined,
-//   simple: undefined,
-//   semitones: undefined,
-//   chroma: undefined,
-//   octave: undefined,
-//   ic: undefined,
-// };
-
-// export const NO_INTERVAL = Object.freeze(EMPTY_INTERVAL);
 
 export const Validator = {
   Perfect: (type: string, quality: string) => eq(quality, 'P'),
@@ -90,27 +85,16 @@ export const Validator = {
 };
 
 /** Cleanup later */
-const mod12 = modC(12);
-const div7 = divC(7);
-const mul7 = mulC(7);
-const signOf = (n: number): number => (n < 0 ? -1 : 1);
-const getIntervalBaseType = (step: number) => BASE_INTERVAL_TYPES[step];
-const widthInOctaves = (distance: number) => Math.floor(distance / 12);
 
-const widthInSemitones = (semitones: number) => Math.abs(semitones);
-const chromaFromWidth = (distance: number) => mod12(distance);
+const signOf = (n: number): number => either(-1, 1, lt(n, 0));
+
 const numberForOffset = (direction: number, chroma: number, octave: number) => {
-  return mul2(direction, INTERVAL_NUMBERS[chroma] + mul7(octave));
-};
-const getStepFromNumber = (num: number) => dec(Math.abs(num)) % 7;
-
-const getIntervalWidth = (step: number, alteration: number, octave: number) => {
-  return BASE_INTERVAL_SIZES[step] + alteration + 12 * dec(octave);
+  return mul2(direction, INTERVAL_NUMBERS[chroma] + 7 * octave);
 };
 
 export function perfectIvlLength(type: string, quality: string) {
   const len = quality.length;
-  return eq(type, 'P') ? -len : -(len + 1);
+  return either(-len, -(len + 1), eq(type, 'P'));
 }
 
 export function qualityToAlteration(type: string, quality: string) {
@@ -122,10 +106,10 @@ export function qualityToAlteration(type: string, quality: string) {
 }
 
 export const qualityFromAlteration = (type: string, alteration: number) => {
-  if (eq(0, alteration)) return eq(type, 'M') ? 'M' : 'P';
+  if (eq(0, alteration)) return either('M', 'P', eq(type, 'M'));
   if (and2(eq(-1, alteration), eq(type, 'M'))) return 'm';
-  if (lt(0, alteration)) return fillStr('A', alteration);
-  if (gt(0, alteration)) return fillStr('d', eq(type, 'P') ? alteration : alteration + 1);
+  if (gt(alteration, 0)) return fillStr('A', alteration);
+  if (lt(alteration, 0)) return fillStr('d', either(alteration, inc(alteration), eq(type, 'P')));
   return null;
 };
 
@@ -139,21 +123,21 @@ export function createIntervalFromName(name: string) {
   const quality = tokens['tq'] || tokens['qq'];
 
   // Similar to Note.letter. Number of steps from first note C to given letter. Normalized to 1 octave
-  const step = getStepFromNumber(num);
+  const step = dec(Math.abs(num)) % 7;
 
   // We use it to store information of interval before being altered: d | A. Diminished ivl can be from minor or Perfect
-  const type = getIntervalBaseType(step);
+  const type = BASE_INTERVAL_TYPES[step];
 
   // 1: (low, high) and -1: (high, low)
   const direction = signOf(num);
 
   // Simple interval number. Used in compound intervals to know which ivl is added to P8
-  const simple = num === 8 ? num : direction * (step + 1);
+  const simple = either(num, direction * (step + 1), eq(num, 8));
 
   // Number of octaves Interval spans. For simple it is 1, compound > 1
   const octave = compose(
     Math.ceil,
-    div7,
+    divC(7),
     dec,
     Math.abs,
   )(num);
@@ -165,10 +149,12 @@ export function createIntervalFromName(name: string) {
   const alteration = qualityToAlteration(type, quality);
 
   // We calculate width in semitones by adding alteration value to base interval. If is compound we include those octaves
-  const semitones = mul2(direction, getIntervalWidth(step, alteration, octave));
+  const width = BASE_INTERVAL_SIZES[step] + alteration + 12 * dec(octave);
+  const semitones = mul2(direction, width);
 
   // Chroma is position of interval among 12 possible in octave
-  const offset = mod12(direction * (BASE_INTERVAL_SIZES[step] + alteration));
+  const offset = (direction * (BASE_INTERVAL_SIZES[step] + alteration)) % 12;
+
   const chroma = (offset + 12) % 12;
 
   // Interval class. It is between [0,6]
@@ -191,13 +177,13 @@ export function createIntervalFromName(name: string) {
 }
 
 export function createIntervalFromSemitones(semitones: number) {
-  const [direction, distance] = [signOf(semitones), widthInSemitones(semitones)];
-  const [chroma, octave] = [chromaFromWidth(distance), widthInOctaves(distance)];
+  const [direction, distance] = [signOf(semitones), Math.abs(semitones)];
+  const [chroma, octave] = [distance % 12, Math.floor(distance / 12)];
   const number = numberForOffset(direction, chroma, octave);
   return createIntervalFromName('' + number + INTERVAL_QUALITIES[chroma]);
 }
 
-export function createIntervalFromNotes(first: NoteInitProp, second: NoteInitProp) {
+export function createIntervalFromNotes(first: NoteName, second: NoteName) {
   const semitones = midi(second) - midi(first);
   return createIntervalFromSemitones(semitones);
 }
@@ -215,7 +201,7 @@ export const build = ({ step = 0, alteration = 0, octave = 4, direction = 1, num
   if (eq(num, undefined)) return null;
   if (!isNumber(alteration)) return null;
   let d = !isNumber(direction) ? '' : lt(direction, 0) ? '-' : '';
-  const type = BASE_INTERVAL_TYPES[getStepFromNumber(num)];
+  const type = BASE_INTERVAL_TYPES[dec(Math.abs(num)) % 7];
   return d + num + qualityFromAlteration(type, alteration);
 };
 
@@ -236,7 +222,7 @@ export const invertInterval = (ivl: string) => {
 
   const { step, type, alteration, direction, octave } = props;
   const invStep = (7 - step) % 7;
-  const invAlt = eq(type, 'P') ? -alteration : -(alteration + 1);
+  const invAlt = either(-alteration, -(alteration + 1), eq(type, 'P'));
   return build({ step: invStep, alteration: invAlt, octave, direction });
 };
 

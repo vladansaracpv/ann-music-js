@@ -1,10 +1,12 @@
 /**
- * createNoteFromName
- * createNoteFromMidi
- * createNoteFromFreq
- * Note
- * simplifyNote
- * enharmonicNote
+ * Note()
+ * * createNoteFromName()
+ * * createNoteFromMidi()
+ * * createNoteFromFreq()
+ *
+ * simplifyNote()
+ * enharmonicNote()
+ *
  * name
  * octave
  * letter

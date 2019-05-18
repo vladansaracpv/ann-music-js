@@ -19,14 +19,13 @@ export const FIFTH_OCTS = FIFTHS.map(fifthsOctaves);
  * -1: how much octaves we need to substract to get initial tone = 14-1*12 = 2
  * @param param0
  */
-export const encode = ({ step, alt, oct, dir = 1 }) => {
-  const f = FIFTHS[step] + 7 * alt;
-  if (oct === null) return [dir * f];
-  const o = oct - FIFTH_OCTS[step] - 4 * alt;
-  return [dir * f, dir * o];
+export const encode = ({ step, alteration, octave, direction = 1 }) => {
+  const f = FIFTHS[step] + 7 * alteration;
+  if (octave === null) return [direction * f];
+  const o = octave - FIFTH_OCTS[step] - 4 * alteration;
+  return [direction * f, direction * o];
 };
 
-console.log(encode({ step: 6, alt: 0, oct: 0 }));
 // We need to get the steps from fifths
 // Fifths for CDEFGAB are [ 0, 2, 4, -1, 1, 3, 5 ]
 // We add 1 to fifths to avoid negative numbers, so:

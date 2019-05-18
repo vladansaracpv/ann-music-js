@@ -1,9 +1,14 @@
 import { SequenceParser, SimplePlayer } from './packages/player';
-import { createNoteFromMidi, name } from './packages/note';
+import { createNoteFromName, name, chroma } from './packages/note';
 import { addC, inc, add2 } from './base/math';
-import { compose } from './base/functional';
+import { compose, log } from './base/functional';
+import { createIntervalFromName, createIntervalFromSemitones } from './packages/interval';
+import { semitones } from './packages/distance';
 
-console.log(createNoteFromMidi(69));
+//          C - C# - D
+// Bb - B - C
+const ivl = createIntervalFromName('m2');
+console.log(createIntervalFromSemitones(3));
 
 // player.play(
 //   sequenceParser.parse([

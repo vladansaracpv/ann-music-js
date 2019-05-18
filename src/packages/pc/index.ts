@@ -3,7 +3,7 @@ import { chroma as ivlchr } from '../interval';
 // import { rotate, range, compact, isArray, eq, gt, land, neq, either } from '../helpers';
 import { isArray, isNumber } from '../../base/types';
 
-const chr = (str: string) => ivlchr(str) || notechr({ name: str }) || 0;
+const chr = (str: string) => ivlchr(str) || notechr(str) || 0;
 const pcsetNum = set => parseInt(chr(set), 2);
 const clen = chroma => chroma.replace(/0/g, '').length;
 const IVLS = '1P 2m 2M 3m 3M 4P 5d 5P 6m 6M 7m 7M'.split(' ');

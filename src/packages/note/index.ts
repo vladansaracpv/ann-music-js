@@ -1,13 +1,13 @@
 import { tokenize, capitalize, substitute } from '../../base/strings';
 import { interval, segment, gt, lt } from '../../base/relations';
 import { and2 } from '../../base/logical';
-import { modC, mul2, sub2, inc, add2 } from '../../base/math';
+import { inc } from '../../base/math';
 import { either } from '../../base/boolean';
 import { isInteger, isNumber } from '../../base/types';
 import { ErrorCode, CustomError } from '../../error/index';
 
 /** Note name is made from letter + accidental? + octave */
-type NoteName = string;
+export type NoteName = string;
 
 /** Set of characteds used for note naming */
 type NoteLetter = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G';
@@ -94,7 +94,7 @@ export const NOTE_LETTERS = 'CDEFGAB';
 /** Accidental types for flat/sharp note */
 export const NOTE_ACCIDENTALS = ['b', '#'];
 
-/** Note names. and2 flats and sharps */
+/** Note names. Both flats and sharps */
 export const ALL_NOTES = 'C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B'.split(' ');
 
 /** Chromatic octave with sharps as accidentals */
@@ -249,7 +249,7 @@ export function simplifyNote(note: string, sameAccidental = true): NoteName {
 
   const useSharps = (isSharp && sameAccidental) || (!isSharp && !sameAccidental);
 
-  const pc = useSharps ? WITH_SHARPS[chroma] : WITH_FLATS[chroma];
+  const pc = either(WITH_SHARPS[chroma], WITH_FLATS[chroma], useSharps);
 
   return pc + octave;
 }
@@ -276,15 +276,15 @@ export function Note(note: NoteInitProp): NoteProps {
 }
 
 // Properties
-const property = (name: string, note: NoteInitProp): NoteProp => Note(note) && Note(note)[name];
+const property = (name: string, note: NoteName): NoteProp => Note({ name: note }) && Note({ name: note })[name];
 
-export const name = (note: NoteInitProp): NoteName => property('name', note) as NoteName;
-export const octave = (note: NoteInitProp): NoteOctave => property('octave', note) as NoteOctave;
-export const letter = (note: NoteInitProp): NoteLetter => property('letter', note) as NoteLetter;
-export const step = (note: NoteInitProp): NoteStep => property('step', note) as NoteStep;
-export const accidental = (note: NoteInitProp): NoteAccidental => property('accidental', note) as NoteAccidental;
-export const alteration = (note: NoteInitProp): NoteAlteration => property('alteration', note) as NoteAlteration;
-export const pc = (note: NoteInitProp): NotePC => property('pc', note) as NotePC;
-export const chroma = (note: NoteInitProp): NoteChroma => property('chroma', note) as NoteChroma;
-export const midi = (note: NoteInitProp): NoteMidi => property('midi', note) as NoteMidi;
-export const frequency = (note: NoteInitProp): NoteFreq => property('frequency', note) as NoteFreq;
+export const name = (note: NoteName): NoteName => property('name', note) as NoteName;
+export const octave = (note: NoteName): NoteOctave => property('octave', note) as NoteOctave;
+export const letter = (note: NoteName): NoteLetter => property('letter', note) as NoteLetter;
+export const step = (note: NoteName): NoteStep => property('step', note) as NoteStep;
+export const accidental = (note: NoteName): NoteAccidental => property('accidental', note) as NoteAccidental;
+export const alteration = (note: NoteName): NoteAlteration => property('alteration', note) as NoteAlteration;
+export const pc = (note: NoteName): NotePC => property('pc', note) as NotePC;
+export const chroma = (note: NoteName): NoteChroma => property('chroma', note) as NoteChroma;
+export const midi = (note: NoteName): NoteMidi => property('midi', note) as NoteMidi;
+export const frequency = (note: NoteName): NoteFreq => property('frequency', note) as NoteFreq;

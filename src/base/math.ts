@@ -8,36 +8,36 @@ export const add2 = (a: number, b: number): number => a + b;
 
 export const addN = (...args: number[]): number => args.reduce(add2);
 
-export const addC = curry(add2) as BinCurryFn;
+export const addC = (b: number) => (a: number): number => a + b;
 
-export const inc = addC(1);
+export const inc = (n: number): number => n + 1;
 
 /** Subtraction */
 export const sub2 = (a: number, b: number): number => a - b;
 
 export const subN = (...args: number[]): number => args.reduce(sub2);
 
-export const subC = curry(sub2) as BinCurryFn;
+export const subC = (b: number) => (a: number): number => a - b;
 
-export const dec = subC(1);
+export const dec = (n: number): number => n - 1;
 
 /** Division */
 export const div2 = (a: number, b: number): number => a / b;
 
 export const divN = (...args: number[]): number => args.reduce(div2);
 
-export const divC = curry(div2) as BinCurryFn;
+export const divC = (b: number) => (a: number): number => a / b;
 
 /** Multiplication */
 export const mul2 = (a: number, b: number): number => a * b;
 
 export const mulN = (...args: number[]): number => args.reduce(mul2);
 
-export const mulC = curry(mul2) as BinCurryFn;
+export const mulC = (b: number) => (a: number): number => a * b;
 
 /** Math functions */
 export const mod2 = (n: number, a: number): number => a % n;
-export const modC = curry(mod2) as BinCurryFn;
+export const modC = (b: number) => (a: number): number => a % b;
 
 export const floor = (n: number): number => Math.floor(n);
 
