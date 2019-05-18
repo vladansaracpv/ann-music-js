@@ -1,15 +1,9 @@
-import { SequenceParser, SimplePlayer } from './packages/player';
-import { createNoteFromName, name, chroma } from './packages/note';
-import { addC, inc, add2 } from './base/math';
-import { compose, log } from './base/functional';
-import { createIntervalFromName, createIntervalFromSemitones } from './packages/interval';
-import { semitones } from './packages/distance';
+import { start } from './packages/scale';
+import { chroma } from './packages/pc';
 
-//          C - C# - D
-// Bb - B - C
-const ivl = createIntervalFromName('m2');
-console.log(createIntervalFromSemitones(3));
-
+const set = chroma(['C', 'D', 'E']);
+const set2 = '111010000000';
+console.log(chroma(set2));
 // player.play(
 //   sequenceParser.parse([
 //     'rest/4 B4/16 A4/16 G#4/16 A4/16',

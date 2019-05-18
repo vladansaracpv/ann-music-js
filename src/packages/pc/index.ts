@@ -3,6 +3,12 @@ import { chroma as ivlchr } from '../interval';
 // import { rotate, range, compact, isArray, eq, gt, land, neq, either } from '../helpers';
 import { isArray, isNumber } from '../../base/types';
 
+// C # D # E F # G # A # B
+// 1 0 0 0 1 0 0 1 0 1 0 0 (1)
+// 1 0 0 1 0 1 0 0 1 0 0 0 (2)
+// 1 0 1 0 0 1 0 0 0 1 0 0 (3)
+// 1 0 0 1 0 0 0 1 0 0 1 0 (4)
+
 const chr = (str: string) => ivlchr(str) || notechr(str) || 0;
 const pcsetNum = set => parseInt(chr(set), 2);
 const clen = chroma => chroma.replace(/0/g, '').length;
@@ -145,7 +151,8 @@ export const chroma = set => {
 // export const includes = (...args) => {
 //   if (gt(1, args.length)) return includes(args[0])(args[1]);
 //   const set = chroma(args[0]);
-//   return note => eq(set[chr(note)], '1');
+//   const note = args[1];
+//   return eq(set[chr(note)], '1');
 // };
 
 // /**

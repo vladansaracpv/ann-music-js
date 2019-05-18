@@ -117,7 +117,8 @@ export const qualityFromAlteration = (type: string, alteration: number) => {
 export function createIntervalFromName(name: string) {
   const tokens = tokenize(name, INTERVAL_REGEX);
 
-  if (!tokens) return CustomError(ErrorCode.InvalidIvlName, name);
+  if (!tokens) return null;
+  // CustomError(ErrorCode.InvalidIvlName, name);
 
   const num = +(tokens['tn'] || tokens['qn']);
   const quality = tokens['tq'] || tokens['qq'];
@@ -226,4 +227,4 @@ export const invertInterval = (ivl: string) => {
   return build({ step: invStep, alteration: invAlt, octave, direction });
 };
 
-export const chroma = (str: string) => Interval(str)['chroma'];
+export const chroma = (str: string) => Interval(str) && Interval(str)['chroma'];
