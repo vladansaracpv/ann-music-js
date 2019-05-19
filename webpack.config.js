@@ -15,11 +15,6 @@ module.exports = {
         loader: 'ts-loader',
         exclude: /node_modules/,
       },
-      {
-        test: /\.json$/,
-        loader: 'ts-loader',
-        exclude: /node_modules/,
-      },
     ],
   },
   resolve: {

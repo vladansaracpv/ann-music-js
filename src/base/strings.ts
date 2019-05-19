@@ -11,7 +11,7 @@ export const len = (str: string) => str.length;
 
 export const tokenize = (str: string, regex: string | RegExp) => (str.match(regex) ? str.match(regex)['groups'] : null);
 
-export const capitalize = (l: string) => l.charAt(0).toUpperCase() + l.slice(1);
+export const capitalize = (l: string) => l.toUpperCase(); // l.charAt(0).toUpperCase() + l.slice(1);
 export const substitute = (str: string, regex: RegExp, char: string) => str.replace(regex, char);
 
 export const fillStr = (s: string, n: number): string => Array(Math.abs(n) + 1).join(s);

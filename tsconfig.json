@@ -11,11 +11,10 @@
     "allowJs": true,
     "baseUrl": ".",
     "lib": ["dom", "es6", "es2015", "es2016", "es2017"],
-    "outDir": "dist"
+    "outDir": "dist",
+    "noEmitOnError": true,
+    "removeComments": true
   },
   "exclude": ["node_modules", "**/*.spec.ts", "**/*.test.ts"],
-  "include": ["src/**/**/*.ts", "src/typings.d.ts"],
-  "paths": {
-    "*": ["node_modules/@types/*", "*"]
-  }
+  "include": ["src/**/*.ts"]
 }

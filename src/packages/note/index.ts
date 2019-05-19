@@ -176,7 +176,8 @@ export function createNoteFromName(name: NoteName): NoteProps {
   if (!tokens || tokens['rest']) return null;
   // CustomError(ErrorCode.InvalidName, name);
 
-  const { letter, accidental, oct, rest } = tokens;
+  let { letter, accidental, oct, rest } = tokens;
+  letter = capitalize(letter);
   const step = Letter.step(letter) as NoteStep;
   const alteration = Accidental.value(accidental) as NoteAlteration;
   const offset = Letter.index(letter);
@@ -191,6 +192,7 @@ export function createNoteFromName(name: NoteName): NoteProps {
   ) as NoteChroma;
   const midi = (inc(octave) * OCTAVE_RANGE + chroma) as NoteMidi;
   const frequency = Midi.toFrequency(midi) as NoteFreq;
+  const _name = capitalize(name);
 
   return Object.freeze({
     name: capitalize(name) as NoteName,
