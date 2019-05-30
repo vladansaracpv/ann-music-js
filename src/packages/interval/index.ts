@@ -1,30 +1,40 @@
 import { tokenize, fillStr } from '../../base/strings';
-import { ErrorCode, CustomError } from '../../error/index';
+import { CustomError } from '../../error/index';
 import { compose } from '../../base/functional';
 import { and2 } from '../../base/logical';
 import { modC, dec, divC, mul2, mulC, inc } from '../../base/math';
 import { eq, lt, gt } from '../../base/relations';
 import { isNumber, isString } from '../../base/types';
-import { midi, NoteName } from '../note/index';
+import { midi } from '../note/index';
 import { either } from '../../base/boolean';
-import { Logger } from '../../base/logger';
 
-const log = new Logger('Interval');
+const IntervalError = CustomError('Interval');
 
 type IvlName = string;
+
 type IvlNumber = number;
+
 type IvlQuality = 'd' | 'm' | 'M' | 'P' | 'A';
+
 type IvlAlteration = number;
+
 type IvlStep = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
 type IvlDirection = -1 | 1;
+
 type IvlType = 'M' | 'P';
+
 type IvlSimpleNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
 type IvlSemitones = number;
+
 type IvlChroma = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
+
 type IvlOctave = number;
+
 type IvlClass = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
-export interface IvlProps {
+interface IvlProps {
   name: IvlName;
   num: IvlNumber;
   quality: IvlQuality;
@@ -39,13 +49,13 @@ export interface IvlProps {
   ic: IvlClass;
 }
 
-export const INTERVALL_QUALITIES = {
-  d: { long: 'diminished', short: 'd', abbr: '°' },
-  m: { long: 'minor', short: 'm', abbr: 'm' },
-  M: { long: 'Major', short: 'M', abbr: 'M' },
-  P: { long: 'Perfect', short: 'P', abbr: 'P' },
-  A: { long: 'Augmented', short: 'A', abbr: '+' },
-};
+// const INTERVAL_QUALITIES = {
+//   d: { long: 'diminished', short: 'd', abbr: '°' },
+//   m: { long: 'minor', short: 'm', abbr: 'm' },
+//   M: { long: 'Major', short: 'M', abbr: 'M' },
+//   P: { long: 'Perfect', short: 'P', abbr: 'P' },
+//   A: { long: 'Augmented', short: 'A', abbr: '+' },
+// };
 
 /**
   +----+----+----+----+----+----+----+----+----+----+----+----+----+
@@ -79,13 +89,16 @@ export const INTERVAL_NAMES = '1P 2m 2M 3m 3M 4P A4 5P 6m 6M 7m 7M'.split(' ');
 export const INTERVAL_NUMBERS = [1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7];
 export const INTERVAL_QUALITIES = 'P m M m M P d P m M m M'.split(' ');
 
-export const Validator = {
-  Perfect: (type: string, quality: string) => eq(quality, 'P'),
-  Major: (type: string, quality: string) => eq(quality, 'M'),
-  Minor: (type: string, quality: string) => eq(quality, 'm'),
-  Diminished: (quality: string) => /^d+$/.test(quality),
-  Augmented: (quality: string) => /^A+$/.test(quality),
+export const Validators = {
+  perfect: (type: string, quality: string) => eq(quality, 'P'),
+  major: (type: string, quality: string) => eq(quality, 'M'),
+  minor: (type: string, quality: string) => eq(quality, 'm'),
+  diminished: (quality: string) => /^d+$/.test(quality),
+  augmented: (quality: string) => /^A+$/.test(quality),
 };
+
+export const isValid = (property: string) => (type: string, quality?: string) =>
+  either(Validators[property](type, quality), false, Validators[property]);
 
 /** Cleanup later */
 
@@ -101,10 +114,10 @@ export function perfectIvlLength(type: string, quality: string) {
 }
 
 export function qualityToAlteration(type: string, quality: string) {
-  if (Validator.Perfect(type, quality) || Validator.Major(type, quality)) return 0;
-  if (Validator.Minor(type, quality)) return -1;
-  if (Validator.Augmented(quality)) return quality.length;
-  if (Validator.Diminished(quality)) return perfectIvlLength(type, quality);
+  if (isValid('perfect')(type, quality) || isValid('major')(type, quality)) return 0;
+  if (isValid('minor')(type, quality)) return -1;
+  if (isValid('augmented')(quality)) return quality.length;
+  if (isValid('diminished')(quality)) return perfectIvlLength(type, quality);
   return null;
 }
 
@@ -120,10 +133,7 @@ export const qualityFromAlteration = (type: string, alteration: number) => {
 export function createIntervalFromName(name: string) {
   const tokens = tokenize(name, INTERVAL_REGEX);
 
-  if (!tokens) {
-    log.error(CustomError(ErrorCode.InvalidIvlName, name));
-    return null;
-  }
+  if (!tokens) return IntervalError('InvalidIvlName', name);
   const num = +(tokens['tn'] || tokens['qn']);
   const quality = tokens['tq'] || tokens['qq'];
 
@@ -188,7 +198,7 @@ export function createIntervalFromSemitones(semitones: number) {
   return createIntervalFromName('' + number + INTERVAL_QUALITIES[chroma]);
 }
 
-export function createIntervalFromNotes(first: NoteName, second: NoteName) {
+export function createIntervalFromNotes(first: string, second: string) {
   const semitones = midi(second) - midi(first);
   return createIntervalFromSemitones(semitones);
 }
@@ -197,8 +207,7 @@ export function Interval(...args) {
   if (args.length > 1) return createIntervalFromNotes(args[0], args[1]);
   if (isString(args[0])) return createIntervalFromName(args[0]);
   if (isNumber(args[0])) return createIntervalFromSemitones(args[0]);
-  log.error(CustomError(ErrorCode.InvalidIvlConstructor, args));
-  return null;
+  return IntervalError('InvalidIvlConstructor', args);
 }
 
 /** Interval functions */
@@ -214,10 +223,7 @@ export const build = ({ step = 0, alteration = 0, octave = 4, direction = 1, num
 export const simplifyInterval = (ivl: string) => {
   const props = createIntervalFromName(ivl);
 
-  if (!props) {
-    log.error(CustomError(ErrorCode.InvalidIvlName, name));
-    return null;
-  }
+  if (!props) return IntervalError('InvalidIvlName', name);
 
   const { simple, quality } = props as Partial<IvlProps>;
 
@@ -227,10 +233,7 @@ export const simplifyInterval = (ivl: string) => {
 export const invertInterval = (ivl: string) => {
   const props = createIntervalFromName(ivl) as IvlProps;
 
-  if (!props) {
-    log.error(CustomError(ErrorCode.InvalidIvlName, name));
-    return null;
-  }
+  if (!props) return IntervalError('InvalidIvlName', name);
   const { step, type, alteration, direction, octave } = props;
   const invStep = (7 - step) % 7;
   const invAlt = either(-alteration, -(alteration + 1), eq(type, 'P'));
