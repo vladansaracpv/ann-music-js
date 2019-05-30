@@ -102,7 +102,6 @@ export const transpose = (...args) => {
  * // or using tonal
  * Distance.trFifths("G4", 1) // => "D"
  */
-
 export const trFifths = (...args) => {
   if (args.length === 1) return f => trFifths(args[0], f);
   const n = encodeNote(args[0]);

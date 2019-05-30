@@ -1,12 +1,12 @@
-import { tokenize, fillStr } from '../../base/strings';
-import { CustomError } from '../../error/index';
-import { compose } from '../../base/functional';
-import { and2 } from '../../base/logical';
-import { modC, dec, divC, mul2, mulC, inc } from '../../base/math';
-import { eq, lt, gt } from '../../base/relations';
-import { isNumber, isString } from '../../base/types';
-import { midi } from '../note/index';
-import { either } from '../../base/boolean';
+import { tokenize, fillStr } from '@base/strings';
+import { CustomError } from '@base/error';
+import { compose } from '@base/functional';
+import { and2 } from '@base/logical';
+import { dec, divC, mul2, mulC, inc } from '@base/math';
+import { eq, lt, gt } from '@base/relations';
+import { isNumber, isString } from '@base/types';
+import { midi } from '@packages/note';
+import { either } from '@base/boolean';
 
 const IntervalError = CustomError('Interval');
 

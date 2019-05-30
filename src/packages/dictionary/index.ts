@@ -1,6 +1,6 @@
 import sdata from '../scale/scales.json';
 import cdata from '../chord/chords.json';
-import { chroma } from '../pc/index';
+import { chromaset } from '../pc';
 
 export const dictionary = raw => {
   const keys = Object.keys(raw).sort();
@@ -16,7 +16,7 @@ export const dictionary = raw => {
   keys.forEach(key => {
     const ivls = raw[key][0].split(' ');
     const alias = raw[key][1];
-    const chr = chroma(ivls);
+    const chr = chromaset(ivls);
 
     add(key, ivls, chr);
     if (alias) alias.forEach(a => add(a, ivls, chr));

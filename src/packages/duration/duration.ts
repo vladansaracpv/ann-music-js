@@ -1,6 +1,6 @@
-import { gsum } from '../../base/math';
-import { tokenize } from '../../base/strings';
-import { CustomError } from '../../error';
+import { gsum } from '@base/math';
+import { tokenize } from '@base/strings';
+import { CustomError } from '@base/error';
 
 const DurationError = CustomError('Duration');
 

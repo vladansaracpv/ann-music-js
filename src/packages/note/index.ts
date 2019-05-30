@@ -1,11 +1,11 @@
-import { tokenize, capitalize, substitute } from '../../base/strings';
-import { interval, segment, gt, lt } from '../../base/relations';
-import { and2 } from '../../base/logical';
-import { inc, dec } from '../../base/math';
-import { either } from '../../base/boolean';
-import { isInteger, isNumber, isString } from '../../base/types';
-import { CustomError } from '../../error/index';
-import { pipe } from '../../base/functional';
+import { tokenize, capitalize, substitute } from '@base/strings';
+import { interval, segment, gt, lt } from '@base/relations';
+import { and2 } from '@base/logical';
+import { inc, dec } from '@base/math';
+import { either } from '@base/boolean';
+import { isInteger, isNumber, isString } from '@base/types';
+import { CustomError } from '@base/error';
+import { pipe } from '@base/functional';
 
 const NoteError = CustomError('Note');
 
@@ -15,14 +15,10 @@ const NoteError = CustomError('Note');
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
-/**
- * Note name is made from letter + accidental? + octave
- */
+/** Note name is made from letter + accidental? + octave **/
 type NoteName = string;
 
-/**
- * Set of characteds used for note naming
- */
+/** Set of characteds used for note naming **/
 type NoteLetter = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G';
 
 /**
@@ -37,50 +33,26 @@ type NoteStep = 0 | 1 | 2 | 3 | 4 | 5 | 6;
  */
 type NoteOctave = number;
 
-/**
- * Accidental is a string consisting of one or more '#' or 'b', or neutral - ''
- */
+/** Accidental is a string consisting of one or more '#' or 'b', or neutral - '' **/
 type NoteAccidental = string;
 
-/**
- * Alteration is numerical value of NoteAccidental where each '#' adds 1, and 'b' adds -1
- */
+/** Alteration is numerical value of NoteAccidental where each '#' adds 1, and 'b' adds -1 **/
 type NoteAlteration = number;
 
-/**
- * There are 12 different pitches in an octave, each at distance of 1 halfstep. C, C#, D, ...B
- */
+/** There are 12 different pitches in an octave, each at distance of 1 halfstep. C, C#, D, ...B **/
 type NotePC = string;
 
-/**
- * Chroma is numerical value of a NotePC. Starting at 0: 'C', and ending at 11: 'B'
- */
+/** Chroma is numerical value of a NotePC. Starting at 0: 'C', and ending at 11: 'B' **/
 type NoteChroma = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
 
-/**
- * Midi value represents NoteChroma that is extended with octave.
- */
+/** Midi value represents NoteChroma that is extended with octave. **/
 type NoteMidi = number;
 
-/**
- * Positive number. Represents tone frequency
- */
+/** Positive number. Represents tone frequency **/
 type NoteFreq = number;
 
-/**
- * Note property is either of previous types
- */
-type NoteProp =
-  | NoteName
-  | NoteLetter
-  | NoteStep
-  | NoteOctave
-  | NoteAccidental
-  | NoteAlteration
-  | NotePC
-  | NoteChroma
-  | NoteMidi
-  | NoteFreq;
+/** Note property is either of previous types **/
+type NoteProp = NoteName | NoteLetter | NoteStep | NoteOctave | NoteAccidental | NoteAlteration | NotePC | NoteChroma | NoteMidi | NoteFreq;
 
 interface NoteProps {
   name: NoteName;
@@ -95,14 +67,10 @@ interface NoteProps {
   frequency: NoteFreq;
 }
 
-/**
- * Note properties from which the Note object can be constructed
- */
+/** Note properties from which the Note object can be constructed **/
 type InitProps = Pick<NoteProps, 'name' | 'midi' | 'frequency'>;
 
-/**
- * Note object factory accepts one of InitProps types
- */
+/** Note object factory accepts one of InitProps types **/
 type NoteInitProp = Partial<InitProps>;
 
 /**
@@ -114,7 +82,7 @@ type NoteInitProp = Partial<InitProps>;
 /** Standard tuning frequency **/
 export const A_440 = 440.0;
 
-/** Midi value for central key used for tuning */
+/** Midi value for central key used for tuning **/
 export const MIDDLE_KEY = 69;
 
 /** Number of tones in octave **/
@@ -132,13 +100,13 @@ export const NOTE_ACCIDENTALS = ['b', '#'];
 /** Note names. Both flats and sharps **/
 export const ALL_NOTES = 'C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B'.split(' ');
 
-/** Chromatic octave with sharps as accidentals */
+/** Chromatic octave with sharps as accidentals **/
 export const SHARPS = 'C C# D D# E F F# G G# A A# B'.split(' ');
 
-/** Hromatic octave with flats as accidentals */
+/** Hromatic octave with flats as accidentals **/
 export const FLATS = 'C Db D Eb E F Gb G Ab A Bb B'.split(' ');
 
-/** Natural (white keys) notes. Without accidentals */
+/** Natural (white keys) notes. Without accidentals **/
 export const NATURAL = 'C D E F G A B'.split(' ');
 
 /** Sharp notes isolated **/
@@ -147,9 +115,7 @@ export const SHARP = 'C# D# F# G# A#'.split(' ');
 /** Flat notes isolated **/
 export const FLAT = 'Db Eb Gb Ab Bb'.split(' ');
 
-/**
- * Regular expression used to tokenize NoteName to {letter, accidental, octave}
- */
+/** Regular expression used to tokenize NoteName to {letter, accidental, octave} **/
 export const NOTE_REGEX = /^(?<Tletter>[a-gA-G]?)(?<Taccidental>#{1,}|b{1,}|x{1,}|)(?<Toct>-?\d*)\s*(?<Trest>.*)$/;
 
 /**
@@ -211,13 +177,13 @@ export function noteFromName(note: NoteName): NoteProps {
   const accidental = substitute(Taccidental, /x/g, '##') as NoteAccidental;
   const alteration = Accidental.toAlteration(accidental) as NoteAlteration;
 
-  // Offset (number of keys) from first letter - C
+  /** Offset (number of keys) from first letter - C **/
   const offset = Letter.indexOf(letter);
 
-  // Note position is calculated as: offset from the start + in place alteration
+  /** Note position is calculated as: offset from the start + in place alteration **/
   const altered = offset + alteration;
 
-  // Because of the alteration, note can slip into the previous/next octave
+  /** Because of the alteration, note can slip into the previous/next octave **/
   const alteredOct = Math.floor(altered / OCTAVE_RANGE);
 
   const octave = Octave.parse(Toct) as NoteOctave;
@@ -231,11 +197,7 @@ export function noteFromName(note: NoteName): NoteProps {
    *  altered == -1
    *  alteredOct == -1
    */
-  const chroma = either(
-    (altered - alteredOct * OCTAVE_RANGE) % OCTAVE_RANGE,
-    altered % OCTAVE_RANGE,
-    lt(alteredOct, 0),
-  ) as NoteChroma;
+  const chroma = either((altered - alteredOct * OCTAVE_RANGE) % OCTAVE_RANGE, altered % OCTAVE_RANGE, lt(alteredOct, 0)) as NoteChroma;
 
   const midi = (inc(octave) * OCTAVE_RANGE + chroma) as NoteMidi;
   const frequency = Midi.toFrequency(midi) as NoteFreq;

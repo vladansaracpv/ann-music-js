@@ -1,4 +1,5 @@
 const path = require('path');
+const { TsConfigPathsPlugin } = require('awesome-typescript-loader');
 
 module.exports = {
   mode: 'development',
@@ -19,5 +20,6 @@ module.exports = {
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json'],
+    plugins: [new TsConfigPathsPlugin()],
   },
 };
