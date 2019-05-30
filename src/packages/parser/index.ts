@@ -13,7 +13,6 @@ export class Parser {
   private regex = /^(?<next>((#\w+#)|(\w+)))(?<rest>.*)/;
   private sequence: string;
   private pattern: string;
-  private duration: number;
 
   public constructor(grammar = GRAMMAR) {
     this.grammar = grammar;
@@ -22,6 +21,7 @@ export class Parser {
   }
 
   private randIn = (rules: number): number => Math.floor(Math.random() * rules);
+
   private isAtomic = (s: string): boolean => /^(4n|8n|4r|8r)$/.test(s);
 
   public expand = (rule: string): string => {
@@ -29,8 +29,11 @@ export class Parser {
       this.sequence += rule;
       return '';
     }
+
     const rules = this.grammar[rule];
+
     const i = this.randIn(rules.length);
+
     return rules[i];
   };
 
@@ -38,6 +41,7 @@ export class Parser {
     if (!this.pattern) return this.sequence;
 
     const { next, rest } = this.pattern.trim().match(this.regex)['groups'];
+
     const rule = next.replace(/#/g, '');
 
     this.pattern = this.expand(rule) + rest;
@@ -51,7 +55,7 @@ function compareArrays(a: any[], b: any[]) {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
-export function euclid(onNotes, totalNotes) {
+export function Euclid(onNotes, totalNotes) {
   var groups = [];
   for (var i = 0; i < totalNotes; i++) groups.push([Number(i < onNotes)]);
 

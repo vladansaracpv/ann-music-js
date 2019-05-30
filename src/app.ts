@@ -2,10 +2,14 @@ import { scales } from './packages/scale';
 import { chords } from './packages/chord';
 import { noteFromName, noteFromMidi, noteFromFreq } from './packages/note';
 import { pcsetNum, filter } from './packages/pc';
+import { Parser, Euclid } from '@packages/parser';
 
-// console.log(pcsetNum('101010000000'));
+const parser = new Parser();
+const pattern = parser.generate();
 
-console.log(filter(['C', 'D', 'E'], ['c2', 'c#2', 'd2', 'c3', 'c#3', 'd3']));
+// console.log(pattern);
+
+console.log(Euclid(3, 7));
 
 /**
  * Note

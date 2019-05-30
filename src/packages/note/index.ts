@@ -123,7 +123,6 @@ export const NOTE_REGEX = /^(?<Tletter>[a-gA-G]?)(?<Taccidental>#{1,}|b{1,}|x{1,
  *              NOTE PROPS - VALIDATORS                    *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
-
 export const Validators = {
   name: (name: string): boolean => NOTE_REGEX.test(name) === true,
   midi: (midi: number): boolean => and2(isInteger(midi), interval(0, 128, midi)),
