@@ -1,38 +1,33 @@
 import { curry } from './functional';
 
-/** Arithmetic operations (binary, C-urried, N-ary) */
-type BinCurryFn = (b: number) => (a: number) => number;
+/**
+ * Arithmetic operations
+ *
+ * {op}2 := binary
+ * {op}c := curried
+ * {op}N := n-ary)
+ */
 
 /** Addition */
 export const add2 = (a: number, b: number): number => a + b;
-
 export const addN = (...args: number[]): number => args.reduce(add2);
-
 export const addC = (b: number) => (a: number): number => a + b;
-
 export const inc = (n: number): number => n + 1;
 
 /** Subtraction */
 export const sub2 = (a: number, b: number): number => a - b;
-
 export const subN = (...args: number[]): number => args.reduce(sub2);
-
 export const subC = (b: number) => (a: number): number => a - b;
-
 export const dec = (n: number): number => n - 1;
 
 /** Division */
 export const div2 = (a: number, b: number): number => a / b;
-
 export const divN = (...args: number[]): number => args.reduce(div2);
-
 export const divC = (b: number) => (a: number): number => a / b;
 
 /** Multiplication */
 export const mul2 = (a: number, b: number): number => a * b;
-
 export const mulN = (...args: number[]): number => args.reduce(mul2);
-
 export const mulC = (b: number) => (a: number): number => a * b;
 
 /** Math functions */

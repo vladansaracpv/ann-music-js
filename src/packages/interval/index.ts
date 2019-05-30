@@ -7,6 +7,9 @@ import { eq, lt, gt } from '../../base/relations';
 import { isNumber, isString } from '../../base/types';
 import { midi, NoteName } from '../note/index';
 import { either } from '../../base/boolean';
+import { Logger } from '../../base/logger';
+
+const log = new Logger('Interval');
 
 type IvlName = string;
 type IvlNumber = number;
@@ -117,8 +120,10 @@ export const qualityFromAlteration = (type: string, alteration: number) => {
 export function createIntervalFromName(name: string) {
   const tokens = tokenize(name, INTERVAL_REGEX);
 
-  if (!tokens) return null; // CustomError(ErrorCode.InvalidIvlName, name);
-
+  if (!tokens) {
+    log.error(CustomError(ErrorCode.InvalidIvlName, name));
+    return null;
+  }
   const num = +(tokens['tn'] || tokens['qn']);
   const quality = tokens['tq'] || tokens['qq'];
 
@@ -192,7 +197,8 @@ export function Interval(...args) {
   if (args.length > 1) return createIntervalFromNotes(args[0], args[1]);
   if (isString(args[0])) return createIntervalFromName(args[0]);
   if (isNumber(args[0])) return createIntervalFromSemitones(args[0]);
-  return CustomError(ErrorCode.InvalidIvlConstructor, args);
+  log.error(CustomError(ErrorCode.InvalidIvlConstructor, args));
+  return null;
 }
 
 /** Interval functions */
@@ -208,7 +214,10 @@ export const build = ({ step = 0, alteration = 0, octave = 4, direction = 1, num
 export const simplifyInterval = (ivl: string) => {
   const props = createIntervalFromName(ivl);
 
-  if (!props) return CustomError(ErrorCode.InvalidIvlName, name);
+  if (!props) {
+    log.error(CustomError(ErrorCode.InvalidIvlName, name));
+    return null;
+  }
 
   const { simple, quality } = props as Partial<IvlProps>;
 
@@ -218,8 +227,10 @@ export const simplifyInterval = (ivl: string) => {
 export const invertInterval = (ivl: string) => {
   const props = createIntervalFromName(ivl) as IvlProps;
 
-  if (!props) return CustomError(ErrorCode.InvalidIvlName, name);
-
+  if (!props) {
+    log.error(CustomError(ErrorCode.InvalidIvlName, name));
+    return null;
+  }
   const { step, type, alteration, direction, octave } = props;
   const invStep = (7 - step) % 7;
   const invAlt = either(-alteration, -(alteration + 1), eq(type, 'P'));

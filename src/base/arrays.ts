@@ -29,8 +29,6 @@ export const sort = (src: any[], fn = id) => compact(src.map(name)).sort((a, b) 
 
 export const unique = (array: any[]) => sort(array).filter(uniqueLocal);
 
-export const swap = (arr: any[], a: number, b: number) => ([arr[a], arr[b]] = [arr[b], arr[a]]);
-
 export const rangeUp = (start: number, l: number): number[] => {
   return Array(l)
     .fill(start)
@@ -42,6 +40,8 @@ export const rangeDown = (start: number, l: number): number[] => {
     .fill(start)
     .map(sub2);
 };
+
+export const swap = (arr: any[], a: number, b: number) => ([arr[a], arr[b]] = [arr[b], arr[a]]);
 
 export const range = (a: number, b: number): number[] => {
   if (or2(!isInteger(a), !isInteger(b))) return [];

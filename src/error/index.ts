@@ -1,23 +1,24 @@
 /** Error handling */
 export enum ErrorCode {
   // Note
-  InvalidConstructor = "Couldn't create Note from given initial values. Provided:",
-  EmptyConstructor = "Couldn't create Note from nothing. Provide name | midi | frequency. Provided:",
-  InvalidNoteProperty = 'Note property provided is not valid. Provided:',
-  InvalidName = 'Note.name provided is not a valid shape: <letter><accidental?><?octave>. Provided:',
-  InvalidMidi = 'Note.midi provided is not valid. Must hold: 0 < midi < 128. Provided:',
-  InvalidChroma = 'Chroma number provided is not valid. Must hold: 0 <= chroma < 12. Provided:',
+  InvalidConstructor = "Couldn't create Note from given initial values. Got:",
+  EmptyConstructor = "Couldn't create Note from nothing. Provide name | midi | frequency. Got:",
+  InvalidNoteProperty = 'Note property provided is not valid. Got:',
+  InvalidName = 'Note.name provided is not a valid shape: <letter><accidental?><octave?>. Got:',
+  InvalidMidi = 'Note.midi provided is not valid. Must hold: 0 < midi < 128. Got:',
+  InvalidChroma = 'Chroma number provided is not valid. Must hold: 0 <= chroma < 12. Got:',
   // Interval
-  InvalidIvlConstructor = "Couldn't create Interval from given initial values. Provided:",
-  InvalidIvlName = 'Interval.name provided is not a valid shape: <number><quality> | <quality><number>. Provided:',
+  InvalidIvlConstructor = "Couldn't create Interval from given initial values. Got:",
+  InvalidIvlName = 'Interval.name provided is not a valid shape: <number><quality> | <quality><number>. Got:',
   // Duration
-  InvalidSplitValue = 'Duration.parts is not a valid value. Must be power of 2. Provided:',
-  InvalidDuration = 'Duration value is not valid. Provided:',
+  InvalidSplitValue = 'Duration.parts is not a valid value. Must be power of 2. Got:',
+  InvalidDuration = 'Duration value is not valid. Got:',
 }
 
 export const CustomError = (code: ErrorCode, value) => {
-  console.error(`Error: ${code} ${value}`);
-  return null;
+  return `Error: ${code} ${value}`;
+  // console.error(`Error: ${code} ${value}`);
+  // return null;
 };
 
 // import { curry } from '../helpers/index';

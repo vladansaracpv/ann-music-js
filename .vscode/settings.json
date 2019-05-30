@@ -10,5 +10,8 @@
   "[typescript]": {
     "editor.formatOnSave": true
   },
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
+  "workbench.editor.enablePreview": false,
+  "editor.fontFamily": "'Fira Code'",
+  "editor.fontLigatures": true
 }

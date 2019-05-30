@@ -1,6 +1,9 @@
 import { gsum } from '../../base/math';
 import { tokenize } from '../../base/strings';
 import { CustomError, ErrorCode } from '../../error';
+import { Logger } from '../../base/logger';
+
+const log = new Logger('Duration');
 
 const TimeUnits = ['n', 't', 'r'];
 const TimeValues = [1, 2, 4, 8, 16, 32];
@@ -38,7 +41,10 @@ export const Validator = {
 };
 
 export const DurationProps = (note: string): DurationProps => {
-  if (!Validator.Duration(note)) return CustomError(ErrorCode.InvalidDuration, note);
+  if (!Validator.Duration(note)) {
+    log.error(CustomError(ErrorCode.InvalidDuration, note));
+    return null;
+  }
 
   const tokens = tokenize(note, NOTE_VALUE_REGEX);
   const { kind, dots, type } = tokens;
@@ -57,11 +63,14 @@ export const DurationProps = (note: string): DurationProps => {
   });
 };
 
-export const Duration = (note: string | DurationProps): Duration => {
+export const Duration = (note: string | DurationProps) => {
   const props = typeof note === 'string' ? DurationProps(note) : note;
 
   const split = (parts = 2) => {
-    if (parts % 2 === 1) return CustomError(ErrorCode.InvalidSplitValue, parts);
+    if (parts % 2 === 1) {
+      log.error(CustomError(ErrorCode.InvalidSplitValue, parts));
+      return null;
+    }
     const newDuration = DurationProps(`${props.relative * parts}${props.dots}:${props.type}`);
     return Array(parts).fill(newDuration);
   };
