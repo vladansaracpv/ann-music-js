@@ -1,11 +1,11 @@
 import { tokenize, fillStr } from '@base/strings';
 import { CustomError } from '@base/error';
 import { compose } from '@base/functional';
-import { and2 } from '@base/logical';
+import { and2 as both } from '@base/logical';
 import { dec, divC, mul2, inc } from '@base/math';
 import { eq, lt, gt } from '@base/relations';
 import { isNumber, isString } from '@base/types';
-import { midi } from '@packages/note';
+import { midi } from '@packages/note/properties';
 import { either } from '@base/boolean';
 
 const IntervalError = CustomError('Interval');
@@ -15,6 +15,7 @@ const IntervalError = CustomError('Interval');
  *                  INTERVAL - INTERFACES                  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
+
 type IvlName = string;
 
 type IvlNumber = number;
@@ -59,6 +60,7 @@ interface IvlProps {
  *              INTERVAL - THEORY CONSTANTS                *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
+
 export const BASE_INTERVAL_TYPES = 'PMMPPMM';
 export const BASE_INTERVAL_SIZES = [0, 2, 4, 5, 7, 9, 11];
 
@@ -80,16 +82,13 @@ export const INTERVAL_QUALITIES = 'P m M m M P d P m M m M'.split(' ');
  *              INTERVAL PROPS - VALIDATORS                *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
-export const Validators = {
-  perfect: (quality: string) => eq(quality, 'P'),
-  major: (quality: string) => eq(quality, 'M'),
-  minor: (quality: string) => eq(quality, 'm'),
-  diminished: (quality: string) => /^d+$/.test(quality),
-  augmented: (quality: string) => /^A+$/.test(quality),
-};
 
-export const isValid = (property: string) => (type: string, quality?: string) => {
-  return either(Validators[property](type, quality), false, Validators[property]);
+export const Validators = {
+  isPerfect: (quality: string) => eq(quality, 'P'),
+  isMajor: (quality: string) => eq(quality, 'M'),
+  isMinor: (quality: string) => eq(quality, 'm'),
+  isDiminished: (quality: string) => /^d+$/.test(quality),
+  isAugmented: (quality: string) => /^A+$/.test(quality),
 };
 
 /**
@@ -99,35 +98,47 @@ export const isValid = (property: string) => (type: string, quality?: string) =>
  */
 export function qualityToAlteration(type: string, quality: string) {
   const len = quality.length;
+  const { isAugmented, isDiminished } = Validators;
+
   if ('PM'.includes(quality)) return 0;
+
   if (eq(quality, 'm')) return -1;
-  if (isValid('augmented')(quality)) return quality.length;
-  if (isValid('diminished')(quality)) return either(-len, -inc(len), eq(type, 'P'));
-  return null;
+
+  if (isAugmented(quality)) return len;
+
+  if (isDiminished(quality)) return -either(len, inc(len), eq(type, 'P'));
+
+  return undefined;
 }
 
 export function qualityFromAlteration(type: string, alteration: number) {
   if (eq(0, alteration)) return either('M', 'P', eq(type, 'M'));
-  if (and2(eq(-1, alteration), eq(type, 'M'))) return 'm';
-  if (gt(alteration, 0)) return fillStr('A', alteration);
-  if (lt(alteration, 0)) return fillStr('d', either(alteration, inc(alteration), eq(type, 'P')));
-  return null;
-}
 
+  if (both(eq(-1, alteration), eq(type, 'M'))) return 'm';
+
+  if (gt(alteration, 0)) return fillStr('A', alteration);
+
+  if (lt(alteration, 0)) return fillStr('d', either(alteration, inc(alteration), eq(type, 'P')));
+
+  return undefined;
+}
 /**
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *              INTERVAL FACTORIES                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
-export function intervalFromName(interval: string) {
+export function intervalFromName(interval: IvlName) {
   const tokens = tokenize(interval, INTERVAL_REGEX);
 
-  if (!tokens) return null;
+  if (!tokens) return undefined;
+
   // IntervalError('InvalidIvlName', name);
   const num = +(tokens['tn'] || tokens['qn']);
   const quality = tokens['tq'] || tokens['qq'];
 
-  // Similar to Note.letter. Number of steps from first note C to given letter. Normalized to 1 octave
+  // Similar to Note.letter.
+  // Number of steps from first note C to given letter.
+  // Normalized to 1 octave
   const step = dec(Math.abs(num)) % 7;
 
   // We use it to store information of interval before being altered: d | A. Diminished ivl can be from minor or Perfect
@@ -140,12 +151,7 @@ export function intervalFromName(interval: string) {
   const simple = either(num, direction * inc(step), eq(num, 8));
 
   // Number of octaves Interval spans. For simple it is 1, compound > 1
-  const octave = compose(
-    Math.ceil,
-    divC(7),
-    dec,
-    Math.abs,
-  )(num);
+  const octave = compose(...[Math.ceil, divC(7), dec, Math.abs])(num);
 
   // How much is the Interval altered from the base position.
   // Ex: 1) diminished can be -2 (when created from minor) or -1 (from Perfect)
@@ -183,16 +189,19 @@ export function intervalFromName(interval: string) {
   });
 }
 
-export function intervalFromSemitones(semitones: number) {
-  const [direction, distance] = [either(-1, 1, lt(semitones, 0)), Math.abs(semitones)];
-  const [chroma, octave] = [distance % 12, Math.floor(distance / 12)];
+export function intervalFromSemitones(semitones: IvlSemitones) {
+  const direction = either(-1, 1, lt(semitones, 0));
+  const distance = Math.abs(semitones);
+  const chroma = distance % 12;
+  const octave = Math.floor(distance / 12);
   const number = direction * (INTERVAL_NUMBERS[chroma] + 7 * octave);
-  return intervalFromName('' + number + INTERVAL_QUALITIES[chroma]);
+  const name = '' + number + INTERVAL_QUALITIES[chroma];
+  return intervalFromName(name);
 }
 
 export function intervalFromNotes(first: string, second: string) {
-  const semitones = midi(second) - midi(first);
-  return intervalFromSemitones(semitones);
+  const distanceInSemitones = midi(second) - midi(first);
+  return intervalFromSemitones(distanceInSemitones);
 }
 
 export function Interval(...args) {
@@ -209,30 +218,34 @@ export function Interval(...args) {
  */
 export function build({ step = 0, alteration = 0, octave = 4, direction = 1, num = 0 }) {
   if (step !== undefined) num = inc(step) + 7 * dec(octave);
-  if (eq(num, undefined)) return null;
-  if (!isNumber(alteration)) return null;
+  if (eq(num, undefined)) return undefined;
+  if (!isNumber(alteration)) return undefined;
   let d = !isNumber(direction) ? '' : lt(direction, 0) ? '-' : '';
   const type = BASE_INTERVAL_TYPES[dec(Math.abs(num)) % 7];
   return d + num + qualityFromAlteration(type, alteration);
 }
 
 export function simplifyInterval(ivl: string) {
-  const props = intervalFromName(ivl);
+  const interval = intervalFromName(ivl);
 
-  if (!props) return IntervalError('InvalidIvlName', name);
+  if (!interval) return IntervalError('InvalidIvlName', name);
 
-  const { simple, quality } = props as Partial<IvlProps>;
+  const { simple, quality } = interval as Partial<IvlProps>;
 
   return '' + simple + quality;
 }
 
 export function invertInterval(ivl: string) {
-  const props = intervalFromName(ivl) as IvlProps;
+  const interval = intervalFromName(ivl) as IvlProps;
 
-  if (!props) return IntervalError('InvalidIvlName', name);
-  const { step, type, alteration, direction, octave } = props;
+  if (!interval) return IntervalError('InvalidIvlName', name);
+
+  const { step, type, alteration, direction, octave } = interval;
+
   const invStep = (7 - step) % 7;
-  const invAlt = either(-alteration, -inc(alteration), eq(type, 'P'));
+
+  const invAlt = -1 * either(alteration, inc(alteration), eq(type, 'P'));
+
   return build({ step: invStep, alteration: invAlt, octave, direction });
 }
 

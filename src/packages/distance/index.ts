@@ -1,4 +1,4 @@
-import { Note as noteProps } from '../note';
+import { Note as noteProps } from '../note/factories';
 import { Interval as iprops, build as ibuild } from '../interval';
 
 // Map from letter step to number of fifths starting from "C":

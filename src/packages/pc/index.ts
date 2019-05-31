@@ -1,4 +1,4 @@
-import { chroma as nchroma } from '@packages/note';
+import { chroma as nchroma } from '@packages/note/properties';
 import { chroma as ichroma, INTERVAL_NAMES } from '@packages/interval';
 import { rotate, compact, range } from '@base/arrays';
 import { isArray, isNumber } from '@base/types';

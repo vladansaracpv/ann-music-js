@@ -1,8 +1,5 @@
 /** Functional Programming */
 
-const id = (x: any): any => x;
-const applyFn = (res: any[], fn) => [fn.call(null, ...res)];
-
 export const partial = (fn, ...first) => (...rest) => fn(...first, ...rest);
 
 export const curry = fn =>
