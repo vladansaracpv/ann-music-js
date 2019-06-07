@@ -6,14 +6,14 @@ import { isArray, isNumber } from '@base/types';
 import { either } from '@base/boolean';
 import { and2 } from '@base/logical';
 import { eq, neq, gt } from '@base/relations';
-
-const chr = (str: string) => ichroma(str) || nchroma(str) || 0;
-
-const clen = chroma => chroma.replace(/0/g, '').length;
+import { isString } from 'util';
 
 const PC_SET_REGEX = /^[01]{12}$/;
 
-export function isChromaSet(set: string) {
+const chr = (str: string) => ichroma(str) || nchroma(str) || 0;
+const clen = chroma => chroma.replace(/0/g, '').length;
+
+export function isPcSet(set: string) {
   return PC_SET_REGEX.test(set);
 }
 
@@ -27,16 +27,20 @@ export function isChromaSet(set: string) {
  * @param {Array|String} set - the pitch class set
  * @return {String} a binary representation of the pitch class set
  * @example
- * PcSet.chromaset(["C", "D", "F#"]) // => "101010000000"
+ * PcSet.pcset(["C", "D", "F#"]) // => "101000100000"
  */
-export function chromaset(set: string | string[]): string {
-  if (isChromaSet(set as string)) return set as string;
-
-  if (!isArray(set)) return null;
+export function pcset(set: string | string[]): string {
+  if (isPcSet(set as string)) return set as string;
 
   let b = Array(12).fill(0);
 
-  set.map(chr).forEach(i => (b[i] = 1));
+  if (isString(set)) {
+    b[chr(set)] = 1;
+  }
+
+  if (isArray(set)) {
+    set.map(chr).forEach(i => (b[i] = 1));
+  }
 
   return b.join('');
 }
@@ -47,19 +51,19 @@ export function chromaset(set: string | string[]): string {
  * @param {Array|String} set - the pitch class set
  * @return {Number} a decimal representation of the chroma set
  * @example
- * PcSet.pcsetNum(["C", "D", "F#"]) // => 2688
+ * PcSet.pcSetNum(["C", "D", "F#"]) // => 2688
  */
-export function pcsetNum(set: string | string[]): number {
-  return parseInt(chromaset(set), 2) || -1;
+export function pcSetNum(set: string | string[]): number {
+  return parseInt(pcset(set), 2) || -1;
 }
 
 /**
- * Get a list of all possible chromas (all possible scales)
+ * Get a list of all possible pcsets (all possible scales)
  * More information: http://allthescales.org/
- * @return {Array} an array of possible chromas from '10000000000' to '11111111111'
+ * @return {Array} an array of possible pcsets from '10000000000' to '11111111111'
  *
  */
-export function chromas(n?, all = null) {
+export function pcsets(n?: boolean, all?: string[]) {
   all = all || range(2048, 4095).map(n => n.toString(2));
 
   return either(all.filter(chroma => clen(chroma) === n), all.slice(), isNumber(n));
@@ -81,7 +85,7 @@ export function chromas(n?, all = null) {
  */
 export function modes(set: string | string[], normalize = true) {
   normalize = normalize !== false;
-  const binary = chromaset(set).split('');
+  const binary = pcset(set).split('');
   return compact(
     binary.map((val, i) => {
       let r = rotate(i, binary);
@@ -98,7 +102,7 @@ export function modes(set: string | string[], normalize = true) {
  * PcSet.intervals("1010100000000") => ["1P", "2M", "3M"]
  */
 export function intervals(set) {
-  if (!isChromaSet(set)) return [];
+  if (!isPcSet(set)) return [];
   return compact(set.split('').map((d, i) => (d === '1' ? INTERVAL_NAMES[i] : null)));
 }
 
@@ -113,7 +117,7 @@ export function intervals(set) {
  */
 export function isEqual(...args) {
   if (eq(args.length, 1)) return s => isEqual(args[0], s);
-  return eq(chromaset(args[0]), chromaset(args[1]));
+  return eq(pcset(args[0]), pcset(args[1]));
 }
 
 /**
@@ -132,10 +136,9 @@ export function isEqual(...args) {
  */
 export function isSubsetOf(...args) {
   if (gt(args.length, 1)) return isSubsetOf(args[0])(args[1]);
-  const set = pcsetNum(args[0]);
+  const set = pcSetNum(args[0]);
   return notes => {
-    notes = pcsetNum(notes);
-    // console.log(set, notes);
+    notes = pcSetNum(notes);
     return and2(neq(notes, set), eq(notes & set, notes));
   };
 }
@@ -154,9 +157,9 @@ export function isSubsetOf(...args) {
  */
 export function isSupersetOf(...args) {
   if (gt(1, args.length)) return isSupersetOf(args[0])(args[1]);
-  const set = pcsetNum(args[0]);
+  const set = pcSetNum(args[0]);
   return notes => {
-    notes = pcsetNum(notes);
+    notes = pcSetNum(notes);
     return and2(neq(notes, set), eq(notes | set, notes));
   };
 }
@@ -173,8 +176,7 @@ export function isSupersetOf(...args) {
 export function includes(...args) {
   if (gt(args.length, 1)) return includes(args[0])(args[1]);
   let [set, note] = [...args];
-  set = chromaset(set);
-  // const note = args[1];
+  set = pcset(set);
   return note => {
     return eq(set[chr(note)], '1');
   };

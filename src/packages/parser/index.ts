@@ -1,83 +1,129 @@
-export const GRAMMAR = {
-  start: '#pattern#',
-  pattern: ['#cell#', '#pattern# #cell#'],
-  cell: ['#dupleCell#', '#tripleCell#'],
-  dupleCell: ['#n8# #n8#', '#n4#'],
-  tripleCell: ['#n8# #n8# #n8#', '#n8# #n4#', '#n4# #n8#'],
-  n4: ['4n', '4r'],
-  n8: ['8n', '8r'],
-};
+/**
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                        PARSER                           *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ */
 
-export class Parser {
-  private grammar;
-  private regex = /^(?<next>((#\w+#)|(\w+)))(?<rest>.*)/;
-  private sequence: string;
-  private pattern: string;
+interface Rule {
+  name: string;
+  expansion: string;
+  isTerminal: boolean;
+  expand: () => string;
+}
 
-  public constructor(grammar = GRAMMAR) {
-    this.grammar = grammar;
-    this.sequence = '';
-    this.pattern = this.grammar.start;
-  }
+class Duration {
+  public static NAMES = ['w', 'h', 'q', 'e', 's', 't'];
+  public static VALUES = [1, 2, 4, 8, 16, 32];
+  public static TYPES = ['n', 'r', 't'];
 
-  private randIn = (rules: number): number => Math.floor(Math.random() * rules);
+  public static nameToValue = (name: string) => {
+    const i = Duration.NAMES.indexOf(name);
+    return Duration.VALUES[i];
+  };
 
-  private isAtomic = (s: string): boolean => /^(4n|8n|4r|8r)$/.test(s);
+  public static valueToName = (value: number) => {
+    const i = Duration.VALUES.indexOf(value);
+    return Duration.NAMES[i];
+  };
+}
 
-  public expand = (rule: string): string => {
-    if (this.isAtomic(rule)) {
-      this.sequence += rule;
-      return '';
+class Grammar {
+  public rules: Record<string, Rule> = {};
+
+  public static createRule = (name: string, expansion: string, isTerminal: boolean): Rule => {
+    const expand = () => {
+      const rules = expansion.split(' | ');
+      const i = Math.floor(Math.random() * rules.length);
+      return rules[i];
+    };
+
+    return {
+      name,
+      expansion,
+      isTerminal,
+      expand,
+    };
+  };
+
+  public static createRuleForDuration = (duration: string | number, isTerminal = false): Rule => {
+    let name, value;
+
+    if (typeof duration == 'string') {
+      name = duration;
+      value = Duration.nameToValue(duration);
+    } else {
+      value = duration;
+      name = Duration.valueToName(duration);
     }
 
-    const rules = this.grammar[rule];
+    const createTypes = (type: string) => (type === 't' ? type + value * 2 : type + value);
+    const createNext = (name: string) => {
+      const i = Duration.NAMES.indexOf(name);
+      const next = i < Duration.NAMES.length - 1 ? Duration.NAMES[i + 1] : '';
+      return next ? next + ' ' + next + ' | ' : '';
+    };
 
-    const i = this.randIn(rules.length);
-
-    return rules[i];
+    const types = createNext(name) + Duration.TYPES.map(createTypes).join(' | ');
+    return Grammar.createRule(name, types, isTerminal);
   };
 
-  public generate = (): string => {
-    if (!this.pattern) return this.sequence;
-
-    const { next, rest } = this.pattern.trim().match(this.regex)['groups'];
-
-    const rule = next.replace(/#/g, '');
-
-    this.pattern = this.expand(rule) + rest;
-
-    return this.generate();
-  };
-}
-
-function compareArrays(a: any[], b: any[]) {
-  // TODO: optimize
-  return JSON.stringify(a) === JSON.stringify(b);
-}
-
-export function Euclid(onNotes, totalNotes) {
-  var groups = [];
-  for (var i = 0; i < totalNotes; i++) groups.push([Number(i < onNotes)]);
-
-  var l;
-  while ((l = groups.length - 1)) {
-    var start = 0,
-      first = groups[0];
-    while (start < l && compareArrays(first, groups[start])) start++;
-    if (start === l) break;
-
-    var end = l,
-      last = groups[l];
-    while (end > 0 && compareArrays(last, groups[end])) end--;
-    if (end === 0) break;
-
-    var count = Math.min(start, l - end);
-    groups = groups
-      .slice(0, count)
-      .map(function(group, i) {
-        return group.concat(groups[l - i]);
-      })
-      .concat(groups.slice(count, -count));
+  public constructor(rules: Rule[] | Record<string, Rule>) {
+    if (Array.isArray(rules)) {
+      rules.forEach(rule => this.addRule(rule));
+    } else {
+      this.rules = rules;
+    }
   }
-  return [].concat.apply([], groups);
+
+  public addRule = (rule: Rule) => {
+    this.rules[rule.name] = rule;
+  };
 }
+
+const createGrammar = (longest: string, shortest: string, ts: number[]) => {
+  let rules: Rule[] = [];
+  const [li, si] = [Duration.NAMES.indexOf(longest), Duration.NAMES.indexOf(shortest)];
+  const notes = Duration.NAMES.slice(li, si + 1);
+  rules = [...rules, ...notes.map(note => Grammar.createRuleForDuration(note))];
+  return rules;
+};
+
+const r = createGrammar('h', 'e', [3, 4]);
+r;
+// console.log(r);
+
+const Parser = (grammar: Record<string, Rule>) => {
+  const sequence = [grammar.startRule];
+  const sentence = [];
+
+  const measure = (notes: string) => `| ${notes} |`;
+
+  while (sequence.length > 0) {
+    const currentRule: Rule = sequence.pop();
+    const expandedRule = currentRule
+      .expand()
+      .split(' ')
+      .map(rule => grammar[rule]);
+
+    sequence.push(...expandedRule.filter(rule => rule && !rule.isTerminal));
+    sentence.push(...expandedRule.filter(rule => rule && rule.isTerminal).map(rule => rule.name));
+  }
+
+  return measure(sentence.join(' - '));
+};
+
+const startRule = Grammar.createRule('startRule', 'q q q q', false);
+const q = Grammar.createRule('q', 'e e | n4 | r4 | t8 ', false);
+const e = Grammar.createRule('e', 'n8 | r8 | t16', false);
+const n4 = Grammar.createRule('n4', '', true);
+const r4 = Grammar.createRule('r4', '', true);
+const t8 = Grammar.createRule('t8', '', true);
+const n8 = Grammar.createRule('n8', '', true);
+const r8 = Grammar.createRule('r8', '', true);
+const t16 = Grammar.createRule('t16', '', true);
+
+const rules = { startRule, q, e, n4, r4, t8, n8, r8, t16 };
+const grammar = new Grammar(rules);
+
+const a = Parser(grammar.rules);
+a;

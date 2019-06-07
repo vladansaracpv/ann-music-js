@@ -1,87 +1,4 @@
-import Nexus from 'nexusui';
 import Tone from 'tone';
-
-export interface Header {
-  PPQ: number;
-  bpm: number;
-  timeSignature: number[];
-  name: string;
-}
-
-export interface Tempo {
-  absoluteTime: number;
-  seconds: number;
-  bpm: number;
-}
-
-export interface TimeSignature {
-  absoluteTime: number;
-  seconds: number;
-  numerator: number;
-  denominator: number;
-  click: number;
-  notesQ: number;
-}
-
-export interface MidiNote {
-  name: string;
-  midi: number;
-  time: number;
-  velocity: number;
-  duration: number;
-}
-
-export interface Track {
-  startTime: number;
-  duration: number;
-  length: number;
-  notes: MidiNote[];
-  controlChanges: any;
-  id: number;
-  name?: string;
-  instrumentNumber?: number;
-  instrument?: string;
-  instrumentFamily?: string;
-  channelNumber?: number;
-  isPercussion?: boolean;
-}
-
-export interface Midi {
-  header: Header;
-  tempo: Tempo[];
-  timeSignature: TimeSignature[];
-  startTime: number;
-  duration: number;
-  tracks: Track[];
-}
-
-const SHEET_URL = '../src/assets/';
-
-export const loadJSON = (fileURL: string, callback) => {
-  var xobj = new XMLHttpRequest();
-  xobj.overrideMimeType('application/json');
-  xobj.open('GET', fileURL, true);
-  xobj.onreadystatechange = function() {
-    if (xobj.readyState == 4 && xobj.status == 200) {
-      callback(xobj.responseText);
-    }
-  };
-  xobj.send(null);
-};
-
-let piano;
-window.onload = event => {
-  piano = new Nexus.Piano('#instrument', {
-    size: [1000, 150],
-    mode: 'button', // 'button', 'toggle', or 'impulse'
-    lowNote: 24,
-    highNote: 96,
-  });
-
-  // piano.on('change', function(v) {
-  //   console.log(v);
-  // });
-};
 
 function makeSynth() {
   let envelope = {
@@ -114,41 +31,155 @@ function makeSynth() {
   });
 }
 
-// let leftSynth = makeSynth();
+export class SimplePlayer {
+  private synth;
 
-export function playSheet(sheet: Midi) {
-  let i = 220;
-  const { tracks } = sheet;
-  const { notes, length } = tracks[1];
-  // const synth = new Tone.Synth().toMaster();
-  const synth = makeSynth().toMaster();
+  public constructor() {
+    this.synth = makeSynth().toMaster();
+  }
 
-  const playNote = (note: MidiNote) => {
-    synth.triggerAttackRelease(note.name, note.duration * 1000);
-    document.getElementById('center').innerText = `${i} - ${note.name} - ${note.midi}`;
-    if (i > 0) {
-      piano.toggleKey(notes[i - 1].midi, false);
-      piano.toggleKey(notes[i].midi, true);
-    } else {
-      piano.toggleKey(notes[i].midi, true);
+  /**
+   * If the given event has new tempo and/or time signatures, apply them to the Transport immediately.
+   * @param {Sequence} event
+   * @param {boolean} ramp If true, tempo will ramp up/down to the given value over 1 second,
+   *     otherwise it will change instantly.
+   */
+  public applyEventUpdates(event: Sequence, ramp) {
+    if (event.newTempo && event.newTempo.unit === 'bpm') {
+      if (ramp) {
+        Tone.Transport.bpm.rampTo(event.newTempo.value, 1);
+      } else {
+        Tone.Transport.bpm.value = event.newTempo.value;
+      }
     }
-  };
 
-  let timerId;
-  timerId = setTimeout(function tick() {
-    if (i === length - 1) {
-      clearTimeout(timerId);
-      synth.disconnect();
-      return;
-    } else {
-      playNote(notes[i]);
-      timerId = setTimeout(tick, notes[i].duration * 1000);
-      i++;
+    if (event.newTimeSignature) {
+      Tone.Transport.timeSignature = [event.newTimeSignature.numerator, event.newTimeSignature.denominator];
     }
-  });
+  }
+
+  /**
+   * Use Tone.js Transport to play a series of notes encoded by the event list passed in input,
+   * using the default ugly synthetic membrane sound.
+   * @param {Sequence[]} track
+   */
+  public play(track: Sequence[]) {
+    const synth = this.synth;
+
+    // We will use the Transport to schedule each measure independently. Given that we
+    // inform Tone.js of the current tempo and time signature, the Transport will be
+    // able to automatically interpret all measures and note durations as absolute
+    // time events in seconds without us actually bothering
+    let measureCounter = 0;
+    let firstEvent = true;
+
+    // Stop, rewind and clear all events from the transport (from previous plays)
+    Tone.Transport.stop();
+    Tone.Transport.position = 0;
+    Tone.Transport.cancel();
+
+    for (const event of track) {
+      // The first event is always supposed to have new tempo and time signature info
+      // so we should update the Transport appropriately
+      if (firstEvent) {
+        this.applyEventUpdates(event, false);
+        firstEvent = false;
+      }
+
+      // In the following callback, "time" represents the absolute time in seconds
+      // that the measure we are scheduling is expected to begin at, given the current
+      // tempo and time signature assigned to the Transport
+      Tone.Transport.schedule(time => {
+        // Change the tempo if this event has a new tempo. Also do the same if a new time signatue is issued
+        this.applyEventUpdates(event, true);
+
+        // This contains the relative time of notes with respect to the
+        // start of the current measure, in seconds
+        let relativeTime = 0;
+
+        for (const note of event.measure.notes) {
+          const duration = note.duration;
+
+          // If this is an actual note (as opposed to a rest), schedule the
+          // corresponding sound to be played along the Transport timeline
+          // after the previous notes in the measure have been played (hence the relativeTime)
+          if (note.type === 'n') {
+            synth.triggerAttackRelease(note.name, note.duration, time + relativeTime);
+          }
+
+          // This is used to delay notes that come next by the correct amount
+          relativeTime += Tone.Time(duration).toSeconds();
+        }
+      }, `${measureCounter}m`);
+
+      measureCounter++;
+    }
+
+    Tone.Transport.start();
+  }
 }
 
-// loadJSON('furElise.json', response => {
-//   const sheet: Midi = JSON.parse(response);
-//   playSheet(sheet);
-// });
+export class SequenceParser {
+  private initialTempo: TTempo;
+  private initialTimeSignature: TTimeSignature;
+
+  public constructor(tempoBpm: number, ts: number[]) {
+    this.initialTempo = { value: tempoBpm, unit: 'bpm' };
+    this.initialTimeSignature = { numerator: ts[0], denominator: ts[1] };
+  }
+
+  public parse(textMeasures: string[]): Sequence[] {
+    const result = [];
+    let firstEvent = true;
+
+    for (const textMeasure of textMeasures) {
+      let event: Sequence;
+
+      if (firstEvent) {
+        event.newTempo = this.initialTempo;
+        event.newTimeSignature = this.initialTimeSignature;
+        firstEvent = false;
+      }
+
+      event.measure = this.parseTextMeasure(textMeasure);
+      result.push(event);
+    }
+
+    return result;
+  }
+
+  public parseTextMeasure(textMeasure: string): Measure {
+    const notes = textMeasure
+      .split(' ')
+      .filter(textNote => !!textNote)
+      .map(this.parseTextNote);
+
+    return { notes };
+  }
+
+  public parseTextNote(textNote: string): Note {
+    const chunks = textNote.split('/');
+    const isNote = 'rt'.indexOf(chunks[0]) >= 0;
+    return {
+      type: isNote ? 'n' : 'r',
+      name: isNote ? chunks[0] : null,
+      duration: chunks[1] + 'n',
+    };
+  }
+}
+
+// const player = new SimplePlayer();
+// const sequenceParser = new SequenceParser(128, [2, 4]);
+// player.play(
+//   sequenceParser.parse([
+//     'r/4 B4/16 A4/16 G#4/16 A4/16',
+//     'C5/8 r/8 D5/16 C5/16 B4/16 C5/16',
+//     'E5/8 r/8 F5/16 E5/16 D#5/16 E5/16',
+//     'B5/16 A5/16 G#5/16 A5/16 B5/16 A5/16 G#5/16 A5/16',
+//     'C6/4 A5/8 C6/8',
+//     'B5/8 A5/8 G5/8 A5/8',
+//     'B5/8 A5/8 G5/8 A5/8',
+//     'B5/8 A5/8 G5/8 F#5/8',
+//     'E5/4',
+//   ]),
+// );

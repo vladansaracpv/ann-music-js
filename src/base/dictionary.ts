@@ -1,4 +1,4 @@
-import { chromaset } from '../packages/pc';
+import { pcset } from '../packages/pc';
 
 export const dictionary = raw => {
   const keys = Object.keys(raw).sort();
@@ -14,7 +14,7 @@ export const dictionary = raw => {
   keys.forEach(key => {
     const ivls = raw[key][0].split(' ');
     const alias = raw[key][1];
-    const chr = chromaset(ivls);
+    const chr = pcset(ivls);
 
     add(key, ivls, chr);
     if (alias) alias.forEach(a => add(a, ivls, chr));
@@ -36,3 +36,4 @@ export const combine = (a, b) => {
 };
 
 // export const pcset = combine(scale, chord);
+const memo = (fn, cache = {}) => str => cache[str] || (cache[str] = fn(str));

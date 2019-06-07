@@ -43,7 +43,8 @@ export const Letter = {
 };
 
 export const Octave = {
-  parse: (octave?: string): NoteOctave => either(+octave, STANDARD_OCTAVE, isString(octave)),
+  parse: (octave?: string): NoteOctave =>
+    either(Number.parseInt(octave), STANDARD_OCTAVE, Number.isInteger(Number.parseInt(octave))),
   toSemitones: (octave: number) => OCTAVE_RANGE * inc(octave),
 };
 

@@ -1,5 +1,8 @@
-import { property, type } from '@packages/interval/properties';
-console.log(type('d3'));
+// import { Parser } from '@packages/parser';
+
+// const parser = new Parser();
+
+// console.log(parser.generate());
 
 /**
  * Note

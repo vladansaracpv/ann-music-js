@@ -2,12 +2,12 @@
 import { eq, neq, lt } from './relations';
 import { add2, sub2, abs } from './math';
 import { either } from './boolean';
-import { isInteger } from './types';
+import { isInteger, isUndefinedOrNull } from './types';
 import { or2 } from './logical';
 
 const id = n => n;
 const name = id;
-const notNull = n => n === 0 || n;
+const notNull = n => !isUndefinedOrNull(n);
 const uniqueLocal = (n: any, i: number, a: any[]) => eq(i, 0) || neq(n, a[--i]);
 
 export const fillStr = (s: string, n: number) => Array(Math.abs(n) + 1).join(s);
