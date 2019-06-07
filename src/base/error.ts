@@ -23,5 +23,5 @@ export enum ErrorCode {
 export const CustomError = (file: string) => (code: string, value) => {
   const log = new Logger(file);
   log.error(`Error: ${ErrorCode[code]} ${value}`);
-  return null;
+  return undefined;
 };

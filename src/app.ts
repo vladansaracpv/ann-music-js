@@ -1,6 +1,6 @@
-import { noteFromMidi } from '@packages/note/factories';
+import { property, type } from '@packages/interval/properties';
+console.log(type('d3'));
 
-console.log(noteFromMidi(42));
 /**
  * Note
  * Duration

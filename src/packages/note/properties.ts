@@ -5,7 +5,7 @@ import { isInteger, isNumber } from '@base/types';
 import { Note } from './factories';
 import { inc } from '@base/math';
 import { isString } from '@base/types';
-import { A_440, MIDDLE_KEY, OCTAVE_RANGE, SHARPS, NOTE_REGEX, STANDARD_OCTAVE } from './theory';
+import { A_440, MIDDLE_KEY, OCTAVE_RANGE, SHARPS, NOTE_REGEX, STANDARD_OCTAVE, FLATS } from './theory';
 
 /**
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -38,8 +38,8 @@ export const Accidental = {
 };
 
 export const Letter = {
-  stepOf: (letter: NoteLetter): number => (letter.charCodeAt(0) + 3) % 7,
-  indexOf: (letter: NoteLetter) => SHARPS.indexOf(letter),
+  toStep: (letter: NoteLetter): number => (letter.charCodeAt(0) + 3) % 7,
+  toIndex: (letter: NoteLetter) => SHARPS.indexOf(letter),
 };
 
 export const Octave = {
@@ -49,30 +49,54 @@ export const Octave = {
 
 /**
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                NOTE - FUNCTIONS                         *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ */
+
+export function simplify(name: NoteName, useSameAccidental = true): NoteName {
+  const note = Note.fromName(name);
+
+  if (!note) return undefined;
+
+  const { chroma, alteration, octave } = note;
+
+  const isSharp = alteration >= 0;
+
+  const useSharps = both(isSharp, useSameAccidental) || both(!isSharp, !useSameAccidental);
+
+  const pc = either(SHARPS[chroma], FLATS[chroma], useSharps);
+
+  return pc + octave;
+}
+
+export function enharmonic(note: NoteName): NoteName {
+  return simplify(note, false);
+}
+
+/**
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * *              NOTE PROPS - GETTERS                     *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
-const property = (name: string) => (note: NoteName) => {
-  return Note({ name: note }) && Note({ name: note })[name];
-};
+export const property = (name: string) => (note: NoteName) => Note.fromName(note) && Note.fromName(note)[name];
 
-export const name: (a: NoteName) => NoteName = property('name');
+export const name = property('name');
 
-export const octave: (a: NoteName) => NoteOctave = property('octave');
+export const octave = property('octave');
 
-export const letter: (a: NoteName) => NoteLetter = property('letter');
+export const letter = property('letter');
 
-export const step: (a: NoteName) => NoteStep = property('step');
+export const step = property('step');
 
-export const accidental: (a: NoteName) => NoteAccidental = property('accidental');
+export const accidental = property('accidental');
 
-export const alteration: (a: NoteName) => NoteAlteration = property('alteration');
+export const alteration = property('alteration');
 
-export const pc: (a: NoteName) => NotePC = property('pc');
+export const pc = property('pc');
 
-export const chroma: (a: NoteName) => NoteChroma = property('chroma');
+export const chroma = property('chroma');
 
-export const midi: (a: NoteName) => NoteMidi = property('midi');
+export const midi = property('midi');
 
-export const frequency: (a: NoteName) => NoteFreq = property('frequency');
+export const frequency = property('frequency');

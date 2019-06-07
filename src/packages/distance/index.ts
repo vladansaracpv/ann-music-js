@@ -1,5 +1,6 @@
 import { Note as noteProps } from '../note/factories';
-import { Interval as iprops, build as ibuild } from '../interval';
+import { Interval as iprops } from '../interval/factories';
+import { build as ibuild } from '../interval/properties';
 
 // Map from letter step to number of fifths starting from "C":
 // { C: 0, D: 2, E: 4, F: -1, G: 1, A: 3, B: 5 }
@@ -227,8 +228,8 @@ export const interval = (...args) => {
  */
 export const semitones = (...args) => {
   if (args.length === 1) return t => semitones(args[0], t);
-  const f = noteProps({ name: args[0] });
-  const t = noteProps({ name: args[1] });
+  const f = noteProps.fromName(args[0]);
+  const t = noteProps.fromName(args[1]);
   return f.midi !== null && t.midi !== null
     ? t.midi - f.midi
     : f.chroma !== null && t.chroma !== null

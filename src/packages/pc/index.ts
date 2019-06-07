@@ -1,5 +1,6 @@
 import { chroma as nchroma } from '@packages/note/properties';
-import { chroma as ichroma, INTERVAL_NAMES } from '@packages/interval';
+import { chroma as ichroma } from '@packages/interval/properties';
+import { INTERVAL_NAMES } from '@packages/interval/theory';
 import { rotate, compact, range } from '@base/arrays';
 import { isArray, isNumber } from '@base/types';
 import { either } from '@base/boolean';

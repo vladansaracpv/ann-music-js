@@ -1,6 +1,6 @@
 /**
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *              NOTE - THEORY CONSTANTS                    *
+ *                 NOTE - THEORY CONSTANTS                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
@@ -25,20 +25,23 @@ export const NOTE_ACCIDENTALS = ['b', '#'];
 /** Note names. Both flats and sharps **/
 export const ALL_NOTES = 'C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B'.split(' ');
 
+// console.log(ALL_NOTES);
+export const notes = acc => ALL_NOTES.filter(note => acc.indexOf(note[1] || ' ') >= 0);
+
 /** Chromatic octave with sharps as accidentals **/
-export const SHARPS = 'C C# D D# E F F# G G# A A# B'.split(' ');
+export const SHARPS = notes('# ');
 
 /** Hromatic octave with flats as accidentals **/
-export const FLATS = 'C Db D Eb E F Gb G Ab A Bb B'.split(' ');
+export const FLATS = notes('b ');
 
 /** Natural (white keys) notes. Without accidentals **/
-export const NATURAL = 'C D E F G A B'.split(' ');
+export const NATURAL = notes(' ');
 
 /** Sharp notes isolated **/
-export const SHARP = 'C# D# F# G# A#'.split(' ');
+export const SHARP = notes('#');
 
 /** Flat notes isolated **/
-export const FLAT = 'Db Eb Gb Ab Bb'.split(' ');
+export const FLAT = notes('b');
 
 /** Regular expression used to tokenize NoteName to {letter, accidental, octave} **/
 export const NOTE_REGEX = /^(?<Tletter>[a-gA-G]?)(?<Taccidental>#{1,}|b{1,}|x{1,}|)(?<Toct>-?\d*)\s*(?<Trest>.*)$/;
