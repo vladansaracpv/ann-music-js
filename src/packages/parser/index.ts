@@ -1,3 +1,4 @@
+import { compose2, compose } from '@base/functional';
 /**
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                        PARSER                           *
@@ -11,24 +12,29 @@ interface Rule {
   expand: () => string;
 }
 
+enum MeterType {
+  Simple = 'simple',
+  Compound = 'compound',
+  Odd = 'odd',
+}
+
 export class Duration {
   public static NAMES = ['w', 'h', 'q', 'e', 's', 't'];
   public static VALUES = [1, 2, 4, 8, 16, 32];
   public static TYPES = ['n', 'r', 't'];
 
+  private static valueIndex = (value: number) => {
+    return Duration.VALUES.indexOf(value);
+  };
+
   public static nameToValue = (name: string) => {
-    // const _name = (name[1] || '') === '.' ? name[0] :
     const i = Duration.NAMES.indexOf(name);
     return Duration.VALUES[i] || undefined;
   };
 
   public static valueToName = (value: number) => {
-    const i = Duration.VALUES.indexOf(value);
+    const i = Duration.valueIndex(value);
     return Duration.NAMES[i] || undefined;
-  };
-
-  private static valueIndex = (value: number) => {
-    return Duration.VALUES.indexOf(value);
   };
 
   public static splitValue = (value: number) => {
@@ -36,23 +42,21 @@ export class Duration {
     return i > -1 ? Duration.VALUES[i + 1] : undefined;
   };
 
+  public static splitName = (name: string) => {
+    return compose2(Duration.splitValue, Duration.nameToValue);
+  };
+
   public static doubleValue = (value: number) => {
     const i = Duration.valueIndex(value);
     return i > -1 ? Duration.VALUES[i - 1] : undefined;
   };
 
-  private static nameIndex = (name: string) => {
-    return Duration.NAMES.indexOf(name);
-  };
-
-  public static splitName = (name: string) => {
-    const i = Duration.nameIndex(name);
-    return i > -1 ? Duration.NAMES[i + 1] : undefined;
-  };
-
   public static doubleName = (name: string) => {
-    const i = Duration.nameIndex(name);
-    return i > -1 ? Duration.NAMES[i - 1] : undefined;
+    return compose(
+      Duration.valueToName,
+      Duration.doubleValue,
+      Duration.nameToValue,
+    )(name);
   };
 
   public static toDuration = (value: number, duration: number) => {
@@ -64,6 +68,7 @@ export class Duration {
 
   public static toDurationN = (value: string, duration: string) => {
     const nDuration = Duration.nameToValue(duration);
+    // return Duration.toDuration(Duration.nameToValue(value), nDuration);
     const values = value
       .split('')
       .map(val => Duration.nameToValue(val))
@@ -73,28 +78,63 @@ export class Duration {
   };
 }
 
-enum MeterType {
-  Simple = 'simple',
-  Compound = 'compound',
-  Odd = 'odd',
-}
+export const Euclid = (onNotes, totalNotes, grouped = false) => {
+  function compareArrays(a: any[], b: any[]) {
+    // TODO: optimize
+    return JSON.stringify(a) === JSON.stringify(b);
+  }
+
+  var groups = [];
+  for (var i = 0; i < totalNotes; i++) groups.push([Number(i < onNotes)]);
+
+  var l;
+  while ((l = groups.length - 1)) {
+    var start = 0,
+      first = groups[0];
+    while (start < l && compareArrays(first, groups[start])) start++;
+    if (start === l) break;
+
+    var end = l,
+      last = groups[l];
+    while (end > 0 && compareArrays(last, groups[end])) end--;
+    if (end === 0) break;
+
+    var count = Math.min(start, l - end);
+    groups = groups
+      .slice(0, count)
+      .map(function(group, i) {
+        return group.concat(groups[l - i]);
+      })
+      .concat(groups.slice(count, -count));
+  }
+  return grouped ? groups : [].concat.apply([], groups);
+};
 
 export class Meter {
   private top: number;
   private bottom: number;
   private type: MeterType;
   private numOfBeats: number;
-  private beat: [string, string];
+  private beat: string[];
 
   public getBeatValue = () =>
-    this.type == MeterType.Compound ? Duration.valueToName(this.bottom).repeat(3) : this.beat.join('');
+    this.type == MeterType.Compound ? Duration.valueToName(this.bottom).repeat(3) : this.beat.join(' ');
   public getNumOfBeats = () => this.numOfBeats;
+  public getType = () => this.type;
 
   public constructor(top: number, bottom: number) {
     this.top = top;
     this.bottom = bottom;
     this.setType();
   }
+
+  public properties = () => ({
+    top: this.top,
+    bottom: this.bottom,
+    type: this.type,
+    numOfBeats: this.numOfBeats,
+    beat: this.beat,
+  });
 
   private setType = () => {
     if (Meter.isCompound(this.top, this.bottom)) return this.createCompound();
@@ -113,19 +153,25 @@ export class Meter {
   private createSimple = () => {
     this.type = MeterType.Simple;
     this.numOfBeats = this.top;
-    this.beat = [Duration.valueToName(this.bottom), ''];
+    this.beat = [Duration.valueToName(this.bottom)];
   };
 
   private createCompound = () => {
     this.type = MeterType.Compound;
     this.numOfBeats = this.top / 3;
-    this.beat = [Duration.valueToName(Duration.doubleValue(this.bottom)), '.'];
+    this.beat = [Duration.valueToName(Duration.doubleValue(this.bottom)) + '.'];
   };
 
   private createOdd = () => {
     this.type = MeterType.Odd;
     this.numOfBeats = Math.ceil(this.top / 3);
-    this.beat = ['', ''];
+    const name = Duration.valueToName(Duration.doubleValue(this.bottom));
+    var arr: string = Euclid(this.numOfBeats, this.top, false).join('');
+    arr = arr.replace(/100/g, name + '.').replace(/10/g, name + ' ');
+
+    const groups = arr.split(' ').map(group => ((group[1] || ' ') === '.' ? [group[0], '.'] : [group, '']));
+
+    this.beat = [arr];
   };
 }
 
@@ -139,12 +185,26 @@ export class Measure {
     this.meter = meter;
     const beat = this.meter.getBeatValue();
     this.level = level ? level : beat;
-    this.notes = notes ? notes : Array(this.meter.getNumOfBeats()).fill(beat);
-    this.bar = this.notes.map(note => Duration.toDurationN(note, this.level)).join(' ');
+    this.notes = notes
+      ? notes
+      : this.meter.getType() === MeterType.Odd
+      ? beat.split(' ')
+      : Array(this.meter.getNumOfBeats()).fill(beat);
+    this.bar =
+      this.meter.getType() === MeterType.Odd
+        ? ''
+        : this.notes.map(note => Duration.toDurationN(note, this.level)).join(' ');
   }
+
+  public properties = () => ({
+    meter: this.meter.properties(),
+    level: this.level,
+    notes: this.notes,
+    bar: this.bar,
+  });
 }
 
-class Grammar {
+export class Grammar {
   public rules: Record<string, Rule> = {};
 
   public static createRule = (name: string, expansion: string, isTerminal: boolean): Rule => {
@@ -184,6 +244,14 @@ class Grammar {
     return Grammar.createRule(name, types, isTerminal);
   };
 
+  public static createGrammar = (longest: string, shortest: string, ts: number[]) => {
+    let rules: Rule[] = [];
+    const [li, si] = [Duration.NAMES.indexOf(longest), Duration.NAMES.indexOf(shortest)];
+    const notes = Duration.NAMES.slice(li, si + 1);
+    rules = [...rules, ...notes.map(note => Grammar.createRuleForDuration(note))];
+    return rules;
+  };
+
   public constructor(rules: Rule[] | Record<string, Rule>) {
     if (Array.isArray(rules)) {
       rules.forEach(rule => this.addRule(rule));
@@ -197,18 +265,7 @@ class Grammar {
   };
 }
 
-const createGrammar = (longest: string, shortest: string, ts: number[]) => {
-  let rules: Rule[] = [];
-  const [li, si] = [Duration.NAMES.indexOf(longest), Duration.NAMES.indexOf(shortest)];
-  const notes = Duration.NAMES.slice(li, si + 1);
-  rules = [...rules, ...notes.map(note => Grammar.createRuleForDuration(note))];
-  return rules;
-};
-
-const r = createGrammar('h', 'e', [3, 4]);
-r;
-
-const Parser = (grammar: Record<string, Rule>) => {
+export const Parser = (grammar: Record<string, Rule>) => {
   const sequence = [grammar.startRule];
   const sentence = [];
 
@@ -228,18 +285,23 @@ const Parser = (grammar: Record<string, Rule>) => {
   return measure(sentence.join(' - '));
 };
 
-const startRule = Grammar.createRule('startRule', 'q q q q', false);
-const q = Grammar.createRule('q', 'e e | n4 | r4 | t8 ', false);
-const e = Grammar.createRule('e', 'n8 | r8 | t16', false);
-const n4 = Grammar.createRule('n4', '', true);
-const r4 = Grammar.createRule('r4', '', true);
-const t8 = Grammar.createRule('t8', '', true);
-const n8 = Grammar.createRule('n8', '', true);
-const r8 = Grammar.createRule('r8', '', true);
-const t16 = Grammar.createRule('t16', '', true);
+const test = () => {
+  const r = Grammar.createGrammar('h', 'e', [3, 4]);
+  r;
 
-const rules = { startRule, q, e, n4, r4, t8, n8, r8, t16 };
-const grammar = new Grammar(rules);
+  const startRule = Grammar.createRule('startRule', 'q q q q', false);
+  const q = Grammar.createRule('q', 'e e | n4 | r4 | t8 ', false);
+  const e = Grammar.createRule('e', 'n8 | r8 | t16', false);
+  const n4 = Grammar.createRule('n4', '', true);
+  const r4 = Grammar.createRule('r4', '', true);
+  const t8 = Grammar.createRule('t8', '', true);
+  const n8 = Grammar.createRule('n8', '', true);
+  const r8 = Grammar.createRule('r8', '', true);
+  const t16 = Grammar.createRule('t16', '', true);
 
-const a = Parser(grammar.rules);
-a;
+  const rules = { startRule, q, e, n4, r4, t8, n8, r8, t16 };
+  const grammar = new Grammar(rules);
+
+  const a = Parser(grammar.rules);
+  a;
+};
