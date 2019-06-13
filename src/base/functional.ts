@@ -7,10 +7,6 @@ export const curry = fn =>
     return cargs.length >= fn.length ? fn.apply(this, cargs) : (...args) => curried([...cargs, ...args]);
   })([]);
 
-// export const compose = (...fns) => (...args) => fns.reduceRight(applyFn, args)[0];
-
-// export const pipe = (...fns) => (...args) => fns.reduce(applyFn, args)[0];
-
 export const compose2 = (f, g) => (...args) => f(g(...args));
 export const compose = (...fns) => fns.reduce(compose2);
 export const pipe = (...fns) => fns.reduceRight(compose2);

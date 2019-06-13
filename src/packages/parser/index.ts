@@ -11,20 +11,137 @@ interface Rule {
   expand: () => string;
 }
 
-class Duration {
+export class Duration {
   public static NAMES = ['w', 'h', 'q', 'e', 's', 't'];
   public static VALUES = [1, 2, 4, 8, 16, 32];
   public static TYPES = ['n', 'r', 't'];
 
   public static nameToValue = (name: string) => {
+    // const _name = (name[1] || '') === '.' ? name[0] :
     const i = Duration.NAMES.indexOf(name);
-    return Duration.VALUES[i];
+    return Duration.VALUES[i] || undefined;
   };
 
   public static valueToName = (value: number) => {
     const i = Duration.VALUES.indexOf(value);
-    return Duration.NAMES[i];
+    return Duration.NAMES[i] || undefined;
   };
+
+  private static valueIndex = (value: number) => {
+    return Duration.VALUES.indexOf(value);
+  };
+
+  public static splitValue = (value: number) => {
+    const i = Duration.valueIndex(value);
+    return i > -1 ? Duration.VALUES[i + 1] : undefined;
+  };
+
+  public static doubleValue = (value: number) => {
+    const i = Duration.valueIndex(value);
+    return i > -1 ? Duration.VALUES[i - 1] : undefined;
+  };
+
+  private static nameIndex = (name: string) => {
+    return Duration.NAMES.indexOf(name);
+  };
+
+  public static splitName = (name: string) => {
+    const i = Duration.nameIndex(name);
+    return i > -1 ? Duration.NAMES[i + 1] : undefined;
+  };
+
+  public static doubleName = (name: string) => {
+    const i = Duration.nameIndex(name);
+    return i > -1 ? Duration.NAMES[i - 1] : undefined;
+  };
+
+  public static toDuration = (value: number, duration: number) => {
+    if (value > duration) return undefined;
+    const [oldname, newName] = [Duration.valueToName(value), Duration.valueToName(duration)];
+    const places = duration / value - 1;
+    return oldname.concat('-'.repeat(places));
+  };
+
+  public static toDurationN = (value: string, duration: string) => {
+    const nDuration = Duration.nameToValue(duration);
+    const values = value
+      .split('')
+      .map(val => Duration.nameToValue(val))
+      .map(val => Duration.toDuration(val, nDuration))
+      .join('');
+    return values;
+  };
+}
+
+enum MeterType {
+  Simple = 'simple',
+  Compound = 'compound',
+  Odd = 'odd',
+}
+
+export class Meter {
+  private top: number;
+  private bottom: number;
+  private type: MeterType;
+  private numOfBeats: number;
+  private beat: [string, string];
+
+  public getBeatValue = () =>
+    this.type == MeterType.Compound ? Duration.valueToName(this.bottom).repeat(3) : this.beat.join('');
+  public getNumOfBeats = () => this.numOfBeats;
+
+  public constructor(top: number, bottom: number) {
+    this.top = top;
+    this.bottom = bottom;
+    this.setType();
+  }
+
+  private setType = () => {
+    if (Meter.isCompound(this.top, this.bottom)) return this.createCompound();
+    if (Meter.isSimple(this.top, this.bottom)) return this.createSimple();
+    return this.createOdd();
+  };
+
+  public static isCompound = (top: number, bottom: number): boolean => {
+    return top % 3 === 0 && top > 3 ? true : false;
+  };
+
+  public static isSimple = (top: number, bottom: number): boolean => {
+    return top < 5 ? true : false;
+  };
+
+  private createSimple = () => {
+    this.type = MeterType.Simple;
+    this.numOfBeats = this.top;
+    this.beat = [Duration.valueToName(this.bottom), ''];
+  };
+
+  private createCompound = () => {
+    this.type = MeterType.Compound;
+    this.numOfBeats = this.top / 3;
+    this.beat = [Duration.valueToName(Duration.doubleValue(this.bottom)), '.'];
+  };
+
+  private createOdd = () => {
+    this.type = MeterType.Odd;
+    this.numOfBeats = Math.ceil(this.top / 3);
+    this.beat = ['', ''];
+  };
+}
+
+export class Measure {
+  private meter: Meter;
+  private level: string; // counting level - in quarters, or eighths...
+  private notes: string[];
+  private bar: string;
+
+  public constructor(meter: Meter, level?: string, notes?: string[]) {
+    this.meter = meter;
+    const beat = this.meter.getBeatValue();
+    this.level = level ? level : beat;
+    this.notes = notes ? notes : Array(this.meter.getNumOfBeats()).fill(beat);
+    this.bar = this.notes.map(note => Duration.toDurationN(note, this.level)).join(' ');
+  }
 }
 
 class Grammar {
@@ -90,7 +207,6 @@ const createGrammar = (longest: string, shortest: string, ts: number[]) => {
 
 const r = createGrammar('h', 'e', [3, 4]);
 r;
-// console.log(r);
 
 const Parser = (grammar: Record<string, Rule>) => {
   const sequence = [grammar.startRule];
