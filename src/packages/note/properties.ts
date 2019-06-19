@@ -14,7 +14,7 @@ import { A_440, MIDDLE_KEY, OCTAVE_RANGE, SHARPS, NOTE_REGEX, STANDARD_OCTAVE, F
  */
 export const Validators = {
   isNoteName: (name: string): boolean => NOTE_REGEX.test(name) === true,
-  isNoteMidi: (midi: number): boolean => both(isInteger(midi), interval(0, 128, midi)),
+  isNoteMidi: (midi: number): boolean => both(isInteger(midi), segment(0, 127, midi)),
   isNoteChroma: (chroma: number): boolean => both(isInteger(chroma), segment(0, 11, chroma)),
   isNoteFreq: (freq: number): boolean => both(isNumber(freq), gt(freq, 0)),
 };

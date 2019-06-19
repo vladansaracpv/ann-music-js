@@ -143,11 +143,11 @@ export class Meter {
   };
 
   public static isCompound = (top: number, bottom: number): boolean => {
-    return top % 3 === 0 && top > 3 ? true : false;
+    return top % 3 === 0 && top > 3;
   };
 
   public static isSimple = (top: number, bottom: number): boolean => {
-    return top < 5 ? true : false;
+    return top < 5;
   };
 
   private createSimple = () => {
@@ -184,7 +184,7 @@ export class Measure {
   public constructor(meter: Meter, level?: string, notes?: string[]) {
     this.meter = meter;
     const beat = this.meter.getBeatValue();
-    this.level = level ? level : beat;
+    this.level = level || beat;
     this.notes = notes
       ? notes
       : this.meter.getType() === MeterType.Odd

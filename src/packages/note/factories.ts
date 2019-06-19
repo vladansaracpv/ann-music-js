@@ -3,7 +3,7 @@ import { isNegative } from '@base/relations';
 import { either } from '@base/boolean';
 import { CustomError } from '@base/error';
 import { compose } from '@base/functional';
-import { OCTAVE_RANGE, NOTE_REGEX, FLATS, SHARPS, A_440 } from './theory';
+import { OCTAVE_RANGE, NOTE_REGEX, FLATS, SHARPS, A_440, WHITE_KEYS } from './theory';
 import { Validators, Letter, Accidental, Octave, Midi, Frequency } from './properties';
 
 const NoteError = CustomError('Note');
@@ -47,15 +47,17 @@ export function createNoteWithName(note: NoteName): NoteProps {
    *  alteredOct == -1
    */
   const chroma = either(
-    (semitonesAltered - Octave.toSemitones(octavesAltered)) % OCTAVE_RANGE,
+    (semitonesAltered - Octave.toSemitones(octavesAltered) + 12) % OCTAVE_RANGE,
     semitonesAltered % OCTAVE_RANGE,
     isNegative(octavesAltered),
   ) as NoteChroma;
 
-  const midi = (Octave.toSemitones(octave) + chroma) as NoteMidi;
+  const midi = (Octave.toSemitones(octave + octavesAltered) + chroma) as NoteMidi;
   const frequency = Midi.toFrequency(midi) as NoteFreq;
 
   const name = (pc + octave) as NoteName;
+
+  const color = WHITE_KEYS.includes(chroma) ? 'white' : 'black';
 
   return Object.freeze({
     name,
@@ -68,6 +70,7 @@ export function createNoteWithName(note: NoteName): NoteProps {
     chroma,
     midi,
     frequency,
+    color,
   });
 }
 
@@ -90,6 +93,8 @@ export function createNoteWithMidi(midi: NoteMidi, useSharps = true): NoteProps 
   const accidental = substitute(tokens['Taccidental'], /x/g, '##') as NoteAccidental;
   const alteration = Accidental.toAlteration(accidental) as NoteAlteration;
 
+  const color = WHITE_KEYS.includes(chroma) ? 'white' : 'black';
+
   return Object.freeze({
     name,
     letter,
@@ -101,6 +106,7 @@ export function createNoteWithMidi(midi: NoteMidi, useSharps = true): NoteProps 
     chroma,
     midi,
     frequency,
+    color,
   });
 }
 

@@ -13,7 +13,7 @@ type NoteLetter = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G';
 /** Note step represents index of NoteLetter. It starts from 'C' at index 0 **/
 type NoteStep = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
-/** Octave is integer value. Human ear can differ from 0 to 10, which is inside theoretical range of 20Hz-20KHz **/
+/** Octave is integer value. **/
 type NoteOctave = number;
 
 /** Accidental is a string consisting of one or more '#' or 'b', or neutral - '' **/
@@ -31,8 +31,11 @@ type NoteChroma = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
 /** Midi value represents NoteChroma that is extended with octave. **/
 type NoteMidi = number;
 
-/** Positive number. Represents tone frequency **/
+/** Positive number. Represents tone frequency. Human ear can differ frequencies from 20Hz-20KHz **/
 type NoteFreq = number;
+
+/** Piano key color - black / white */
+type NoteColor = string;
 
 interface NoteProps {
   name: NoteName;
@@ -45,6 +48,7 @@ interface NoteProps {
   chroma: NoteChroma;
   midi: NoteMidi;
   frequency: NoteFreq;
+  color: NoteColor;
 }
 
 /** Note properties from which the Note object can be constructed **/

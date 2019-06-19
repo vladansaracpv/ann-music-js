@@ -43,5 +43,11 @@ export const SHARP = notes('#');
 /** Flat notes isolated **/
 export const FLAT = notes('b');
 
+/** Indexes of white keys in 12-step octave */
+export const WHITE_KEYS = [0, 2, 4, 5, 7, 9, 11];
+
+/** Indexes of black keys in 12-step octave */
+export const BLACK_KEYS = [1, 3, 4, 8, 10];
+
 /** Regular expression used to tokenize NoteName to {letter, accidental, octave} **/
 export const NOTE_REGEX = /^(?<Tletter>[a-gA-G]?)(?<Taccidental>#{1,}|b{1,}|x{1,}|)(?<Toct>-?\d*)\s*(?<Trest>.*)$/;
