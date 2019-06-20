@@ -14,32 +14,15 @@ import { Factory } from '../interval/factories';
  * // it works with pitch classes
  * transpose("D", "3M") // => "F#"
  * // can be partially applied
- * ["C", "D", "E", "F", "G"].map(transpose("M3)) // => ["E", "F#", "G#", "A", "B"]
+ * ["C", "D", "E", "F", "G"].map(transpose("M3")) // => ["E", "F#", "G#", "A", "B"]
  */
 export const transpose = (...args: string[]): any => {
   if (args.length === 1) {
-    return (i: string) => transpose(args[0], i);
+    return (i: string) => transpose(i, args[0]);
   }
   const [n, i] = args;
   const note = NoteFactory.fromName(n);
   const interval = Factory.fromName(i);
 
-  return NoteFactory.fromMidi(note.midi + interval.semitones).name;
-};
-
-/**
- * The same as transpose with the arguments inverted.
- *
- * Can be partially applied.
- *
- * @param {String} note
- * @param {String} interval
- * @return {String} the transposed note
- * @example
- * import { tranposeBy } from "tonal-distance"
- * transposeBy("3m", "5P") // => "7m"
- */
-export const transposeBy = (...args): any => {
-  if (args.length === 1) return n => transpose(n, args[0]);
-  return transpose(args[1], args[0]);
+  return NoteFactory.fromMidi(note.midi + interval['semitones']).name;
 };
