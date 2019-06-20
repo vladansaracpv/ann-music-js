@@ -5,7 +5,7 @@ import { compose2, compose } from '@base/functional';
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
-interface Rule {
+export interface Rule {
   name: string;
   expansion: string;
   isTerminal: boolean;
@@ -23,8 +23,12 @@ export class Duration {
   public static VALUES = [1, 2, 4, 8, 16, 32];
   public static TYPES = ['n', 'r', 't'];
 
-  private static valueIndex = (value: number) => {
+  public static valueIndex = (value: number) => {
     return Duration.VALUES.indexOf(value);
+  };
+
+  public static nameIndex = (name: string) => {
+    return Duration.NAMES.indexOf(name);
   };
 
   public static nameToValue = (name: string) => {
@@ -246,9 +250,14 @@ export class Grammar {
 
   public static createGrammar = (longest: string, shortest: string, ts: number[]) => {
     let rules: Rule[] = [];
-    const [li, si] = [Duration.NAMES.indexOf(longest), Duration.NAMES.indexOf(shortest)];
+    const initDuration = Duration.valueToName(ts[1]) + ' ';
+    const beats = ts[0];
+    const expansion = initDuration.repeat(beats).trimRight();
+
+    const startRule = Grammar.createRule('startRule', expansion, false);
+    const [li, si] = [Duration.nameIndex(longest), Duration.nameIndex(shortest)];
     const notes = Duration.NAMES.slice(li, si + 1);
-    rules = [...rules, ...notes.map(note => Grammar.createRuleForDuration(note))];
+    rules = [startRule, ...rules, ...notes.map(note => Grammar.createRuleForDuration(note))];
     return rules;
   };
 
@@ -271,37 +280,40 @@ export const Parser = (grammar: Record<string, Rule>) => {
 
   const measure = (notes: string) => `| ${notes} |`;
 
-  while (sequence.length > 0) {
-    const currentRule: Rule = sequence.pop();
-    const expandedRule = currentRule
-      .expand()
-      .split(' ')
-      .map(rule => grammar[rule]);
+  const parse = () => {
+    while (sequence.length > 0) {
+      const currentRule: Rule = sequence.pop();
+      const expandedRule = currentRule
+        .expand()
+        .split(' ')
+        .map(rule => grammar[rule]);
 
-    sequence.push(...expandedRule.filter(rule => rule && !rule.isTerminal));
-    sentence.push(...expandedRule.filter(rule => rule && rule.isTerminal).map(rule => rule.name));
-  }
+      sequence.push(...expandedRule.filter(rule => rule && !rule.isTerminal));
+      sentence.push(...expandedRule.filter(rule => rule && rule.isTerminal).map(rule => rule.name));
+    }
 
-  return measure(sentence.join(' - '));
+    return measure(sentence.join(' - '));
+  };
+
+  return { parse };
 };
 
-const test = () => {
+export const test = () => {
   const r = Grammar.createGrammar('h', 'e', [3, 4]);
-  r;
 
-  const startRule = Grammar.createRule('startRule', 'q q q q', false);
-  const q = Grammar.createRule('q', 'e e | n4 | r4 | t8 ', false);
-  const e = Grammar.createRule('e', 'n8 | r8 | t16', false);
-  const n4 = Grammar.createRule('n4', '', true);
-  const r4 = Grammar.createRule('r4', '', true);
-  const t8 = Grammar.createRule('t8', '', true);
-  const n8 = Grammar.createRule('n8', '', true);
-  const r8 = Grammar.createRule('r8', '', true);
-  const t16 = Grammar.createRule('t16', '', true);
-
-  const rules = { startRule, q, e, n4, r4, t8, n8, r8, t16 };
+  var rules = {
+    startRule: Grammar.createRule('startRule', 'q q q q', false),
+    q: Grammar.createRule('q', 'e e | n4 | r4 | t8', false),
+    e: Grammar.createRule('e', 'n8 | r8 | t16', false),
+    n4: Grammar.createRule('n/4', '', true),
+    r4: Grammar.createRule('r/4', '', true),
+    t8: Grammar.createRule('t/8', '', true),
+    n8: Grammar.createRule('n/8', '', true),
+    r8: Grammar.createRule('r/8', '', true),
+    t16: Grammar.createRule('t/16', '', true),
+  };
   const grammar = new Grammar(rules);
 
   const a = Parser(grammar.rules);
-  a;
+  console.log(a.parse());
 };

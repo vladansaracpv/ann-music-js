@@ -1,26 +1,7 @@
-import { Meter, Measure, Duration, Euclid } from '@packages/parser';
-import { Factories } from '@packages/note';
+import { Meter, Measure, Duration, Parser, test, Grammar } from '@packages/parser';
 
-const meter = new Meter(5, 8);
-const measure = new Measure(meter, 'e');
+// const meter = new Meter(5, 8);
+// const measure = new Measure(meter, 'e');
 
-// console.log(Duration.doubleName('h'));
-console.log(Factories.Note.fromName('Eb0'));
-// const parser = new Parser();
-
+test();
 // console.log(parser.generate());
-
-/**
- * Note
- * Duration
- * Interval
- * Chord
- * Scale
- * PC
- * Distance (Transpose)
- *
- * Parser
- * Midi
- * Composition
- * Player
- */

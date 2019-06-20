@@ -1,11 +1,11 @@
-import { Interval } from '../interval/factories';
+import { Factory } from '../interval/factories';
 
 export const add = (i1: IvlName, i2: IvlName, op = true): any => {
-  const ivl1 = Interval.fromName(i1);
-  const ivl2 = Interval.fromName(i2);
+  const ivl1 = Factory.fromName(i1);
+  const ivl2 = Factory.fromName(i2);
   const semitones = ivl1.semitones + (op ? ivl2.semitones : -1 * ivl2.semitones);
 
-  return Interval.fromSemitones(semitones).name;
+  return Factory.fromSemitones(semitones).name;
 };
 
 /**

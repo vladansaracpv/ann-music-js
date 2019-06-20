@@ -119,7 +119,7 @@ export function createNoteWithFreq(freq: NoteFreq, tuning = A_440): NoteProps {
   )(freq, tuning);
 }
 
-export const Note = {
+export const Factory = {
   fromName: createNoteWithName,
   fromMidi: createNoteWithMidi,
   fromFreq: createNoteWithFreq,

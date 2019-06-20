@@ -1,4 +1,4 @@
-import { Note } from '../note/factories';
+import { Factory } from '../note/factories';
 /**
  * Get the distance between two notes in semitones
  *
@@ -13,8 +13,8 @@ import { Note } from '../note/factories';
  */
 export const semitones = (...args) => {
   if (args.length === 1) return t => semitones(args[0], t);
-  const f = Note.fromName(args[0]);
-  const t = Note.fromName(args[1]);
+  const f = Factory.fromName(args[0]);
+  const t = Factory.fromName(args[1]);
   return f.midi !== null && t.midi !== null
     ? t.midi - f.midi
     : f.chroma !== null && t.chroma !== null

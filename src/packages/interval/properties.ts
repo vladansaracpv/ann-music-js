@@ -6,9 +6,9 @@ import { eq, lt, gt } from '@base/relations';
 import { isNumber } from '@base/types';
 import { either } from '@base/boolean';
 import { BASE_INTERVAL_TYPES } from './theory';
-import { Interval } from './factories';
+import { Factory } from './factories';
 
-const IntervalError = CustomError('Interval');
+const IntervalError = CustomError('Factory');
 /**
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *              INTERVAL PROPS - VALIDATORS                *
@@ -19,8 +19,8 @@ export const Validators = {
   isPerfect: (quality: string) => eq(quality, 'P'),
   isMajor: (quality: string) => eq(quality, 'M'),
   isMinor: (quality: string) => eq(quality, 'm'),
-  isDiminished: (quality: string) => /^d+$/.test(quality),
-  isAugmented: (quality: string) => /^A+$/.test(quality),
+  isDiminished: (quality: string) => /^d{1,2}$/.test(quality),
+  isAugmented: (quality: string) => /^A{1,2}$/.test(quality),
 };
 
 /**
@@ -75,7 +75,7 @@ export function build({ step = 0, alteration = 0, octave = 4, direction = 1, num
 }
 
 export function simplifyInterval(ivl: string) {
-  const interval = Interval.fromName(ivl);
+  const interval = Factory.fromName(ivl);
 
   if (!interval) return IntervalError('InvalidIvlName', ivl);
 
@@ -85,7 +85,7 @@ export function simplifyInterval(ivl: string) {
 }
 
 export function invertInterval(ivl: string) {
-  const interval = Interval.fromName(ivl) as IvlProps;
+  const interval = Factory.fromName(ivl) as IvlProps;
 
   if (!interval) return IntervalError('InvalidIvlName', ivl);
 
@@ -104,7 +104,7 @@ export function invertInterval(ivl: string) {
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 export const property = (name: string) => (interval: IvlName) =>
-  Interval.fromName(interval) && Interval.fromName(interval)[name];
+  Factory.fromName(interval) && Factory.fromName(interval)[name];
 
 export const name = property('name');
 
