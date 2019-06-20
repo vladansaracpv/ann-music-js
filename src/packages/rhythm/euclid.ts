@@ -29,3 +29,6 @@ export const Euclid = (onNotes, totalNotes, grouped = false) => {
   }
   return grouped ? groups : [].concat.apply([], groups);
 };
+
+const n = Euclid(5, 8);
+n;

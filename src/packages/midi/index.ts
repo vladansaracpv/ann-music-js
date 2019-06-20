@@ -32,7 +32,7 @@ function makeSynth() {
 }
 
 export class SimplePlayer {
-  synth;
+  private synth;
 
   constructor() {
     this.synth = makeSynth().toMaster();
@@ -120,8 +120,8 @@ export class SimplePlayer {
 }
 
 export class SequenceParser {
-  initialTempo: TTempo;
-  initialTimeSignature: TTimeSignature;
+  initialTempo: Tempo;
+  initialTimeSignature: TimeSignature;
 
   constructor(tempoBpm: number, ts: number[]) {
     this.initialTempo = { value: tempoBpm, unit: 'bpm' };
@@ -133,7 +133,7 @@ export class SequenceParser {
     let firstEvent = true;
 
     for (const textMeasure of textMeasures) {
-      let event: Sequence;
+      var event: Sequence = { newTempo: undefined, measure: undefined, newTimeSignature: undefined };
 
       if (firstEvent) {
         event.newTempo = this.initialTempo;
@@ -159,7 +159,7 @@ export class SequenceParser {
 
   parseTextNote(textNote: string): Note {
     const chunks = textNote.split('/');
-    const isNote = 'rt'.indexOf(chunks[0]) >= 0;
+    const isNote = chunks[0] !== 'r';
     return {
       type: isNote ? 'n' : 'r',
       name: isNote ? chunks[0] : null,
@@ -168,18 +168,20 @@ export class SequenceParser {
   }
 }
 
-// const player = new SimplePlayer();
-// const sequenceParser = new SequenceParser(128, [2, 4]);
-// player.play(
-//   sequenceParser.parse([
-//     'r/4 B4/16 A4/16 G#4/16 A4/16',
-//     'C5/8 r/8 D5/16 C5/16 B4/16 C5/16',
-//     'E5/8 r/8 F5/16 E5/16 D#5/16 E5/16',
-//     'B5/16 A5/16 G#5/16 A5/16 B5/16 A5/16 G#5/16 A5/16',
-//     'C6/4 A5/8 C6/8',
-//     'B5/8 A5/8 G5/8 A5/8',
-//     'B5/8 A5/8 G5/8 A5/8',
-//     'B5/8 A5/8 G5/8 F#5/8',
-//     'E5/4',
-//   ]),
-// );
+export const test = () => {
+  const player = new SimplePlayer();
+  const sequenceParser = new SequenceParser(128, [2, 4]);
+  player.play(
+    sequenceParser.parse([
+      'r/4 B4/16 A4/16 G#4/16 A4/16',
+      'C5/8 r/8 D5/16 C5/16 B4/16 C5/16',
+      'E5/8 r/8 F5/16 E5/16 D#5/16 E5/16',
+      'B5/16 A5/16 G#5/16 A5/16 B5/16 A5/16 G#5/16 A5/16',
+      'C6/4 A5/8 C6/8',
+      'B5/8 A5/8 G5/8 A5/8',
+      'B5/8 A5/8 G5/8 A5/8',
+      'B5/8 A5/8 G5/8 F#5/8',
+      'E5/4',
+    ]),
+  );
+};

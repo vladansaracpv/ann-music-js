@@ -1,4 +1,4 @@
-import { Theory, Factories, Properties } from '../src/packages/note';
+import { Theory, Factories, Properties } from '../packages/note';
 import { expect } from 'chai';
 import 'mocha';
 

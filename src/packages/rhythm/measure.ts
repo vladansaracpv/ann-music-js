@@ -1,5 +1,6 @@
 import { Meter, MeterType } from './meter';
 import { Duration } from './duration';
+
 export class Measure {
   meter: Meter;
   level: string; // counting level - in quarters, or eighths...
