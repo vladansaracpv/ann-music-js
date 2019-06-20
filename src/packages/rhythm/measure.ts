@@ -1,12 +1,12 @@
 import { Meter, MeterType } from './meter';
 import { Duration } from './duration';
 export class Measure {
-  private meter: Meter;
-  private level: string; // counting level - in quarters, or eighths...
-  private notes: string[];
-  private bar: string;
+  meter: Meter;
+  level: string; // counting level - in quarters, or eighths...
+  notes: string[];
+  bar: string;
 
-  public constructor(meter: Meter, level?: string, notes?: string[]) {
+  constructor(meter: Meter, level?: string, notes?: string[]) {
     this.meter = meter;
     const beat = this.meter.getBeatValue();
     this.level = level || beat;
@@ -21,7 +21,7 @@ export class Measure {
         : this.notes.map(note => Duration.toDurationN(note, this.level)).join(' ');
   }
 
-  public properties = () => ({
+  properties = () => ({
     meter: this.meter.properties(),
     level: this.level,
     notes: this.notes,

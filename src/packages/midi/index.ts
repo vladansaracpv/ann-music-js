@@ -32,9 +32,9 @@ function makeSynth() {
 }
 
 export class SimplePlayer {
-  private synth;
+  synth;
 
-  public constructor() {
+  constructor() {
     this.synth = makeSynth().toMaster();
   }
 
@@ -44,7 +44,7 @@ export class SimplePlayer {
    * @param {boolean} ramp If true, tempo will ramp up/down to the given value over 1 second,
    *     otherwise it will change instantly.
    */
-  public applyEventUpdates(event: Sequence, ramp) {
+  applyEventUpdates(event: Sequence, ramp) {
     if (event.newTempo && event.newTempo.unit === 'bpm') {
       if (ramp) {
         Tone.Transport.bpm.rampTo(event.newTempo.value, 1);
@@ -63,7 +63,7 @@ export class SimplePlayer {
    * using the default ugly synthetic membrane sound.
    * @param {Sequence[]} track
    */
-  public play(track: Sequence[]) {
+  play(track: Sequence[]) {
     const synth = this.synth;
 
     // We will use the Transport to schedule each measure independently. Given that we
@@ -120,15 +120,15 @@ export class SimplePlayer {
 }
 
 export class SequenceParser {
-  private initialTempo: TTempo;
-  private initialTimeSignature: TTimeSignature;
+  initialTempo: TTempo;
+  initialTimeSignature: TTimeSignature;
 
-  public constructor(tempoBpm: number, ts: number[]) {
+  constructor(tempoBpm: number, ts: number[]) {
     this.initialTempo = { value: tempoBpm, unit: 'bpm' };
     this.initialTimeSignature = { numerator: ts[0], denominator: ts[1] };
   }
 
-  public parse(textMeasures: string[]): Sequence[] {
+  parse(textMeasures: string[]): Sequence[] {
     const result = [];
     let firstEvent = true;
 
@@ -148,7 +148,7 @@ export class SequenceParser {
     return result;
   }
 
-  public parseTextMeasure(textMeasure: string): Measure {
+  parseTextMeasure(textMeasure: string): Measure {
     const notes = textMeasure
       .split(' ')
       .filter(textNote => !!textNote)
@@ -157,7 +157,7 @@ export class SequenceParser {
     return { notes };
   }
 
-  public parseTextNote(textNote: string): Note {
+  parseTextNote(textNote: string): Note {
     const chunks = textNote.split('/');
     const isNote = 'rt'.indexOf(chunks[0]) >= 0;
     return {

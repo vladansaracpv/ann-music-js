@@ -41,11 +41,11 @@ class Node implements Node {
 }
 
 export class Tree implements AST {
-  public root: Node;
-  public ts: TimeSignature;
-  public grammar: Grammar;
+  root: Node;
+  ts: TimeSignature;
+  grammar: Grammar;
 
-  public constructor(ts: TimeSignature, grammar: Grammar) {
+  constructor(ts: TimeSignature, grammar: Grammar) {
     this.ts = ts;
     this.grammar = grammar;
     // this.root = new Node(Token.NonTerminal, grammar.rules['startRule']);

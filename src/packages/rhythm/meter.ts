@@ -8,24 +8,24 @@ export enum MeterType {
 }
 
 export class Meter {
-  private top: number;
-  private bottom: number;
-  private type: MeterType;
-  private numOfBeats: number;
-  private beat: string[];
+  top: number;
+  bottom: number;
+  type: MeterType;
+  numOfBeats: number;
+  beat: string[];
 
-  public getBeatValue = () =>
+  getBeatValue = () =>
     this.type == MeterType.Compound ? Duration.valueToName(this.bottom).repeat(3) : this.beat.join(' ');
-  public getNumOfBeats = () => this.numOfBeats;
-  public getType = () => this.type;
+  getNumOfBeats = () => this.numOfBeats;
+  getType = () => this.type;
 
-  public constructor(top: number, bottom: number) {
+  constructor(top: number, bottom: number) {
     this.top = top;
     this.bottom = bottom;
     this.setType();
   }
 
-  public properties = () => ({
+  properties = () => ({
     top: this.top,
     bottom: this.bottom,
     type: this.type,
@@ -33,33 +33,33 @@ export class Meter {
     beat: this.beat,
   });
 
-  private setType = () => {
+  setType = () => {
     if (Meter.isCompound(this.top, this.bottom)) return this.createCompound();
     if (Meter.isSimple(this.top, this.bottom)) return this.createSimple();
     return this.createOdd();
   };
 
-  public static isCompound = (top: number, bottom: number): boolean => {
+  static isCompound = (top: number, bottom: number): boolean => {
     return top % 3 === 0 && top > 3;
   };
 
-  public static isSimple = (top: number, bottom: number): boolean => {
+  static isSimple = (top: number, bottom: number): boolean => {
     return top < 5;
   };
 
-  private createSimple = () => {
+  createSimple = () => {
     this.type = MeterType.Simple;
     this.numOfBeats = this.top;
     this.beat = [Duration.valueToName(this.bottom)];
   };
 
-  private createCompound = () => {
+  createCompound = () => {
     this.type = MeterType.Compound;
     this.numOfBeats = this.top / 3;
     this.beat = [Duration.valueToName(Duration.doubleValue(this.bottom)) + '.'];
   };
 
-  private createOdd = () => {
+  createOdd = () => {
     this.type = MeterType.Odd;
     this.numOfBeats = Math.ceil(this.top / 3);
     const name = Duration.valueToName(Duration.doubleValue(this.bottom));

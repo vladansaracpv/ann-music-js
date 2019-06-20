@@ -48,27 +48,27 @@ export enum LogLevel {
 export type LogOutput = (source: string | undefined, level: LogLevel, ...objects: any[]) => void;
 
 export class Logger {
-  public source: string;
+  source: string;
   /**
    * Current logging level.
    * Set it to LogLevel.Off to disable logs completely.
    */
-  public static level = LogLevel.Debug;
+  static level = LogLevel.Debug;
 
   /**
    * Additional log outputs.
    */
-  public static outputs: LogOutput[] = [];
+  static outputs: LogOutput[] = [];
 
   /**
    * Enables production mode.
    * Sets logging level to LogLevel.Warning.
    */
-  public static enableProductionMode() {
+  static enableProductionMode() {
     Logger.level = LogLevel.Warning;
   }
 
-  public constructor(source?: string) {
+  constructor(source?: string) {
     this.source = source;
   }
 
@@ -76,7 +76,7 @@ export class Logger {
    * Logs messages or objects  with the debug level.
    * Works the same as console.log().
    */
-  public debug(...objects: any[]) {
+  debug(...objects: any[]) {
     this.log(console.log, LogLevel.Debug, objects);
   }
 
@@ -84,7 +84,7 @@ export class Logger {
    * Logs messages or objects  with the info level.
    * Works the same as console.log().
    */
-  public info(...objects: any[]) {
+  info(...objects: any[]) {
     this.log(console.info, LogLevel.Info, objects);
   }
 
@@ -92,7 +92,7 @@ export class Logger {
    * Logs messages or objects  with the warning level.
    * Works the same as console.log().
    */
-  public warn(...objects: any[]) {
+  warn(...objects: any[]) {
     this.log(console.warn, LogLevel.Warning, objects);
   }
 
@@ -100,11 +100,11 @@ export class Logger {
    * Logs messages or objects  with the error level.
    * Works the same as console.log().
    */
-  public error(...objects: any[]) {
+  error(...objects: any[]) {
     this.log(console.error, LogLevel.Error, objects);
   }
 
-  public log(func: Function, level: LogLevel, objects: any[]) {
+  log(func: Function, level: LogLevel, objects: any[]) {
     if (level <= Logger.level) {
       const log = this.source ? ['[' + this.source + ']'].concat(objects) : objects;
       func.apply(console, log);

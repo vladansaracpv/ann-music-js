@@ -47,9 +47,9 @@ export class Rule {
 }
 
 export class Grammar {
-  public rules: Record<string, Rule> = {};
+  rules: Record<string, Rule> = {};
 
-  public static createGrammar = (longest: string, shortest: string, ts: number[]) => {
+  static createGrammar = (longest: string, shortest: string, ts: number[]) => {
     let rules: Rule[] = [];
     const initDuration = Duration.valueToName(ts[1]) + ' ';
     const beats = ts[0];
@@ -62,7 +62,7 @@ export class Grammar {
     return rules;
   };
 
-  public constructor(rules: Record<string, Rule>) {
+  constructor(rules: Record<string, Rule>) {
     this.rules = rules;
   }
 }
