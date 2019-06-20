@@ -6,12 +6,11 @@ import { isArray, isNumber } from '@base/types';
 import { either } from '@base/boolean';
 import { and2 } from '@base/logical';
 import { eq, neq, gt } from '@base/relations';
-import { isString } from 'util';
 
 const PC_SET_REGEX = /^[01]{12}$/;
 
 const chr = (str: string) => ichroma(str) || nchroma(str) || 0;
-const clen = chroma => chroma.replace(/0/g, '').length;
+const clen = c => c.replace(/0/g, '').length;
 
 export function isPcSet(set: string) {
   return PC_SET_REGEX.test(set);
@@ -29,20 +28,19 @@ export function isPcSet(set: string) {
  * @example
  * PcSet.pcset(["C", "D", "F#"]) // => "101000100000"
  */
-export function pcset(set: string | string[]): string {
+export function pcset(set): string {
   if (isPcSet(set as string)) return set as string;
-
-  let b = Array(12).fill(0);
-
-  if (isString(set)) {
-    b[chr(set)] = 1;
-  }
+  if (!Array.isArray(set)) return '';
 
   if (isArray(set)) {
-    set.map(chr).forEach(i => (b[i] = 1));
+    let b = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    set.map(chr).forEach(i => {
+      b[i] = 1;
+    });
+    return b.join('');
   }
 
-  return b.join('');
+  // return b.join('');
 }
 
 /**

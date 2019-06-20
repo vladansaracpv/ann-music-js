@@ -34,7 +34,6 @@ export function createIntervalWithName(interval: IvlName) {
   // Number of steps from first note C to given letter.
   // Normalized to 1 octave
   const step = dec(Math.abs(num)) % 7;
-
   // We use it to store information of interval before being altered: d | A. Diminished ivl can be from minor or Perfect
   const type = BASE_INTERVAL_TYPES[step];
 

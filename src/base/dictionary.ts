@@ -22,7 +22,7 @@ export const dictionary = raw => {
   const allKeys = Object.keys(data).sort();
 
   const dict = name => data[name];
-  dict.names = p => {
+  dict.names = (p?) => {
     if (typeof p === 'string') return (index[p] || []).slice();
     else return (p === true ? allKeys : keys).slice();
   };

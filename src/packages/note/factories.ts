@@ -15,8 +15,7 @@ const NoteError = CustomError('Note');
  */
 
 export function createNoteWithName(note: NoteName): NoteProps {
-  if (!Validators.isNoteName(note)) return NoteError('InvalidName', note);
-
+  if (!Validators.isNoteName(note)) return undefined;
   const tokens = tokenize(note, NOTE_REGEX);
 
   const { Tletter, Taccidental, Toct } = tokens;
