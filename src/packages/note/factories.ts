@@ -57,6 +57,7 @@ export function createNoteWithName(note: NoteName): NoteProps {
   const name = (pc + octave) as NoteName;
 
   const color = WHITE_KEYS.includes(chroma) ? 'white' : 'black';
+  const valid = true;
 
   return Object.freeze({
     name,
@@ -70,6 +71,7 @@ export function createNoteWithName(note: NoteName): NoteProps {
     midi,
     frequency,
     color,
+    valid,
   });
 }
 
@@ -94,6 +96,8 @@ export function createNoteWithMidi(midi: NoteMidi, useSharps = true): NoteProps 
 
   const color = WHITE_KEYS.includes(chroma) ? 'white' : 'black';
 
+  const valid = true;
+
   return Object.freeze({
     name,
     letter,
@@ -106,6 +110,7 @@ export function createNoteWithMidi(midi: NoteMidi, useSharps = true): NoteProps 
     midi,
     frequency,
     color,
+    valid,
   });
 }
 
@@ -118,7 +123,7 @@ export function createNoteWithFreq(freq: NoteFreq, tuning = A_440): NoteProps {
   )(freq, tuning);
 }
 
-export const Factory = {
+export const NoteFactory = {
   fromName: createNoteWithName,
   fromMidi: createNoteWithMidi,
   fromFreq: createNoteWithFreq,

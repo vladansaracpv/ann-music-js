@@ -1,4 +1,6 @@
 import { chroma as nchroma } from '@packages/note/properties';
+import { createNoteWithName } from '@packages/note/factories';
+import { createIntervalWithName } from '@packages/interval/factories';
 import { chroma as ichroma } from '@packages/interval/properties';
 import { INTERVAL_NAMES } from '@packages/interval/theory';
 import { rotate, compact, range } from '@base/arrays';
@@ -7,6 +9,37 @@ import { either } from '@base/boolean';
 import { and2 } from '@base/logical';
 import { eq, neq, gt } from '@base/relations';
 
+type PcsetChroma = string;
+type PcsetNum = number;
+/**
+ * The properties of a pitch class set
+ * @param {number} num - a number between 1 and 4095 (both included) that
+ * uniquely identifies the set. It's the decimal number of the chrom.
+ * @param {string} chroma - a string representation of the set: a 12-char string
+ * with either "1" or "0" as characters, representing a pitch class or not
+ * for the given position in the octave. For example, a "1" at index 0 means 'C',
+ * a "1" at index 2 means 'D', and so on...
+ * @param {number} length - the number of notes of the pitch class set
+ * @param {string} normalized - @chroma rotated so that it starts with '1'
+ * *starting from C*
+ */
+
+export interface Pcset {
+  readonly num: number;
+  readonly chroma: PcsetChroma;
+  readonly normalized: PcsetChroma;
+  readonly length: number;
+}
+
+export type Set = Pcset | PcsetChroma | PcsetNum | NoteName[] | IvlName[];
+
+export const EmptySet: Pcset = {
+  num: 0,
+  chroma: '000000000000',
+  normalized: '000000000000',
+  length: 0,
+};
+
 const PC_SET_REGEX = /^[01]{12}$/;
 
 const chr = (str: string) => ichroma(str) || nchroma(str) || 0;
@@ -14,6 +47,26 @@ const clen = c => c.replace(/0/g, '').length;
 
 export function isPcSet(set: string) {
   return PC_SET_REGEX.test(set);
+}
+
+function toChroma(set: any[]): PcsetChroma {
+  if (set.length === 0) {
+    return EmptySet.chroma;
+  }
+
+  let pitch: NoteProps | IvlProps | null;
+  const binary = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  // tslint:disable-next-line:prefer-for-of
+  for (let i = 0; i < set.length; i++) {
+    pitch = createNoteWithName(set[i]);
+    // tslint:disable-next-line: curly
+    if (!pitch.valid) {
+      pitch = createIntervalWithName(set[i]) as IvlProps;
+    }
+    // tslint:disable-next-line: curly
+    if (pitch.valid) binary[pitch.chroma] = 1;
+  }
+  return binary.join('');
 }
 
 /**

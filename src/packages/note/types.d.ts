@@ -49,6 +49,7 @@ interface NoteProps {
   midi: NoteMidi;
   frequency: NoteFreq;
   color: NoteColor;
+  valid: boolean;
 }
 
 /** Note properties from which the Note object can be constructed **/

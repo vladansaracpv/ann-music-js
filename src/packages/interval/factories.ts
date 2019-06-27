@@ -21,6 +21,23 @@ import {
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
+const i0 = { 1: '1P', 2: '2d' };
+const i1 = { 1: '1A', 2: '2m', 3: '3dd' };
+const i2 = { 1: '1AA', 2: '2M', 3: '3d' };
+const i3 = { 2: '2A', 3: '3m', 4: '4dd' };
+const i4 = { 2: '2AA', 3: '3M', 4: '4d' };
+const i5 = { 3: '3A', 4: '4P', 5: '5dd' };
+const i6 = { 3: '3AA', 4: '4A', 5: '5d', 6: '6dd' };
+const i7 = { 4: '4AA', 5: '5P', 6: '6d' };
+const i8 = { 5: '5A', 6: '6m', 7: '7dd' };
+const i9 = { 5: '5AA', 6: '6M', 7: '7d' };
+const i10 = { 6: '6A', 7: '7m', 8: '8dd' };
+const i11 = { 6: '6AA', 7: '7M', 8: '8d' };
+const i12 = { 7: '7A', 8: '8P' };
+const intervalTable = [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12];
+
+const intervalTypeFrom = (harmonic: number, generic: number) => intervalTable[harmonic][generic];
+
 export function createIntervalWithName(interval: IvlName) {
   const tokens = tokenize(interval, INTERVAL_REGEX);
 
@@ -72,6 +89,8 @@ export function createIntervalWithName(interval: IvlName) {
 
   const name = '' + num + quality;
 
+  const valid = true;
+
   return Object.freeze({
     name,
     num,
@@ -85,25 +104,9 @@ export function createIntervalWithName(interval: IvlName) {
     octave,
     chroma,
     ic,
+    valid,
   });
 }
-
-const i0 = { 1: '1P', 2: '2d' };
-const i1 = { 1: '1A', 2: '2m', 3: '3dd' };
-const i2 = { 1: '1AA', 2: '2M', 3: '3d' };
-const i3 = { 2: '2A', 3: '3m', 4: '4dd' };
-const i4 = { 2: '2AA', 3: '3M', 4: '4d' };
-const i5 = { 3: '3A', 4: '4P', 5: '5dd' };
-const i6 = { 3: '3AA', 4: '4A', 5: '5d', 6: '6dd' };
-const i7 = { 4: '4AA', 5: '5P', 6: '6d' };
-const i8 = { 5: '5A', 6: '6m', 7: '7dd' };
-const i9 = { 5: '5AA', 6: '6M', 7: '7d' };
-const i10 = { 6: '6A', 7: '7m', 8: '8dd' };
-const i11 = { 6: '6AA', 7: '7M', 8: '8d' };
-const i12 = { 7: '7A', 8: '8P' };
-const intervalTable = [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12];
-
-const intervalTypeFrom = (harmonic: number, generic: number) => intervalTable[harmonic][generic];
 
 export function createIntervalWithSemitones(semitones: IvlSemitones) {
   const harmonic = semitones % 12;
@@ -158,7 +161,7 @@ export function createIntervalWithNotes(first: string, second: string) {
   return createIntervalWithName(name);
 }
 
-export const Factory = {
+export const IvlFactory = {
   fromName: createIntervalWithName,
   fromSemitones: createIntervalWithSemitones,
   fromNotes: createIntervalWithNotes,

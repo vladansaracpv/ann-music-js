@@ -53,6 +53,7 @@ interface IvlProps {
   chroma: IvlChroma;
   octave: IvlOctave;
   ic: IvlClass;
+  valid: boolean;
 }
 
 /** Interval properties from which the Interval object can be constructed **/

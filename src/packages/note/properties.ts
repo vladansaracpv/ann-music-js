@@ -2,7 +2,7 @@ import { interval, segment, gt } from '@base/relations';
 import { and2 as both } from '@base/logical';
 import { either } from '@base/boolean';
 import { isInteger, isNumber } from '@base/types';
-import { Factory, createNoteWithName } from './factories';
+import { NoteFactory, createNoteWithName } from './factories';
 import { inc } from '@base/math';
 import { isString } from '@base/types';
 import { A_440, MIDDLE_KEY, OCTAVE_RANGE, SHARPS, NOTE_REGEX, STANDARD_OCTAVE, FLATS } from './theory';
@@ -55,7 +55,7 @@ export const Octave = {
  */
 
 export function simplify(name: NoteName, useSameAccidental = true): NoteName {
-  const note = Factory.fromName(name);
+  const note = NoteFactory.fromName(name);
 
   if (!note) return undefined;
 
@@ -80,7 +80,8 @@ export function enharmonic(note: NoteName): NoteName {
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
-export const property = (name: string) => (note: NoteName) => Factory.fromName(note) && Factory.fromName(note)[name];
+export const property = (name: string) => (note: NoteName) =>
+  NoteFactory.fromName(note) && NoteFactory.fromName(note)[name];
 
 export const name = property('name');
 

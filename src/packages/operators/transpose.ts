@@ -1,5 +1,5 @@
-import { Factory as NoteFactory } from '../note/factories';
-import { Factory } from '../interval/factories';
+import { NoteFactory } from '../note/factories';
+import { IvlFactory } from '../interval/factories';
 /**
  * Transpose a note by an interval. The note can be a pitch class.
  *
@@ -22,7 +22,7 @@ export const transpose = (...args: string[]): any => {
   }
   const [n, i] = args;
   const note = NoteFactory.fromName(n);
-  const interval = Factory.fromName(i);
+  const interval = IvlFactory.fromName(i);
 
   return NoteFactory.fromMidi(note.midi + interval['semitones']).name;
 };
