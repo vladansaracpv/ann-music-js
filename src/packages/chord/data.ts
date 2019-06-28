@@ -1,4 +1,4 @@
-import { pcset } from '@packages/pc';
+import { pcset, EmptySet } from '@packages/pc/properties';
 /**
  * @private
  * Chord List
@@ -129,15 +129,13 @@ const CHORDS: string[][] = [
 ];
 
 const NoChord: ChordPcset = {
+  ...EmptySet,
   name: '',
   quality: 'Unknown',
   intervals: [],
   aliases: [],
 };
 
-export type PcsetChroma = string;
-export type PcsetNum = number;
-type ChordType = string | PcsetChroma | PcsetNum;
 const chordNames: string[] = [];
 const chordAliases: string[] = [];
 export const chords: Record<ChordType, ChordPcset> = {};
@@ -175,19 +173,19 @@ CHORDS.forEach(([ivls, name, abbrvs]) => {
   const aliases = abbrvs.split(' ');
   const quality = getQuality(intervals);
   const set = pcset(intervals);
-  // if (set.chroma) {
-  const chord: ChordPcset = { name, quality, intervals, aliases };
-  if (name) {
-    chordNames.push(name);
-    chords[name] = chord;
+  if (set.chroma) {
+    const chord: ChordPcset = { name, quality, intervals, aliases, ...set };
+    if (name) {
+      chordNames.push(name);
+      chords[name] = chord;
+    }
+    chords[chord.num] = chord;
+    chords[chord.chroma] = chord;
+    aliases.forEach(alias => {
+      chordAliases.push(alias);
+      chords[alias] = chord;
+    });
   }
-  // chords[chord.num] = chord;
-  // chords[chord.chroma] = chord;
-  aliases.forEach(alias => {
-    chordAliases.push(alias);
-    chords[alias] = chord;
-  });
-  // }
 });
 chordNames.sort((a, b) => a.localeCompare(b));
 chordAliases.sort((a, b) => a.localeCompare(b));

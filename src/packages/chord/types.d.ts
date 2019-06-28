@@ -14,7 +14,9 @@ type ChordQuality = 'Major' | 'minor' | 'Augmented' | 'diminished' | 'Unknown' |
 //   aliases: string[];
 // }
 
-interface ChordPcset {
+type ChordType = string | PcsetChroma | PcsetNum;
+
+interface ChordPcset extends PcProps {
   name: string;
   quality: ChordQuality;
   intervals: IvlName[];

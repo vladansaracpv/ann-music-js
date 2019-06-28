@@ -8,14 +8,16 @@ import { Validators, Letter, Accidental, Octave, Midi, Frequency } from './prope
 
 const NoteError = CustomError('Note');
 
+const NoNote: NoNote = { valid: false, name: '' };
+
 /**
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *              NOTE FACTORIES                             *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
-export function createNoteWithName(note: NoteName): NoteProps {
-  if (!Validators.isNoteName(note)) return undefined;
+export function createNoteWithName(note: NoteName): NoteProps | NoNote {
+  if (!Validators.isNoteName(note)) return NoNote;
   const tokens = tokenize(note, NOTE_REGEX);
 
   const { Tletter, Taccidental, Toct } = tokens;
@@ -75,8 +77,8 @@ export function createNoteWithName(note: NoteName): NoteProps {
   });
 }
 
-export function createNoteWithMidi(midi: NoteMidi, useSharps = true): NoteProps {
-  if (!Validators.isNoteMidi(midi)) return NoteError('InvalidMidi', midi);
+export function createNoteWithMidi(midi: NoteMidi, useSharps = true): NoteProps | NoNote {
+  if (!Validators.isNoteMidi(midi)) return NoNote;
 
   const frequency = Midi.toFrequency(midi) as NoteFreq;
   const octave = (Midi.toOctaves(midi) - 1) as NoteOctave;
@@ -114,8 +116,8 @@ export function createNoteWithMidi(midi: NoteMidi, useSharps = true): NoteProps 
   });
 }
 
-export function createNoteWithFreq(freq: NoteFreq, tuning = A_440): NoteProps {
-  if (!Validators.isNoteFreq(freq)) return undefined;
+export function createNoteWithFreq(freq: NoteFreq, tuning = A_440): NoteProps | NoNote {
+  if (!Validators.isNoteFreq(freq)) return NoNote;
 
   return compose(
     createNoteWithMidi,

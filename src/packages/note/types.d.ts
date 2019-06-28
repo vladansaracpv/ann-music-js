@@ -52,6 +52,11 @@ interface NoteProps {
   valid: boolean;
 }
 
+interface NoNote extends Partial<NoteProps> {
+  readonly valid: false;
+  readonly name: '';
+}
+
 /** Note properties from which the Note object can be constructed **/
 type InitProps = Pick<NoteProps, 'name' | 'midi' | 'frequency'>;
 

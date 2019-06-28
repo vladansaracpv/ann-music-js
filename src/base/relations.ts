@@ -39,16 +39,16 @@ export const geq = (a: Comparable, b: Comparable): boolean => a >= b;
 export const geqc = (b: Comparable) => (a: Comparable): boolean => a >= b;
 
 // interval := (a,b,n) => a < n < b
-export const interval = (lower: number, higher: number, num: number): boolean => lt(lower, num) && lt(num, higher);
+export const inInterval = (lower: number, higher: number, num: number): boolean => lt(lower, num) && lt(num, higher);
 
 // intervalc := (a,b) => x => a < x < b
-export const intervalc = (a: Comparable, b: Comparable) => (x: Comparable): boolean => ltc(x)(a) && ltc(b)(x);
+export const inIntervalc = (a: Comparable, b: Comparable) => (x: Comparable): boolean => ltc(x)(a) && ltc(b)(x);
 
 // segment := (a,b,n) => a <= n <= b
-export const segment = (lower: number, higher: number, num: number): boolean => leq(lower, num) && leq(num, higher);
+export const inSegment = (lower: number, higher: number, num: number): boolean => leq(lower, num) && leq(num, higher);
 
 // segmentc := (a,b) => x => a <= x <= b
-export const segmentc = (a: Comparable, b: Comparable) => (x: Comparable): boolean => leqc(x)(a) && leqc(b)(x);
+export const inSegmentc = (a: Comparable, b: Comparable) => (x: Comparable): boolean => leqc(x)(a) && leqc(b)(x);
 
 export const isNegative = (a: number): boolean => lt(a, 0);
 export const isPositive = (a: number): boolean => gt(a, 0);
