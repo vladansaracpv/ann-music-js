@@ -4,42 +4,57 @@ import { either } from '@base/boolean';
 import { CustomError } from '@base/error';
 import { compose } from '@base/functional';
 import { OCTAVE_RANGE, NOTE_REGEX, FLATS, SHARPS, A_440, WHITE_KEYS } from './theory';
-import { Validators, Letter, Accidental, Octave, Midi, Frequency } from './properties';
+import { Letter, Accidental, Octave, Midi, Frequency, NoteValidator, NoteRelations, NoteBinRelations } from './mixins';
+import { and2 as both } from '@base/logical';
 
 const NoteError = CustomError('Note');
 
-const NoNote: NoNote = { valid: false, name: '' };
+const EmptyNote: NoteProps = {
+  name: undefined,
+  letter: undefined,
+  step: undefined,
+  octave: undefined,
+  accidental: undefined,
+  alteration: undefined,
+  pc: undefined,
+  chroma: undefined,
+  midi: undefined,
+  frequency: undefined,
+  color: undefined,
+  valid: false,
+  op: {},
+};
 
 /**
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *              NOTE FACTORIES                             *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                     NOTE FACTORIES                        *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
-export function createNoteWithName(note: NoteName): NoteProps | NoNote {
-  if (!Validators.isNoteName(note)) return NoNote;
-  const tokens = tokenize(note, NOTE_REGEX);
+function createNoteWithName(note: NoteName): NoteProps {
+  // Example: A#4
 
-  const { Tletter, Taccidental, Toct } = tokens;
+  if (!NoteValidator.isName(note)) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
 
-  const letter = capitalize(Tletter) as NoteLetter;
-  const step = Letter.toStep(letter) as NoteStep;
+  const { Tletter, Taccidental, Toct } = tokenize(note, NOTE_REGEX);
 
-  const accidental = substitute(Taccidental, /x/g, '##') as NoteAccidental;
-  const alteration = Accidental.toAlteration(accidental) as NoteAlteration;
+  const letter = capitalize(Tletter) as NoteLetter; // A
+  const step = Letter.toStep(letter) as NoteStep; // 5
+
+  const accidental = substitute(Taccidental, /x/g, '##') as NoteAccidental; // #
+  const alteration = Accidental.toAlteration(accidental) as NoteAlteration; // +1
 
   /** Offset (number of keys) from first letter - C **/
-  const offset = Letter.toIndex(letter);
+  const offset = Letter.toIndex(letter); // 10
 
-  /** Note position is calculated as: offset from the start + in place alteration **/
-  const semitonesAltered = offset + alteration;
+  /** Note position is calculated as: letter offset from the start + in place alteration **/
+  const semitonesAltered = offset + alteration; // 11
 
   /** Because of the alteration, note can slip into the previous/next octave **/
-  const octavesAltered = Math.floor(semitonesAltered / OCTAVE_RANGE);
+  const octavesAltered = Math.floor(semitonesAltered / OCTAVE_RANGE); // 0
+  const octave = Octave.parse(Toct) as NoteOctave; // 4
 
-  const octave = Octave.parse(Toct) as NoteOctave;
-
-  const pc = (letter + accidental) as NotePC;
+  const pc = (letter + accidental) as NotePC; // A#
 
   /**
    *  @example
@@ -51,15 +66,17 @@ export function createNoteWithName(note: NoteName): NoteProps | NoNote {
     (semitonesAltered - Octave.toSemitones(octavesAltered) + 12) % OCTAVE_RANGE,
     semitonesAltered % OCTAVE_RANGE,
     isNegative(octavesAltered),
-  ) as NoteChroma;
+  ) as NoteChroma; // 10
 
-  const midi = (Octave.toSemitones(octave + octavesAltered) + chroma) as NoteMidi;
-  const frequency = Midi.toFrequency(midi) as NoteFreq;
+  const midi = (Octave.toSemitones(octave + octavesAltered) + chroma) as NoteMidi; // 70
+  const frequency = Midi.toFrequency(midi) as NoteFreq; // 466.164
 
-  const name = (pc + octave) as NoteName;
+  const name = (pc + octave) as NoteName; // A#4
 
-  const color = WHITE_KEYS.includes(chroma) ? 'white' : 'black';
+  const color = either('white', 'black', WHITE_KEYS.includes(chroma)); // 'black'
   const valid = true;
+
+  const op = NoteRelations(midi, 'midi');
 
   return Object.freeze({
     name,
@@ -74,11 +91,12 @@ export function createNoteWithName(note: NoteName): NoteProps | NoNote {
     frequency,
     color,
     valid,
+    op,
   });
 }
 
-export function createNoteWithMidi(midi: NoteMidi, useSharps = true): NoteProps | NoNote {
-  if (!Validators.isNoteMidi(midi)) return NoNote;
+function createNoteWithMidi(midi: NoteMidi, useSharps = true): NoteProps {
+  if (!NoteValidator.isMidi(midi)) return NoteError('InvalidConstructor', { midi }, EmptyNote);
 
   const frequency = Midi.toFrequency(midi) as NoteFreq;
   const octave = (Midi.toOctaves(midi) - 1) as NoteOctave;
@@ -86,19 +104,20 @@ export function createNoteWithMidi(midi: NoteMidi, useSharps = true): NoteProps 
   const chroma = (midi - Octave.toSemitones(octave)) as NoteChroma;
   const pc = either(SHARPS[chroma], FLATS[chroma], useSharps) as NotePC;
 
-  const name: NoteName = pc + octave;
+  const name = (pc + octave) as NoteName;
 
-  const tokens = tokenize(name, NOTE_REGEX);
+  const { Tletter, Taccidental } = tokenize(name, NOTE_REGEX);
 
-  const letter = tokens['Tletter'] as NoteLetter;
+  const letter = capitalize(Tletter) as NoteLetter;
   const step = Letter.toStep(letter) as NoteStep;
 
-  const accidental = substitute(tokens['Taccidental'], /x/g, '##') as NoteAccidental;
+  const accidental = substitute(Taccidental, /x/g, '##') as NoteAccidental;
   const alteration = Accidental.toAlteration(accidental) as NoteAlteration;
 
-  const color = WHITE_KEYS.includes(chroma) ? 'white' : 'black';
+  const color = either('white', 'black', WHITE_KEYS.includes(chroma)) as NoteColor;
 
   const valid = true;
+  const op = NoteRelations(midi, 'midi');
 
   return Object.freeze({
     name,
@@ -113,11 +132,12 @@ export function createNoteWithMidi(midi: NoteMidi, useSharps = true): NoteProps 
     frequency,
     color,
     valid,
+    op,
   });
 }
 
-export function createNoteWithFreq(freq: NoteFreq, tuning = A_440): NoteProps | NoNote {
-  if (!Validators.isNoteFreq(freq)) return NoNote;
+function createNoteWithFreq(freq: NoteFreq, tuning = A_440): NoteProps {
+  if (!NoteValidator.isFrequency(freq)) return NoteError('InvalidConstructor', { frequency: freq }, EmptyNote);
 
   return compose(
     createNoteWithMidi,
@@ -125,8 +145,59 @@ export function createNoteWithFreq(freq: NoteFreq, tuning = A_440): NoteProps | 
   )(freq, tuning);
 }
 
-export const NoteFactory = {
-  fromName: createNoteWithName,
-  fromMidi: createNoteWithMidi,
-  fromFreq: createNoteWithFreq,
+export const Note = (prop: InitProps): NoteProps => {
+  const { name, midi, frequency } = prop;
+  if (name && NoteValidator.isName(name)) return createNoteWithName(name);
+  if (midi && NoteValidator.isMidi(midi)) return createNoteWithMidi(midi);
+  if (frequency && NoteValidator.isFrequency(frequency)) return createNoteWithFreq(frequency);
+  return EmptyNote;
+};
+
+/**
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                     NOTE STATIC METHODS                   *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ */
+
+const property = (prop: string) => (name: NoteName) => {
+  const note = Note({ name });
+  return note && note[prop];
+};
+
+function simplify(name: NoteName, useSameAccidental = true): NoteName {
+  const note = Note({ name });
+
+  if (!note) return undefined;
+
+  const { chroma, alteration, octave } = note;
+
+  const isSharp = alteration >= 0;
+
+  const useSharps = both(isSharp, useSameAccidental) || both(!isSharp, !useSameAccidental);
+
+  const pc = either(SHARPS[chroma], FLATS[chroma], useSharps);
+
+  return pc + octave;
+}
+
+function enharmonic(note: NoteName): NoteName {
+  return simplify(note, false);
+}
+
+export const NoteStatic = {
+  simplify,
+  enharmonic,
+  name: property('name'),
+  octave: property('octave'),
+  letter: property('letter'),
+  step: property('step'),
+  accidental: property('accidental'),
+  alteration: property('alteration'),
+  pc: property('pc'),
+  chroma: property('chroma'),
+  midi: property('midi'),
+  frequency: property('frequency'),
+  color: property('color'),
+  valid: property('valid'),
+  op: NoteBinRelations('midi'),
 };

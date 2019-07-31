@@ -1,4 +1,4 @@
-import { Theory, Factories, Properties } from '../packages/note';
+import { Note } from '../packages/note/factories';
 import { expect } from 'chai';
 import 'mocha';
 
@@ -18,7 +18,7 @@ describe('\nNote Factories', () => {
         pc: 'C',
         step: 0,
       };
-      const test = Factories.createNoteWithName('C4');
+      const test = Note({ name: 'C4' });
       expect(test).to.equal(result);
     });
 

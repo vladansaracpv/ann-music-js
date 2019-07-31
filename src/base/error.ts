@@ -3,7 +3,7 @@ import { Logger } from '@base/logger';
 /** Error handling */
 export enum ErrorCode {
   // Note
-  InvalidConstructor = 'Cannot create Note from given initial values. Got:',
+  InvalidConstructor = 'Cannot create Note from given values. Got:',
   EmptyConstructor = 'Cannot create Note from nothing. Provide name | midi | frequency. Got:',
   InvalidNoteProperty = 'Note property provided is not valid. Got:',
   InvalidName = 'Note.name provided is not a valid shape: <letter><accidental?><octave?>. Got:',
@@ -20,8 +20,8 @@ export enum ErrorCode {
   InvalidDuration = 'Duration value is not valid. Got:',
 }
 
-export const CustomError = (file: string) => (code: string, value) => {
+export const CustomError = (file: string) => (code: string, value, returnValue) => {
   const log = new Logger(file);
-  log.error(`Error: ${ErrorCode[code]} ${value}`);
-  return undefined;
+  log.error('Error: ' + ErrorCode[code] + ' ' + JSON.stringify(value));
+  return returnValue;
 };

@@ -1,8 +1,9 @@
 import { tokenize } from '@base/strings';
 import { compose } from '@base/functional';
-import { dec, divC, mul2, inc } from '@base/math';
-import { eq, lt, isNegative } from '@base/relations';
-import { midi, step, Letter, letter } from '@packages/note/properties';
+import { dec, divC, inc } from '@base/math';
+import { eq, isNegative } from '@base/relations';
+import { NoteStatic } from '@packages/note/factories';
+import { Letter } from '@packages/note/mixins';
 import { either } from '@base/boolean';
 import { Quality } from './properties';
 import {
@@ -140,10 +141,10 @@ export function createIntervalWithSemitones(semitones: IvlSemitones) {
  */
 
 export function createIntervalWithNotes(first: string, second: string) {
-  const _harmonic = midi(second) - midi(first);
+  const _harmonic = NoteStatic.midi(second) - NoteStatic.midi(first);
   // return createIntervalWithSemitones(_harmonic);
   const harmonic = _harmonic % 12;
-  const [l1, l2] = [letter(first), letter(second)];
+  const [l1, l2] = [NoteStatic.letter(first), NoteStatic.letter(second)];
   const generic = (Letter.toStep(l2) - Letter.toStep(l1) + 8) % 7;
   console.log(harmonic, generic);
   const _name = eq(harmonic, 12) ? 'P8' : intervalTypeFrom(harmonic, generic);

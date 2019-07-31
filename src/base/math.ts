@@ -1,5 +1,4 @@
 import { curry } from './functional';
-
 /**
  * Arithmetic operations
  *

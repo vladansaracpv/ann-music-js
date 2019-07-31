@@ -4,6 +4,22 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
+/** Note keys */
+export const KEYS = [
+  'name',
+  'letter',
+  'step',
+  'octave',
+  'accidental',
+  'alteration',
+  'pc',
+  'chroma',
+  'midi',
+  'frequency',
+  'color',
+  'valid',
+];
+
 /** Standard tuning frequency **/
 export const A_440 = 440.0;
 

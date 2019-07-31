@@ -1,6 +1,6 @@
 import { inSegment } from '@base/relations';
 import { isArray, isNumber } from '@base/types';
-import { createNoteWithName } from '@packages/note/factories';
+import { Note } from '@packages/note/factories';
 import { createIntervalWithName } from '@packages/interval/factories';
 import { range, compact, rotate } from '@base/arrays';
 export const EmptySet: PcProps = {
@@ -46,7 +46,7 @@ function toChroma(set: any[]): PcsetChroma {
   const binary = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   // tslint:disable-next-line:prefer-for-of
   for (let i = 0; i < set.length; i++) {
-    pitch = createNoteWithName(set[i]);
+    pitch = Note({ name: set[i] });
     // tslint:disable-next-line: curly
     if (!pitch.valid) pitch = createIntervalWithName(set[i]) as IvlProps;
     // tslint:disable-next-line: curly
@@ -227,7 +227,7 @@ export function isNoteIncludedInSet(set: PcSet) {
   const s = pcset(set);
 
   return (noteName: NoteName): boolean => {
-    const n = createNoteWithName(noteName);
+    const n = Note({ name: noteName });
     return s && n.valid && s.chroma.charAt(n.chroma) === '1';
   };
 }

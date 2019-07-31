@@ -77,7 +77,7 @@ export function build({ step = 0, alteration = 0, octave = 4, direction = 1, num
 export function simplifyInterval(ivl: string) {
   const interval = IvlFactory.fromName(ivl);
 
-  if (!interval) return IntervalError('InvalidIvlName', ivl);
+  if (!interval) return IntervalError('InvalidIvlName', ivl, '');
 
   const { simple, quality } = interval as Partial<IvlProps>;
 
@@ -87,7 +87,7 @@ export function simplifyInterval(ivl: string) {
 export function invertInterval(ivl: string) {
   const interval = IvlFactory.fromName(ivl) as IvlProps;
 
-  if (!interval) return IntervalError('InvalidIvlName', ivl);
+  if (!interval) return IntervalError('InvalidIvlName', ivl, '');
 
   const { step, type, alteration, direction, octave } = interval;
 

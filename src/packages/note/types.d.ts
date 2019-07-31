@@ -50,6 +50,7 @@ interface NoteProps {
   frequency: NoteFreq;
   color: NoteColor;
   valid: boolean;
+  op: any;
 }
 
 interface NoNote extends Partial<NoteProps> {
@@ -58,7 +59,7 @@ interface NoNote extends Partial<NoteProps> {
 }
 
 /** Note properties from which the Note object can be constructed **/
-type InitProps = Pick<NoteProps, 'name' | 'midi' | 'frequency'>;
+type InitProps = Partial<Pick<NoteProps, 'name' | 'midi' | 'frequency'>>;
 
 /** Note object factory accepts one of InitProps types **/
 type NoteInitProp = Partial<InitProps>;
