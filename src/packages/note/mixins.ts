@@ -2,8 +2,8 @@ import { A_440, MIDDLE_KEY, OCTAVE_RANGE, SHARPS, STANDARD_OCTAVE, NOTE_REGEX, K
 import { either } from '@base/boolean';
 import { inc } from '@base/math';
 import { and2 as both } from '@base/logical';
-import { isInteger, isNumber, isUndefinedOrNull, isObject } from '@base/types';
-import { inSegment, lt, leq, eq, neq, gt, geq, cmp } from '@base/relations';
+import { isInteger, isNumber, isObject } from '@base/types';
+import { inSegment, lt, leq, eq, neq, gt, geq, cmp, ComparableBinFn } from '@base/relations';
 
 /**
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -52,42 +52,31 @@ export const Octave = {
  *                    NOTE RELATIONS                       *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
-/**
- *
- * @param key - Note property used for comparing
- * @param first - If there's only one param, it's used from object
- */
-export const NoteRelations = (key: string, first?: number | string): NoteRelations<NoteProps> => ({
-  lt: (a, b) => either(lt(a[key], b && b[key]), lt(first, a[key]), isObject(b)),
-  leq: (a, b) => either(leq(a[key], b && b[key]), leq(first, a[key]), isObject(b)),
-  eq: (a, b) => either(eq(a[key], b && b[key]), eq(first, a[key]), isObject(b)),
-  neq: (a, b) => either(neq(a[key], b && b[key]), neq(first, a[key]), isObject(b)),
-  gt: (a, b) => either(gt(a[key], b && b[key]), gt(first, a[key]), isObject(b)),
-  geq: (a, b) => either(geq(a[key], b && b[key]), geq(first, a[key]), isObject(b)),
-  cmp: (a, b) => either(cmp(a[key], b && b[key]), cmp(first, a[key]), isObject(b)),
-});
 
-export const withRelations = {
+function eitherOrder(fn: (x: number, y: number) => boolean, a: NoteProps, b?: NoteProps) {
+  return b ? fn(a.midi, b.midi) : fn(this.midi, a.midi);
+}
+export const withComparison = {
   lt: function(a: NoteProps, b?: NoteProps) {
-    return b ? lt(a.midi, b.midi) : lt(this.midi, a.midi);
+    return eitherOrder.call({ midi: this.midi }, lt, a, b);
   },
   leq: function(a: NoteProps, b?: NoteProps) {
-    return b ? leq(a.midi, b.midi) : leq(this.midi, a.midi);
+    return eitherOrder.call({ midi: this.midi }, leq, a, b);
   },
   eq: function(a: NoteProps, b?: NoteProps) {
-    return b ? eq(a.midi, b.midi) : eq(this.midi, a.midi);
+    return eitherOrder.call({ midi: this.midi }, eq, a, b);
   },
   neq: function(a: NoteProps, b?: NoteProps) {
-    return b ? neq(a.midi, b.midi) : neq(this.midi, a.midi);
+    return eitherOrder.call({ midi: this.midi }, neq, a, b);
   },
   gt: function(a: NoteProps, b?: NoteProps) {
-    return b ? gt(a.midi, b.midi) : gt(this.midi, a.midi);
+    return eitherOrder.call({ midi: this.midi }, gt, a, b);
   },
   geq: function(a: NoteProps, b?: NoteProps) {
-    return b ? geq(a.midi, b.midi) : geq(this.midi, a.midi);
+    return eitherOrder.call({ midi: this.midi }, geq, a, b);
   },
   cmp: function(a: NoteProps, b?: NoteProps) {
-    return b ? cmp(a.midi, b.midi) : cmp(this.midi, a.midi);
+    return eitherOrder.call({ midi: this.midi }, cmp, a, b);
   },
 };
 

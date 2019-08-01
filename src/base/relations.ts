@@ -2,7 +2,7 @@ type BinRelationFn<T> = (a: T, b: T) => boolean;
 type CurryRelationFn<T> = (b: T) => (a: T) => boolean;
 
 type Comparable = number | string;
-type ComparableBinFn = BinRelationFn<Comparable>;
+export type ComparableBinFn = BinRelationFn<Comparable>;
 type ComparableCurryFn = CurryRelationFn<Comparable>;
 
 // type ComparableCurryFn = (a: Comparable) => (b: Comparable) => boolean;
