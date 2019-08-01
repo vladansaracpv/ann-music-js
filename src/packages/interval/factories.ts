@@ -2,8 +2,7 @@ import { tokenize } from '@base/strings';
 import { compose } from '@base/functional';
 import { dec, divC, inc } from '@base/math';
 import { eq, isNegative } from '@base/relations';
-import { NoteStatic } from '@packages/note/factories';
-import { Letter } from '@packages/note/mixins';
+import { NoteStatic, Letter } from '@packages/note/factories';
 import { either } from '@base/boolean';
 import { Quality } from './properties';
 import {

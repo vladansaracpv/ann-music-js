@@ -2,20 +2,9 @@ type BinRelationFn<T> = (a: T, b: T) => boolean;
 type CurryRelationFn<T> = (b: T) => (a: T) => boolean;
 
 type Comparable = number | string;
-export type ComparableBinFn = BinRelationFn<Comparable>;
+type ComparableBinFn = BinRelationFn<Comparable>;
 type ComparableCurryFn = CurryRelationFn<Comparable>;
 
-// type ComparableCurryFn = (a: Comparable) => (b: Comparable) => boolean;
-
-// interface NoteRelations<T> {
-//   lt: ComparableBinFn<T>;
-//   leq: ComparableBinFn<T>;
-//   eq: ComparableBinFn<T>;
-//   neq: ComparableBinFn<T>;
-//   gt: ComparableBinFn<T>;
-//   geq: ComparableBinFn<T>;
-//   cmp(a: T, b?: T): number;
-// }
 /** Relational binary operators  */
 
 // lt := (a,b) => a < b
