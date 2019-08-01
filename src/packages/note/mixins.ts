@@ -2,8 +2,8 @@ import { A_440, MIDDLE_KEY, OCTAVE_RANGE, SHARPS, STANDARD_OCTAVE, NOTE_REGEX, K
 import { either } from '@base/boolean';
 import { inc } from '@base/math';
 import { and2 as both } from '@base/logical';
-import { isInteger, isNumber } from '@base/types';
-import { Comparable, inSegment, lt, leq, eq, neq, gt, geq, cmp } from '@base/relations';
+import { isInteger, isNumber, isUndefinedOrNull, isObject } from '@base/types';
+import { inSegment, lt, leq, eq, neq, gt, geq, cmp } from '@base/relations';
 
 /**
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -47,42 +47,52 @@ export const Octave = {
   toSemitones: (octave: number) => OCTAVE_RANGE * inc(octave),
 };
 
-interface GenericBinRelations<T> {
-  lt(a: T, b: T): boolean;
-  leq(a: T, b: T): boolean;
-  eq(a: T, b: T): boolean;
-  neq(a: T, b: T): boolean;
-  gt(a: T, b: T): boolean;
-  geq(a: T, b: T): boolean;
-  cmp(a: T, b: T): number;
-}
-
-export const NoteBinRelations = (comparableKey: string): GenericBinRelations<NoteProps> => ({
-  lt: (a, b) => lt(a[comparableKey], b[comparableKey]),
-  leq: (a, b) => leq(a[comparableKey], b[comparableKey]),
-  eq: (a, b) => eq(a[comparableKey], b[comparableKey]),
-  neq: (a, b) => neq(a[comparableKey], b[comparableKey]),
-  gt: (a, b) => gt(a[comparableKey], b[comparableKey]),
-  geq: (a, b) => geq(a[comparableKey], b[comparableKey]),
-  cmp: (a, b) => cmp(a[comparableKey], b[comparableKey]),
+/**
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                    NOTE RELATIONS                       *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ */
+/**
+ *
+ * @param key - Note property used for comparing
+ * @param first - If there's only one param, it's used from object
+ */
+export const NoteRelations = (key: string, first?: number | string): NoteRelations<NoteProps> => ({
+  lt: (a, b) => either(lt(a[key], b && b[key]), lt(first, a[key]), isObject(b)),
+  leq: (a, b) => either(leq(a[key], b && b[key]), leq(first, a[key]), isObject(b)),
+  eq: (a, b) => either(eq(a[key], b && b[key]), eq(first, a[key]), isObject(b)),
+  neq: (a, b) => either(neq(a[key], b && b[key]), neq(first, a[key]), isObject(b)),
+  gt: (a, b) => either(gt(a[key], b && b[key]), gt(first, a[key]), isObject(b)),
+  geq: (a, b) => either(geq(a[key], b && b[key]), geq(first, a[key]), isObject(b)),
+  cmp: (a, b) => either(cmp(a[key], b && b[key]), cmp(first, a[key]), isObject(b)),
 });
 
-interface GenericRelations<T> {
-  lt(b: T): boolean;
-  leq(b: T): boolean;
-  eq(b: T): boolean;
-  neq(b: T): boolean;
-  gt(b: T): boolean;
-  geq(b: T): boolean;
-  cmp(b: T): number;
-}
+export const withRelations = {
+  lt: function(a: NoteProps, b?: NoteProps) {
+    return b ? lt(a.midi, b.midi) : lt(this.midi, a.midi);
+  },
+  leq: function(a: NoteProps, b?: NoteProps) {
+    return b ? leq(a.midi, b.midi) : leq(this.midi, a.midi);
+  },
+  eq: function(a: NoteProps, b?: NoteProps) {
+    return b ? eq(a.midi, b.midi) : eq(this.midi, a.midi);
+  },
+  neq: function(a: NoteProps, b?: NoteProps) {
+    return b ? neq(a.midi, b.midi) : neq(this.midi, a.midi);
+  },
+  gt: function(a: NoteProps, b?: NoteProps) {
+    return b ? gt(a.midi, b.midi) : gt(this.midi, a.midi);
+  },
+  geq: function(a: NoteProps, b?: NoteProps) {
+    return b ? geq(a.midi, b.midi) : geq(this.midi, a.midi);
+  },
+  cmp: function(a: NoteProps, b?: NoteProps) {
+    return b ? cmp(a.midi, b.midi) : cmp(this.midi, a.midi);
+  },
+};
 
-export const NoteRelations = (first: Comparable, comparableKey: string): GenericRelations<NoteProps> => ({
-  lt: b => lt(first, b[comparableKey]),
-  leq: b => leq(first, b[comparableKey]),
-  eq: b => eq(first, b[comparableKey]),
-  neq: b => neq(first, b[comparableKey]),
-  gt: b => gt(first, b[comparableKey]),
-  geq: b => geq(first, b[comparableKey]),
-  cmp: b => cmp(first, b[comparableKey]),
-});
+export const withDistance = {
+  distanceTo: function(a: NoteProps, b?: NoteProps) {
+    return b ? b.midi - a.midi : a.midi - this.midi;
+  },
+};

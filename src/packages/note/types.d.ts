@@ -37,7 +37,36 @@ type NoteFreq = number;
 /** Piano key color - black / white */
 type NoteColor = string;
 
-interface NoteProps {
+type Comparable = number | string;
+type ComparableFn<T, U> = (a: T, b?: T) => U;
+type TransposableFn<T, U> = (a: T | U, b?: U) => T;
+type DistanceFn<T, U> = (a: T | number) => (b: T) => U;
+
+interface NoteRelations<NoteProps> {
+  lt: ComparableFn<NoteProps, boolean>;
+  leq: ComparableFn<NoteProps, boolean>;
+  eq: ComparableFn<NoteProps, boolean>;
+  neq: ComparableFn<NoteProps, boolean>;
+  gt: ComparableFn<NoteProps, boolean>;
+  geq: ComparableFn<NoteProps, boolean>;
+  cmp: ComparableFn<NoteProps, number>;
+}
+
+interface NoteMethods {
+  op?: NoteRelations<NoteProps>;
+  lt?: (a: NoteProps, b?: NoteProps) => boolean;
+  distanceTo?: (b: NoteProps) => number;
+  transposeBy?: TransposableFn<NoteProps, number>;
+}
+
+/** Note methods to include */
+interface NoteMethodsConfig {
+  withRelations: boolean;
+  withTransposition: boolean;
+  withDistance: boolean;
+}
+
+interface NoteProps extends NoteMethods {
   name: NoteName;
   letter: NoteLetter;
   step: NoteStep;
@@ -50,7 +79,6 @@ interface NoteProps {
   frequency: NoteFreq;
   color: NoteColor;
   valid: boolean;
-  op: any;
 }
 
 interface NoNote extends Partial<NoteProps> {
@@ -59,7 +87,15 @@ interface NoNote extends Partial<NoteProps> {
 }
 
 /** Note properties from which the Note object can be constructed **/
-type InitProps = Partial<Pick<NoteProps, 'name' | 'midi' | 'frequency'>>;
+type InitProps = Partial<{
+  name: string;
+  midi: number;
+  frequency: number;
+}>;
+
+type InitMethods = Partial<NoteMethods>;
+
+interface InitParams extends InitProps, NoteMethods {}
 
 /** Note object factory accepts one of InitProps types **/
-type NoteInitProp = Partial<InitProps>;
+type NoteInitConfig = Partial<InitParams>;

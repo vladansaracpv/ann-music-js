@@ -1,11 +1,22 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import { tokenize, capitalize, substitute } from '@base/strings';
 import { isNegative } from '@base/relations';
 import { either } from '@base/boolean';
 import { CustomError } from '@base/error';
-import { compose } from '@base/functional';
 import { OCTAVE_RANGE, NOTE_REGEX, FLATS, SHARPS, A_440, WHITE_KEYS } from './theory';
-import { Letter, Accidental, Octave, Midi, Frequency, NoteValidator, NoteRelations, NoteBinRelations } from './mixins';
+import {
+  Letter,
+  Accidental,
+  Octave,
+  Midi,
+  Frequency,
+  NoteValidator,
+  NoteRelations,
+  withDistance,
+  withRelations,
+} from './mixins';
 import { and2 as both } from '@base/logical';
+import { isObject, isFunction, isNumber } from '@base/types';
 
 const NoteError = CustomError('Note');
 
@@ -22,7 +33,6 @@ const EmptyNote: NoteProps = {
   frequency: undefined,
   color: undefined,
   valid: false,
-  op: {},
 };
 
 /**
@@ -31,7 +41,7 @@ const EmptyNote: NoteProps = {
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
-function createNoteWithName(note: NoteName): NoteProps {
+function createNoteWithName(note: NoteName, methods?: NoteMethodsConfig): NoteProps {
   // Example: A#4
 
   if (!NoteValidator.isName(note)) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
@@ -75,8 +85,11 @@ function createNoteWithName(note: NoteName): NoteProps {
 
   const color = either('white', 'black', WHITE_KEYS.includes(chroma)); // 'black'
   const valid = true;
-
-  const op = NoteRelations(midi, 'midi');
+  const { distanceTo } = withDistance;
+  const { lt } = withRelations;
+  // const op = methods.withRelations ? NoteRelations('midi', midi) : undefined;
+  // const distanceTo = methods.withDistance ? withDistance.distanceTo : undefined;
+  // const transposeBy = methods.withTransposition ? (n: number) => Note({ midi: midi + n, ...methods }) : undefined;
 
   return Object.freeze({
     name,
@@ -91,11 +104,14 @@ function createNoteWithName(note: NoteName): NoteProps {
     frequency,
     color,
     valid,
-    op,
+    // op,
+    lt,
+    distanceTo,
+    // transposeBy,
   });
 }
 
-function createNoteWithMidi(midi: NoteMidi, useSharps = true): NoteProps {
+function createNoteWithMidi(midi: NoteMidi, methods?: NoteMethodsConfig, useSharps = true): NoteProps {
   if (!NoteValidator.isMidi(midi)) return NoteError('InvalidConstructor', { midi }, EmptyNote);
 
   const frequency = Midi.toFrequency(midi) as NoteFreq;
@@ -117,7 +133,9 @@ function createNoteWithMidi(midi: NoteMidi, useSharps = true): NoteProps {
   const color = either('white', 'black', WHITE_KEYS.includes(chroma)) as NoteColor;
 
   const valid = true;
-  const op = NoteRelations(midi, 'midi');
+  // const op = methods.withRelations ? NoteRelations('midi', midi) : undefined;
+  // const distanceTo = methods.withDistance ? withDistance.distanceTo : undefined;
+  // const transposeBy = methods.withTransposition ? (n: number) => Note({ midi: midi + n, ...methods }) : undefined;
 
   return Object.freeze({
     name,
@@ -132,21 +150,22 @@ function createNoteWithMidi(midi: NoteMidi, useSharps = true): NoteProps {
     frequency,
     color,
     valid,
-    op,
+    // op,
+    // distanceTo,
+    // transposeBy,
   });
 }
 
-function createNoteWithFreq(freq: NoteFreq, tuning = A_440): NoteProps {
+function createNoteWithFreq(freq: NoteFreq, methods?: NoteMethodsConfig, tuning = A_440): NoteProps {
   if (!NoteValidator.isFrequency(freq)) return NoteError('InvalidConstructor', { frequency: freq }, EmptyNote);
 
-  return compose(
-    createNoteWithMidi,
-    Frequency.toMidi,
-  )(freq, tuning);
+  const midi = Frequency.toMidi(freq, tuning);
+  return createNoteWithMidi(midi, methods);
 }
 
-export const Note = (prop: InitProps): NoteProps => {
-  const { name, midi, frequency } = prop;
+export const Note = (props: InitProps): NoteProps => {
+  const { name, midi, frequency } = props;
+
   if (name && NoteValidator.isName(name)) return createNoteWithName(name);
   if (midi && NoteValidator.isMidi(midi)) return createNoteWithMidi(midi);
   if (frequency && NoteValidator.isFrequency(frequency)) return createNoteWithFreq(frequency);
@@ -184,6 +203,15 @@ function enharmonic(note: NoteName): NoteName {
   return simplify(note, false);
 }
 
+export const transpose = (a: NoteProps | number, b: number) => {
+  if (isNumber(a)) return Note({ midi: a + b });
+  return {
+    ...a,
+    ...Note({ midi: a.midi + b }),
+  };
+};
+
+const { distanceTo } = withDistance;
 export const NoteStatic = {
   simplify,
   enharmonic,
@@ -199,5 +227,7 @@ export const NoteStatic = {
   frequency: property('frequency'),
   color: property('color'),
   valid: property('valid'),
-  op: NoteBinRelations('midi'),
+  op: NoteRelations('midi'),
+  distanceTo,
+  transpose,
 };
