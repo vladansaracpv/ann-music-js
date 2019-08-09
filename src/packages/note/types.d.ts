@@ -38,6 +38,7 @@ type NoteFreq = number;
 type NoteColor = string;
 
 type ComparableFn<T, U> = (a: T, b?: T) => U;
+
 type TransposableFn<T, U> = (a: T, b?: U) => U;
 
 interface NoteRelations<NoteProps> {

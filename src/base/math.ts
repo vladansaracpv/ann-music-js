@@ -48,4 +48,4 @@ export const sign = (n: number): number => (n < 0 ? -1 : 1);
 export const flipCoin = (n: number): number => Math.floor(Math.random() * Math.floor(n));
 
 /** Sums */
-export const gsum = (a1: number, r: number, n: number): number => (a1 * (1 - r ** n)) / (1 - r);
+export const gsum = (a1: number, r: number, n: number): number => 2 * a1 * (1 - r ** n);

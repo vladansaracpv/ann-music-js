@@ -4,17 +4,7 @@ import { isNegative, inSegment, lt, leq, eq, neq, gt, geq, cmp } from '@base/rel
 import { either } from '@base/boolean';
 import { CustomError } from '@base/error';
 import { inc } from '@base/math';
-import {
-  OCTAVE_RANGE,
-  NOTE_REGEX,
-  FLATS,
-  SHARPS,
-  A_440,
-  WHITE_KEYS,
-  KEYS,
-  MIDDLE_KEY,
-  STANDARD_OCTAVE,
-} from './theory';
+import { OCTAVE_RANGE, NOTE_REGEX, FLATS, SHARPS, A_440, WHITE_KEYS, KEYS, MIDDLE_KEY, STANDARD_OCTAVE } from '.';
 import { and2 as both } from '@base/logical';
 import { isInteger, isNumber } from '@base/types';
 
@@ -40,25 +30,25 @@ const EmptyNote: NoteProps = {
  *               NOTE PROPS - HELPER FUNCTIONS             *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
-export const Midi = {
+const Midi = {
   toFrequency: (key: NoteMidi, tuning = A_440): NoteFreq => tuning * 2 ** ((key - MIDDLE_KEY) / OCTAVE_RANGE),
   toOctaves: (key: NoteMidi) => Math.floor(key / OCTAVE_RANGE),
 };
 
-export const Frequency = {
+const Frequency = {
   toMidi: (freq: NoteFreq, tuning = A_440) => Math.ceil(OCTAVE_RANGE * Math.log2(freq / tuning) + MIDDLE_KEY),
 };
 
-export const Accidental = {
+const Accidental = {
   toAlteration: (accidental: NoteAccidental): number => accidental.length * (accidental[0] === 'b' ? -1 : 1),
 };
 
-export const Letter = {
+const Letter = {
   toStep: (letter: NoteLetter): number => (letter.charCodeAt(0) + 3) % 7,
   toIndex: (letter: NoteLetter) => SHARPS.indexOf(letter),
 };
 
-export const Octave = {
+const Octave = {
   parse: (octave?: string): NoteOctave =>
     either(Number.parseInt(octave), STANDARD_OCTAVE, Number.isInteger(Number.parseInt(octave))),
   toSemitones: (octave: number) => OCTAVE_RANGE * inc(octave),
@@ -69,7 +59,7 @@ export const Octave = {
  *               NOTE PROPS - VALIDATORS                   *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
-export const NoteValidator = {
+const Validators = {
   isName: (name: string): boolean => NOTE_REGEX.test(name) === true,
   isMidi: (midi: number): boolean => both(isInteger(midi), inSegment(0, 127, midi)),
   isChroma: (chroma: number): boolean => both(isInteger(chroma), inSegment(0, 11, chroma)),
@@ -89,7 +79,7 @@ export const Note = (props: InitProps): NoteProps => {
   function createNoteWithName(note: NoteName): NoteProps {
     // Example: A#4
 
-    if (!NoteValidator.isName(note)) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
+    if (!Validators.isName(note)) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
 
     const { Tletter, Taccidental, Toct, Trest } = tokenize(note, NOTE_REGEX);
 
@@ -132,8 +122,6 @@ export const Note = (props: InitProps): NoteProps => {
 
     const color = either('white', 'black', WHITE_KEYS.includes(chroma)); // 'black'
     const valid = true;
-    // const distanceTo = methods.withDistance ? withDistance.distanceTo : undefined;
-    // const transposeBy = methods.withTransposition ? (n: number) => Note({ midi: midi + n, ...methods }) : undefined;
 
     return Object.freeze({
       name,
@@ -156,7 +144,7 @@ export const Note = (props: InitProps): NoteProps => {
   }
 
   function createNoteWithMidi(midi: NoteMidi, useSharps = true): NoteProps {
-    if (!NoteValidator.isMidi(midi)) return NoteError('InvalidConstructor', { midi }, EmptyNote);
+    if (!Validators.isMidi(midi)) return NoteError('InvalidConstructor', { midi }, EmptyNote);
 
     const frequency = Midi.toFrequency(midi) as NoteFreq;
     const octave = (Midi.toOctaves(midi) - 1) as NoteOctave;
@@ -177,9 +165,6 @@ export const Note = (props: InitProps): NoteProps => {
     const color = either('white', 'black', WHITE_KEYS.includes(chroma)) as NoteColor;
 
     const valid = true;
-    // const op = methods.withComparison ? NoteRelations('midi', midi) : undefined;
-    // const distanceTo = methods.withDistance ? withDistance.distanceTo : undefined;
-    // const transposeBy = methods.withTransposition ? (n: number) => Note({ midi: midi + n, ...methods }) : undefined;
 
     return Object.freeze({
       name,
@@ -203,16 +188,19 @@ export const Note = (props: InitProps): NoteProps => {
     });
   }
 
-  function createNoteWithFreq(freq: NoteFreq, tuning = A_440): NoteProps {
-    if (!NoteValidator.isFrequency(freq)) return NoteError('InvalidConstructor', { frequency: freq }, EmptyNote);
+  function createNoteWithFreq(frequency: NoteFreq, tuning = A_440): NoteProps {
+    if (!Validators.isFrequency(frequency)) return NoteError('InvalidConstructor', { frequency }, EmptyNote);
 
-    const midi = Frequency.toMidi(freq, tuning);
+    const midi = Frequency.toMidi(frequency, tuning);
     return createNoteWithMidi(midi);
   }
 
-  if (name && NoteValidator.isName(name)) return createNoteWithName(name);
-  if (midi && NoteValidator.isMidi(midi)) return createNoteWithMidi(midi);
-  if (frequency && NoteValidator.isFrequency(frequency)) return createNoteWithFreq(frequency);
+  if (name && Validators.isName(name)) return createNoteWithName(name);
+
+  if (midi && Validators.isMidi(midi)) return createNoteWithMidi(midi);
+
+  if (frequency && Validators.isFrequency(frequency)) return createNoteWithFreq(frequency);
+
   return EmptyNote;
 };
 
@@ -227,7 +215,7 @@ const property = (prop: string) => (name: NoteName) => {
   return note && note[prop];
 };
 
-function simplify(name: NoteName, sameSign = true): NoteName {
+function simplify(name: NoteName, keepAccidental = true): NoteName {
   const note = Note({ name });
 
   if (!note) return undefined;
@@ -236,7 +224,7 @@ function simplify(name: NoteName, sameSign = true): NoteName {
 
   const isSharp = alteration >= 0;
 
-  const useSharps = both(isSharp, sameSign) || both(!isSharp, !sameSign);
+  const useSharps = both(isSharp, keepAccidental) || both(!isSharp, !keepAccidental);
 
   const pc = either(SHARPS[chroma], FLATS[chroma], useSharps);
 
@@ -251,13 +239,13 @@ function eitherOrder(fn: (x: number, y: number) => boolean, a: NoteProps, b?: No
   return b ? fn(a.midi, b.midi) : fn(this.midi, a.midi);
 }
 
-export const withTranspose = {
+const withTranspose = {
   transposeBy: function(n: number, b?: NoteProps) {
     return b ? Note({ midi: b.midi + n }) : Note({ midi: this.midi + n });
   },
 };
 
-export const withComparison = {
+const withComparison = {
   lt: function(a: NoteProps, b?: NoteProps) {
     return eitherOrder.call({ midi: this.midi }, lt, a, b);
   },
@@ -281,27 +269,22 @@ export const withComparison = {
   },
 };
 
-export const withDistance = {
+const withDistance = {
   distanceTo: function(a: NoteProps, b?: NoteProps) {
     return b ? b.midi - a.midi : a.midi - this.midi;
   },
 };
 
 export const NoteStatic = {
+  Validators,
+  Midi,
+  Frequency,
+  Accidental,
+  Letter,
+  Octave,
   simplify,
   enharmonic,
-  name: property('name'),
-  octave: property('octave'),
-  letter: property('letter'),
-  step: property('step'),
-  accidental: property('accidental'),
-  alteration: property('alteration'),
-  pc: property('pc'),
-  chroma: property('chroma'),
-  midi: property('midi'),
-  frequency: property('frequency'),
-  color: property('color'),
-  valid: property('valid'),
+  property,
   ...withComparison,
   ...withDistance,
   ...withTranspose,

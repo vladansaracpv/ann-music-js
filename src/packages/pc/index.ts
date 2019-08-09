@@ -1,13 +1,12 @@
 import { inSegment } from '@base/relations';
 import { isArray, isNumber } from '@base/types';
-import { Note } from '@packages/note/factories';
-import { Interval } from '@packages/interval/factories';
-import { INTERVAL_NAMES as IVLS } from '@packages/interval/theory';
 import { range, compact, rotate, toBinary } from '@base/arrays';
 import { either } from '@base/boolean';
 import { CustomError } from '@base/error';
 import { curry } from '@base/functional';
 import { and2 as both } from '@base/logical';
+import { Note } from '@packages/note';
+import { Interval, INTERVAL_NAMES as IVLS } from '@packages/interval';
 
 const PcError = CustomError('PC');
 

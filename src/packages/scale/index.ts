@@ -2,7 +2,7 @@ import { rotate } from '@base/arrays';
 import { entries as chordTypes } from '@packages/chord/dictionary';
 import { isSubsetOf, isSupersetOf, modes, transpose } from '@packages/pc';
 import { entries as scaleTypes, scaleType } from './dictionary';
-import { Note } from '@packages/note/factories';
+import { Note } from '@packages/note';
 
 type ScaleName = string;
 type ScaleNameTokens = [string, string]; // [TONIC, SCALE TYPE]

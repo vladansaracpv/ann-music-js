@@ -1,4 +1,4 @@
-import { Note } from '../packages/note/factories';
+import { Note } from '../packages/note';
 import { expect } from 'chai';
 import 'mocha';
 

@@ -1,5 +1,5 @@
 import { tokenize as tokenizeNote } from '@base/strings';
-import { Note } from '@packages/note/factories';
+import { Note } from '@packages/note';
 import { chordType, entries as chordTypes } from './dictionary';
 import { transpose as transposeNote, isSubsetOf, isSupersetOf } from '@packages/pc';
 import { either } from '@base/boolean';
