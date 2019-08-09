@@ -17,7 +17,7 @@ export const AUGMENTED_REGEX = /^A+$/;
 export const DIMINISHED_REGEX = /^d+$/;
 
 /** Regular expression used to tokenize Interval of shape <number><quality> **/
-export const INTERVAL_TONAL = '(?<tn>[-+]?\\d+)(?<tq>d{1,4}|m|M|P|A{1,4})';
+export const INTERVAL_TONAL = '(?<tn>[-+]?\\d+)(?<tq>d{1,2}|m|M|P|A{1,2})';
 
 /** Regular expression used to tokenize Interval of shape <quality><number> **/
 export const INTERVAL_QUALITY = '(?<qq>d{1,4}|m|M|P|A{1,4})(?<qn>[-+]?\\d+)';

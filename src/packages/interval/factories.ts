@@ -2,7 +2,7 @@ import { tokenize, fillStr } from '@base/strings';
 import { compose } from '@base/functional';
 import { CustomError } from '@base/error';
 import { dec, divC, inc } from '@base/math';
-import { eq, isNegative, isPositive, lt, gt } from '@base/relations';
+import { eq, isNegative, lt, gt } from '@base/relations';
 import { NoteStatic, Letter, NoteValidator } from '@packages/note/factories';
 import { either } from '@base/boolean';
 import { and2 as both } from '@base/logical';

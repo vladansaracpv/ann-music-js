@@ -1,9 +1,7 @@
-import { EmptySet } from '@packages/pc';
 import { tokenize as tokenizeNote } from '@base/strings';
-import { NOTE_REGEX } from '@packages/note/theory';
 import { Note } from '@packages/note/factories';
 import { chordType, entries as chordTypes } from './dictionary';
-import { transpose as transposeNote, isSubsetOf, isSupersetOf, modes } from '@packages/pc';
+import { transpose as transposeNote, isSubsetOf, isSupersetOf } from '@packages/pc';
 import { either } from '@base/boolean';
 import { entries as scaleTypes } from '@packages/scale/dictionary';
 

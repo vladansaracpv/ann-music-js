@@ -91,7 +91,9 @@ export const Note = (props: InitProps): NoteProps => {
 
     if (!NoteValidator.isName(note)) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
 
-    const { Tletter, Taccidental, Toct } = tokenize(note, NOTE_REGEX);
+    const { Tletter, Taccidental, Toct, Trest } = tokenize(note, NOTE_REGEX);
+
+    if (Trest) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
 
     const letter = capitalize(Tletter) as NoteLetter; // A
     const step = Letter.toStep(letter) as NoteStep; // 5
