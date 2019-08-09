@@ -1,10 +1,3 @@
-import { pcset, EmptySet } from '@packages/pc';
-/**
- * @private
- * Chord List
- * Source: https://en.wikibooks.org/wiki/Music_Theory/Complete_List_of_Chord_Patterns
- * Format: ["intervals", "full name", "abrv1 abrv2"]
- */
 const CHORDS: string[][] = [
   // ==Major==
   ['1P 3M 5P', 'major', 'M '],
@@ -128,66 +121,4 @@ const CHORDS: string[][] = [
   ['1P 5P 7m 9m 11P', '', '11b9'],
 ];
 
-const NoChord: ChordPcset = {
-  ...EmptySet,
-  name: '',
-  quality: 'Unknown',
-  intervals: [],
-  aliases: [],
-};
-
-const chordNames: string[] = [];
-const chordAliases: string[] = [];
-export const chords: Record<ChordType, ChordPcset> = {};
-
-/**
- * Given a chord name or chroma, return the chord properties
- * @param {string} source - chord name or pitch class set chroma
- * @example
- * import { chord } from 'tonaljs/chord-dictionary'
- * chord('major')
- */
-export function chord(type: ChordType): ChordPcset {
-  return chords[type] || NoChord;
-}
-
-/**
- * Get all chord names
- * @return {Array<String>} an array of chord names
- */
-export function names() {
-  return chordNames.slice();
-}
-
-export function abbreviatures() {
-  return chordAliases.slice();
-}
-
-function getQuality(intervals: IvlName[]): ChordQuality {
-  const has = (interval: IvlName) => intervals.indexOf(interval) !== -1;
-  return has('5A') ? 'Augmented' : has('3M') ? 'Major' : has('5d') ? 'diminished' : has('3m') ? 'minor' : 'other';
-}
-
-CHORDS.forEach(([ivls, name, abbrvs]) => {
-  const intervals = ivls.split(' ');
-  const aliases = abbrvs.split(' ');
-  const quality = getQuality(intervals);
-  const set = pcset(intervals);
-  if (set.chroma) {
-    const chord: ChordPcset = { name, quality, intervals, aliases, ...set };
-    if (name) {
-      chordNames.push(name);
-      chords[name] = chord;
-    }
-    chords[chord.num] = chord;
-    chords[chord.chroma] = chord;
-    aliases.forEach(alias => {
-      chordAliases.push(alias);
-      chords[alias] = chord;
-    });
-  }
-});
-chordNames.sort((a, b) => a.localeCompare(b));
-chordAliases.sort((a, b) => a.localeCompare(b));
-
-// export chords;
+export default CHORDS;

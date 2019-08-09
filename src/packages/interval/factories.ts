@@ -138,7 +138,7 @@ export const Interval = (props: IvlInitProps): IvlProps => {
     const octave = compose(
       Math.ceil,
       divideBy7,
-      dec,
+      // dec,
       Math.abs,
     )(num) as IvlOctave;
 

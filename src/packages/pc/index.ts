@@ -12,6 +12,7 @@ import { and2 as both } from '@base/logical';
 const PcError = CustomError('PC');
 
 export const EmptySet: PcProps = {
+  empty: true,
   num: 0,
   chroma: '000000000000',
   normalized: '000000000000',
@@ -62,7 +63,8 @@ function properties(chroma: PcChroma): PcProps {
     // tslint:disable-next-line: curly
     if (chroma.charAt(i) === '1') length++;
   }
-  return { num, chroma, normalized, length };
+  const empty = length == 0;
+  return { empty, num, chroma, normalized, length };
 }
 
 /**
@@ -207,7 +209,6 @@ function fnIsSubsetOf(set: PcSet, notes: PcSet) {
 
   return s !== o && (o & s) === o;
 }
-
 export const isSubsetOf = curry(fnIsSubsetOf);
 
 /**
@@ -226,7 +227,6 @@ function fnIsSupersetOf(set: PcSet, notes: PcSet) {
   const o = pcset(notes).num;
   return s !== o && (o | s) === o;
 }
-
 export const isSupersetOf = curry(fnIsSupersetOf);
 
 /**
@@ -266,9 +266,15 @@ function filterNotesFn(set: PcSet, notes: NoteName[]) {
   const isIncluded = isNoteIncludedInSet(set);
   return notes.filter(isIncluded);
 }
-
 export const filterNotes = curry(filterNotesFn);
 
+/**
+ *
+ * @param {IvlName} i1
+ * @param {IvlName} i2
+ * @param {boolean} addition - to add or subtract
+ * @returns sum or difference of 2 intervals
+ */
 export const add = (i1: IvlName, i2: IvlName, addition = true): IvlName => {
   const ivl1 = Interval({ name: i1 });
   const ivl2 = Interval({ name: i2 });

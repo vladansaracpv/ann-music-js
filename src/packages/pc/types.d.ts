@@ -15,6 +15,7 @@ type PcNum = number;
  */
 
 interface PcProperties {
+  empty: boolean;
   num: number;
   chroma: PcChroma;
   normalized: PcChroma;

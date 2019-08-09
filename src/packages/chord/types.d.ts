@@ -1,24 +1,26 @@
-type ChordQuality = 'Major' | 'minor' | 'Augmented' | 'diminished' | 'Unknown' | 'other';
+type ChordQuality = 'Major' | 'Minor' | 'Augmented' | 'Diminished' | 'Unknown' | 'Other';
 
-// export interface Pcset {
-//   readonly num: number;
-//   readonly chroma: PcsetChroma;
-//   readonly normalized: PcsetChroma;
-//   readonly length: number;
-// }
-
-// export interface ChordPcset extends Pcset {
-//   name: string;
-//   quality: ChordQuality;
-//   intervals: IntervalName[];
-//   aliases: string[];
-// }
-
-type ChordType = string | PcsetChroma | PcsetNum;
-
-interface ChordPcset extends PcProps {
+interface ChordType extends PcProperties {
   name: string;
   quality: ChordQuality;
   intervals: IvlName[];
   aliases: string[];
 }
+
+interface Chord extends ChordType {
+  tonic: string | null;
+  type: string;
+  notes: NoteName[];
+}
+
+interface ChordPcset extends PcProperties {
+  name: string;
+  quality: ChordQuality;
+  intervals: IvlName[];
+  aliases: string[];
+}
+
+type ChordTypeName = string | PcChroma | PcNum;
+
+type ChordName = string;
+type ChordNameTokens = [string, string];
