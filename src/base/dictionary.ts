@@ -1,4 +1,4 @@
-import { pcset } from '../packages/pc/properties';
+import { pcset } from '../packages/pc';
 
 export const dictionary = raw => {
   const keys = Object.keys(raw).sort();

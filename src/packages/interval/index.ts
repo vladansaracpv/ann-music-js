@@ -1,8 +1,7 @@
 import * as Theory from './theory';
-import { IvlFactory } from './factories';
-import * as Properties from './properties';
+import { Interval } from './factories';
 
-export { Theory, IvlFactory, Properties };
+export { Theory, Interval };
 
 // const INTERVAL_QUALITIES = {
 //   d: { long: 'diminished', short: 'd', abbr: '°' },

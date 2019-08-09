@@ -25,6 +25,8 @@ export const flatten = (array, depth = 2) => array.flat(depth);
 
 export const compact = (array: any[]) => array.filter(notNull);
 
+export const toBinary = (n: number) => n.toString(2);
+
 export const sort = (src: any[], fn = id) => compact(src.map(name)).sort((a, b) => fn(a) - fn(b));
 
 export const unique = (array: any[]) => sort(array).filter(uniqueLocal);

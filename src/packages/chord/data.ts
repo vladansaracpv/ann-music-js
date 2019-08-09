@@ -1,4 +1,4 @@
-import { pcset, EmptySet } from '@packages/pc/properties';
+import { pcset, EmptySet } from '@packages/pc';
 /**
  * @private
  * Chord List

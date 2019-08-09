@@ -1,5 +1,5 @@
-type PcsetChroma = string;
-type PcsetNum = number;
+type PcChroma = string;
+type PcNum = number;
 
 /**
  * The properties of a pitch class set
@@ -14,11 +14,12 @@ type PcsetNum = number;
  * *starting from C*
  */
 
-interface PcProps {
-  readonly num: number;
-  readonly chroma: PcsetChroma;
-  readonly normalized: PcsetChroma;
-  readonly length: number;
+interface PcProperties {
+  num: number;
+  chroma: PcChroma;
+  normalized: PcChroma;
+  length: number;
 }
+type PcProps = Readonly<PcProperties>;
 
-type PcSet = PcProps | PcsetChroma | PcsetNum | NoteName[] | IvlName[];
+type PcSet = PcProps | PcChroma | PcNum | NoteName[] | IvlName[];
