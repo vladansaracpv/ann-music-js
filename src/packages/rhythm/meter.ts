@@ -71,3 +71,67 @@
 //     this.beat = [arr];
 //   };
 // }
+
+const numbers = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+const subdivisions = {
+  1: (n: number) => `${n} `,
+  2: (n: number) => `${n} & `,
+  3: (n: number) => `${n} & a `,
+  4: (n: number) => `${n} e & a `,
+};
+
+const s = subdivisions[4](2);
+console.log(s.split(' '));
+
+const sayNumber = (n: number) => numbers[n];
+
+const fillStr = (s: string, n: number): string => Array(Math.abs(n) + 1).join(s);
+
+const add2 = (a: number, b: number): number => a + b;
+
+const rangeUp = (start: number, l: number): number[] => {
+  return Array(l)
+    .fill(start)
+    .map(add2);
+};
+
+const afterBeat = (beat: number, sheetSymbol: string, subdivision: number) => {
+  const bar = subdivisions[subdivision](beat)
+    .split(' ')
+    .join(sheetSymbol);
+  return bar;
+};
+
+const count = (ts: TimeSignature, subdivision = 4, sheetSymbol = '-') => {
+  const { numerator: beats, denominator: beatUnit } = ts;
+
+  const notes = rangeUp(1, beats);
+  // const subdivisionUnit = countUnit / beatUnit;
+  const sheet = '|' + notes.reduce((acc, cur) => acc + afterBeat(cur, sheetSymbol, subdivision), '') + '|';
+
+  console.log(sheet);
+};
+
+const ts = { numerator: 4, denominator: 4 };
+count(ts, 4);
+
+const duple = `
+|       |
+|   |   |
+| 1 | 2 |
+|   |   | 
+|       |
+`;
+const triple = `
+|           |
+|   |   |   |
+| 1 | 2 | 3 |
+|   |   |   | 
+|           |`;
+const quadruple = `
+|               |
+|       |       |
+| 1 | 2 | 3 | 4 |
+|       |       | 
+|               |
+`;

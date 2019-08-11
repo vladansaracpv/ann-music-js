@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import { tokenize, capitalize, substitute } from '@base/strings';
 import { isNegative, inSegment, lt, leq, eq, neq, gt, geq, cmp } from '@base/relations';
 import { either } from '@base/boolean';

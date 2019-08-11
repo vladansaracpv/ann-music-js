@@ -104,7 +104,7 @@ export class SimplePlayer {
           // corresponding sound to be played along the Transport timeline
           // after the previous notes in the measure have been played (hence the relativeTime)
           if (note.type === 'n') {
-            synth.triggerAttackRelease(note.name, note.duration, time + relativeTime);
+            synth.triggerAttackRelease(note.name, duration, time + relativeTime);
           }
 
           // This is used to delay notes that come next by the correct amount
