@@ -1,14 +1,21 @@
-import { inSegment } from '@base/relations';
-import { isArray, isNumber } from '@base/types';
-import { range, compact, rotate, toBinary } from '@base/arrays';
-import { either } from '@base/boolean';
-import { CustomError } from '@base/error';
-import { curry } from '@base/functional';
-import { and2 as both } from '@base/logical';
 import { Note } from '@packages/note';
-import { Interval, INTERVAL_NAMES as IVLS } from '@packages/interval';
+import { Interval } from '@packages/interval';
+import {
+  range,
+  compact,
+  rotate,
+  toBinary,
+  isArray,
+  isNumber,
+  inSegment,
+  either,
+  CustomError,
+  curry,
+  and2 as both,
+} from '@base/index';
 
 const PcError = CustomError('PC');
+const IVLS = Interval.Theory.INTERVAL_NAMES;
 
 export const EmptySet: PcProps = {
   empty: true,
@@ -80,9 +87,9 @@ export function toChroma(set: NoteName[] | IvlName[]): PcChroma {
   const binary = Array(12).fill(0);
   // tslint:disable-next-line:prefer-for-of
   for (let i = 0; i < set.length; i++) {
-    pitch = Note({ name: set[i] });
+    pitch = Note.from({ name: set[i] });
     // tslint:disable-next-line: curly
-    if (!pitch.valid) pitch = Interval({ name: set[i] }) as IvlProps;
+    if (!pitch.valid) pitch = Interval.from({ name: set[i] }) as IvlProps;
     // tslint:disable-next-line: curly
     if (!pitch.valid) return EmptySet.chroma;
     if (pitch.valid) binary[pitch.chroma] = 1;
@@ -244,7 +251,7 @@ export const isSupersetOf = curry(fnIsSupersetOf);
  */
 function fnIsNoteIncludedInSet(set: PcSet, note: NoteName) {
   const s = pcset(set);
-  const n = Note({ name: note });
+  const n = Note.from({ name: note });
   return s && n.valid && s.chroma.charAt(n.chroma) === '1';
 }
 
@@ -275,12 +282,12 @@ export const filterNotes = curry(filterNotesFn);
  * @returns sum or difference of 2 intervals
  */
 export const add = (i1: IvlName, i2: IvlName, addition = true): IvlName => {
-  const ivl1 = Interval({ name: i1 });
-  const ivl2 = Interval({ name: i2 });
+  const ivl1 = Interval.from({ name: i1 });
+  const ivl2 = Interval.from({ name: i2 });
 
   const semitones = ivl1.semitones + ivl2.semitones * either(1, -1, addition);
 
-  const interval = Interval({ semitones });
+  const interval = Interval.from({ semitones });
 
   return interval.valid ? interval.name : undefined;
 };
@@ -323,8 +330,8 @@ export const subIntervals = (...args: IvlName[]) => {
 export const semitones = (...args: NoteName[]) => {
   if (args.length === 1) return (t: NoteName) => semitones(args[0], t);
 
-  const f = Note({ name: args[0] });
-  const t = Note({ name: args[1] });
+  const f = Note.from({ name: args[0] });
+  const t = Note.from({ name: args[1] });
 
   return either(t.midi - f.midi, null, both(f.valid, t.valid));
 };
@@ -350,12 +357,12 @@ export const transpose = (...args: string[]): any => {
     return (i: NoteName) => transpose(i, args[0]);
   }
   const [n, i] = args;
-  const note = Note({ name: n });
-  const interval = Interval({ name: i });
+  const note = Note.from({ name: n });
+  const interval = Interval.from({ name: i });
 
   if (!both(note.valid, interval.valid)) return undefined;
 
   const amount = note.midi + interval.semitones;
 
-  return Note({ midi: amount }).name;
+  return Note.from({ midi: amount }).name;
 };

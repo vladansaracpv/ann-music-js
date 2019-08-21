@@ -1,9 +1,8 @@
-import { tokenize as tokenizeNote } from '@base/strings';
+import { tokenize as tokenizeNote, either } from '@base/index';
 import { Note } from '@packages/note';
-import { chordType, entries as chordTypes } from './dictionary';
 import { transpose as transposeNote, isSubsetOf, isSupersetOf } from '@packages/pc';
-import { either } from '@base/boolean';
 import { entries as scaleTypes } from '@packages/scale/dictionary';
+import { chordType, entries as chordTypes } from './dictionary';
 
 const NoChord: Chord = {
   empty: true,
@@ -67,7 +66,7 @@ export function tokenize(name: string): ChordNameTokens {
  */
 export function chord(src: ChordName | ChordNameTokens): Chord {
   const tokens = Array.isArray(src) ? src : tokenize(src);
-  const tonic = Note({ name: tokens[0] });
+  const tonic = Note.from({ name: tokens[0] });
   const st = chordType(tokens[1]);
 
   if (st.empty || src === '') {

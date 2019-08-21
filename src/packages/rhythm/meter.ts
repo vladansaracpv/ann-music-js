@@ -113,7 +113,7 @@ const count = (ts: TimeSignature, subdivision = 4, sheetSymbol = '-') => {
 };
 
 const ts = { numerator: 4, denominator: 4 };
-count(ts, 4);
+// count(ts, 4);
 
 const duple = `
 |       |
@@ -135,3 +135,13 @@ const quadruple = `
 |       |       | 
 |               |
 `;
+
+const say = (arr: number[], interval: number) => {
+  if (arr.length == 0) return;
+  console.log(arr[0]);
+  setTimeout(() => {
+    say(arr.slice(1), 2000);
+  }, interval);
+};
+
+say([1, 2, 3, 4], 2000);

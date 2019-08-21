@@ -15,8 +15,6 @@ export const capitalize = (l: string) => l[0].toUpperCase(); // l.charAt(0).toUp
 
 export const substitute = (str: string, regex: RegExp, char: string) => str.replace(regex, char);
 
-export const fillStr = (s: string, n: number): string => Array(Math.abs(n) + 1).join(s);
-
 export const empty = '';
 
 export function isFalsyOrWhitespace(str: string | undefined): boolean {

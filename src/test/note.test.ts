@@ -18,7 +18,7 @@ describe('\nNote Factories', () => {
         pc: 'C',
         step: 0,
       };
-      const test = Note({ name: 'C4' });
+      const test = Note.from({ name: 'C4' });
       expect(test).to.equal(result);
     });
 
