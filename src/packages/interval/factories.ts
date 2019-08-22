@@ -1,10 +1,9 @@
 import { Note } from '@packages/note';
-
+import * as Theory from './theory';
 import {
   tokenize,
   fillStr,
   compose,
-  CustomError,
   dec,
   divC,
   inc,
@@ -17,6 +16,7 @@ import {
   isInteger,
   isNumber,
 } from '@base/index';
+import { CustomError } from '@base/error';
 
 const IntervalError = CustomError('Interval');
 
@@ -36,15 +36,10 @@ const EmptyInterval = {
   valid: false,
 };
 
-let Theory, NoteValidator, Letter, midi, letter;
-
-if (Note) {
-  Theory = Note.Theory;
-  NoteValidator = Note.Validators;
-  Letter = Note.Letter;
-  midi = Note && Note.property('midi');
-  letter = Note && Note.property('letter');
-}
+const NoteValidator = Note && Note.Validators;
+const Letter = Note && Note.Letter;
+const midi = Note && Note.property('midi');
+const letter = Note && Note.property('letter');
 
 /**
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

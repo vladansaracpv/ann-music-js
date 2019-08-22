@@ -37,6 +37,9 @@ type NoteFreq = number;
 /** Piano key color - black / white */
 type NoteColor = string;
 
+/** Note duration value. Can be: 1, 2, 4, 8, 16, 32, 64 */
+type NoteDuration = number;
+
 type ComparableFn<T, U> = (a: T, b?: T) => U;
 
 type TransposableFn<T, U> = (a: T, b?: U) => U;
@@ -76,6 +79,7 @@ interface NoteProps extends NoteMethods {
   midi: NoteMidi;
   frequency: NoteFreq;
   color: NoteColor;
+  duration: NoteDuration;
   valid: boolean;
 }
 
@@ -86,7 +90,8 @@ interface NoNote extends Partial<NoteProps> {
 
 /** Note properties from which the Note object can be constructed **/
 type InitProps = Partial<{
-  name: string;
-  midi: number;
-  frequency: number;
+  name: NoteName;
+  midi: NoteMidi;
+  frequency: NoteFreq;
+  duration: NoteDuration;
 }>;

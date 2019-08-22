@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "esnext",
+    "strict": false,
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
@@ -16,7 +17,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
-    "target": "es6",
+    "target": "es5",
     "lib": ["dom", "es6", "es2015", "es2016", "es2017"],
     "outDir": "dist",
     "noEmitOnError": true,

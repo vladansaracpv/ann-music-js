@@ -50,6 +50,6 @@ function dataToChordType([ivls, name, abbrvs]: string[]) {
   const intervals = ivls.split(' ');
   const aliases = abbrvs.split(' ');
   const quality = getQuality(intervals);
-  const set = pcset(intervals);
+  const set = pcset && pcset(intervals);
   return { ...set, name, quality, intervals, aliases };
 }

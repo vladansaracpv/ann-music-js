@@ -3,7 +3,7 @@ export * from './boolean';
 export * from './charCode';
 export * from './dictionary';
 export * from './error';
-export * from './functional';
+export { curry, compose } from './functional';
 export * from './logger';
 export * from './logical';
 export * from './math';

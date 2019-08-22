@@ -1,5 +1,5 @@
 import * as Theory from './theory';
-
+import { chord } from '@packages/chord';
 import {
   isNegative,
   inSegment,
@@ -14,13 +14,14 @@ import {
   capitalize,
   substitute,
   either,
-  CustomError,
   inc,
   dec,
   and2 as both,
   isInteger,
   isNumber,
 } from '@base/index';
+import { CustomError } from '@base/error';
+import { scale } from '@packages/scale';
 
 const NoteError = CustomError('Note');
 
@@ -36,6 +37,7 @@ const EmptyNote: NoteProps = {
   midi: undefined,
   frequency: undefined,
   color: undefined,
+  duration: undefined,
   valid: false,
 };
 
@@ -90,14 +92,14 @@ const Validators = {
  */
 
 function createNote(props: InitProps): NoteProps {
-  const { name, midi, frequency } = props;
+  const { name, midi, frequency, duration } = props;
 
-  function createNoteWithName(note: NoteName): NoteProps {
+  function createNoteWithName(note: NoteName, nduration?: NoteDuration): NoteProps {
     // Example: A#4
 
     if (!Validators.isName(note)) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
 
-    const { Tletter, Taccidental, Toct, Trest } = tokenize(note, Theory.NOTE_REGEX);
+    const { Tletter, Taccidental, Toct, Tduration, Trest } = tokenize(note, Theory.NOTE_REGEX);
 
     if (Trest) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
 
@@ -137,6 +139,10 @@ function createNote(props: InitProps): NoteProps {
     const name = (pc + octave) as NoteName; // A#4
 
     const color = either('white', 'black', Theory.WHITE_KEYS.includes(chroma)); // 'black'
+    const durationFromParam = nduration ? nduration : 0;
+    const durationFromToken = Tduration ? +Tduration.split('/')[1] : undefined;
+    const duration = durationFromParam || durationFromToken;
+
     const valid = true;
 
     return Object.freeze({
@@ -151,15 +157,12 @@ function createNote(props: InitProps): NoteProps {
       midi,
       frequency,
       color,
+      duration,
       valid,
-      // ...withDistance,
-      // ...withComparison,
-      // ...withTranspose,
-      // transposeBy,
     });
   }
 
-  function createNoteWithMidi(midi: NoteMidi, useSharps = true): NoteProps {
+  function createNoteWithMidi(midi: NoteMidi, useSharps = true, nduration?: NoteDuration): NoteProps {
     if (!Validators.isMidi(midi)) return NoteError('InvalidConstructor', { midi }, EmptyNote);
 
     const frequency = Midi.toFrequency(midi) as NoteFreq;
@@ -170,7 +173,7 @@ function createNote(props: InitProps): NoteProps {
 
     const name = (pc + octave) as NoteName;
 
-    const { Tletter, Taccidental } = tokenize(name, Theory.NOTE_REGEX);
+    const { Tletter, Taccidental, Tduration } = tokenize(name, Theory.NOTE_REGEX);
 
     const letter = capitalize(Tletter) as NoteLetter;
     const step = Letter.toStep(letter) as NoteStep;
@@ -179,6 +182,10 @@ function createNote(props: InitProps): NoteProps {
     const alteration = Accidental.toAlteration(accidental) as NoteAlteration;
 
     const color = either('white', 'black', Theory.WHITE_KEYS.includes(chroma)) as NoteColor;
+
+    const durationFromParam = nduration ? nduration : 0;
+    const durationFromToken = Tduration ? +Tduration.split('/')[1] : undefined;
+    const duration = durationFromParam || durationFromToken;
 
     const valid = true;
 
@@ -194,28 +201,23 @@ function createNote(props: InitProps): NoteProps {
       midi,
       frequency,
       color,
+      duration,
       valid,
-      ...withDistance,
-      ...withComparison,
-      ...withTranspose,
-      // op,
-      // distanceTo,
-      // transposeBy,
     });
   }
 
-  function createNoteWithFreq(frequency: NoteFreq, tuning = Theory.A_440): NoteProps {
+  function createNoteWithFreq(frequency: NoteFreq, tuning = Theory.A_440, nduration?: NoteDuration): NoteProps {
     if (!Validators.isFrequency(frequency)) return NoteError('InvalidConstructor', { frequency }, EmptyNote);
 
     const midi = Frequency.toMidi(frequency, tuning);
-    return createNoteWithMidi(midi);
+    return createNoteWithMidi(midi, true, nduration);
   }
 
-  if (name && Validators.isName(name)) return createNoteWithName(name);
+  if (name && Validators.isName(name)) return createNoteWithName(name, duration);
 
-  if (midi && Validators.isMidi(midi)) return createNoteWithMidi(midi);
+  if (midi && Validators.isMidi(midi)) return createNoteWithMidi(midi, true, duration);
 
-  if (frequency && Validators.isFrequency(frequency)) return createNoteWithFreq(frequency);
+  if (frequency && Validators.isFrequency(frequency)) return createNoteWithFreq(frequency, 440, duration);
 
   return EmptyNote;
 }
@@ -257,6 +259,20 @@ function eitherOrder(fn: (x: number, y: number) => boolean, a: NoteProps, b?: No
   return b ? fn(a.midi, b.midi) : fn(this.midi, a.midi);
 }
 
+const withChordExpansion = {
+  toChord: function(type: string, tonic?: NoteName) {
+    const name = this.name ? this.name : '';
+    return tonic ? chord([tonic, type]) : chord([name, type]);
+  },
+};
+
+const withScaleExpansion = {
+  toScale: function(type: string, tonic?: NoteName) {
+    const name = this.name ? this.name : '';
+    return tonic ? scale([tonic, type]) : scale([name, type]);
+  },
+};
+
 const withTranspose = {
   transposeBy: function(n: number, b?: NoteProps) {
     return b ? createNote({ midi: b.midi + n }) : createNote({ midi: this.midi + n });
@@ -294,6 +310,7 @@ const withDistance = {
 };
 
 export const Note = {
+  Validators: Validators,
   from: createNote,
   property,
   simplify,
@@ -301,8 +318,7 @@ export const Note = {
   Midi,
   Frequency,
   Accidental,
-  Letter: { ...Letter },
+  Letter,
   Octave,
-  Validators: Validators,
   Theory,
 };

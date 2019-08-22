@@ -1,21 +1,12 @@
 import { Note } from '@packages/note';
 import { Interval } from '@packages/interval';
-import {
-  range,
-  compact,
-  rotate,
-  toBinary,
-  isArray,
-  isNumber,
-  inSegment,
-  either,
-  CustomError,
-  curry,
-  and2 as both,
-} from '@base/index';
+import { CustomError } from '@base/error';
+
+import { range, compact, rotate, toBinary, isArray, isNumber, inSegment, either, and2 as both } from '../../base/index';
+import { curry } from '@base/functional';
 
 const PcError = CustomError('PC');
-const IVLS = Interval.Theory.INTERVAL_NAMES;
+const IVLS = Interval && Interval.Theory.INTERVAL_NAMES;
 
 export const EmptySet: PcProps = {
   empty: true,
@@ -87,9 +78,9 @@ export function toChroma(set: NoteName[] | IvlName[]): PcChroma {
   const binary = Array(12).fill(0);
   // tslint:disable-next-line:prefer-for-of
   for (let i = 0; i < set.length; i++) {
-    pitch = Note.from({ name: set[i] });
+    pitch = Note && (Note.from({ name: set[i] }) as NoteProps);
     // tslint:disable-next-line: curly
-    if (!pitch.valid) pitch = Interval.from({ name: set[i] }) as IvlProps;
+    if (!(pitch && pitch.valid)) pitch = Interval.from({ name: set[i] }) as IvlProps;
     // tslint:disable-next-line: curly
     if (!pitch.valid) return EmptySet.chroma;
     if (pitch.valid) binary[pitch.chroma] = 1;
@@ -102,7 +93,7 @@ export function toChroma(set: NoteName[] | IvlName[]): PcChroma {
  * @param {PcSet} src
  * @returns {PcProps}
  */
-export function pcset(src: PcSet): PcProps {
+export const pcset = function(src: PcSet): PcProps {
   const chroma: PcChroma = PcValidator.isChroma(src)
     ? src
     : PcValidator.isPcsetNum(src)
@@ -116,7 +107,7 @@ export function pcset(src: PcSet): PcProps {
     : EmptySet.chroma;
 
   return (cache[chroma] = cache[chroma] || properties(chroma));
-}
+};
 
 /**
  * Get PcProps value for given key
@@ -140,7 +131,7 @@ export function intervals(src: PcSet): IvlName[] {
   const set = pcset(src);
 
   // PcChroma to array
-  const chroma = [...set.chroma];
+  const chroma = set.chroma.split('');
   // Map every c == '1' to Interval at position i, then filter existing values
   return compact(chroma.map((c, i) => (c == '1' ? IVLS[i] : null)));
 }
@@ -251,7 +242,7 @@ export const isSupersetOf = curry(fnIsSupersetOf);
  */
 function fnIsNoteIncludedInSet(set: PcSet, note: NoteName) {
   const s = pcset(set);
-  const n = Note.from({ name: note });
+  const n = Note && Note.from({ name: note });
   return s && n.valid && s.chroma.charAt(n.chroma) === '1';
 }
 
@@ -330,8 +321,8 @@ export const subIntervals = (...args: IvlName[]) => {
 export const semitones = (...args: NoteName[]) => {
   if (args.length === 1) return (t: NoteName) => semitones(args[0], t);
 
-  const f = Note.from({ name: args[0] });
-  const t = Note.from({ name: args[1] });
+  const f = Note && Note.from({ name: args[0] });
+  const t = Note && Note.from({ name: args[1] });
 
   return either(t.midi - f.midi, null, both(f.valid, t.valid));
 };
@@ -357,12 +348,12 @@ export const transpose = (...args: string[]): any => {
     return (i: NoteName) => transpose(i, args[0]);
   }
   const [n, i] = args;
-  const note = Note.from({ name: n });
+  const note = Note && Note.from({ name: n });
   const interval = Interval.from({ name: i });
 
   if (!both(note.valid, interval.valid)) return undefined;
 
   const amount = note.midi + interval.semitones;
 
-  return Note.from({ midi: amount }).name;
+  return Note && Note.from({ midi: amount }).name;
 };
