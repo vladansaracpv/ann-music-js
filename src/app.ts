@@ -8,4 +8,5 @@ import { scale } from '@packages/scale';
 //   .map(tonic => chord(tonic))
 //   .map(chord => console.log(chord.notes));
 
-console.log(Note.from({ frequency: 220 }));
+let n = Note.from({ name: 'G4' }, { comparison: false, transposition: false, distance: true, extension: true });
+console.log(n.toChord('7'));

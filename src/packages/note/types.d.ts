@@ -54,6 +54,10 @@ interface NoteRelations<NoteProps> {
   cmp: ComparableFn<NoteProps, number>;
 }
 
+interface NoteExtension<NoteProps> {
+  toChord: (a: string, b?: NoteName) => Chord;
+  toScale: (a: string, b?: NoteName) => Scale;
+}
 interface NoteDistance<NoteProps> {
   distanceTo: ComparableFn<NoteProps, number>;
 }
@@ -65,6 +69,7 @@ interface NoteTranspose<NoteProps> {
 interface NoteMethods
   extends Partial<NoteRelations<NoteProps>>,
     Partial<NoteDistance<NoteProps>>,
+    Partial<NoteExtension<NoteProps>>,
     Partial<NoteTranspose<NoteProps>> {}
 
 interface NoteProps extends NoteMethods {
@@ -81,6 +86,10 @@ interface NoteProps extends NoteMethods {
   color: NoteColor;
   duration: NoteDuration;
   valid: boolean;
+  compare?: any;
+  transpose?: any;
+  distance?: any;
+  extend?: any;
 }
 
 interface NoNote extends Partial<NoteProps> {
@@ -94,4 +103,11 @@ type InitProps = Partial<{
   midi: NoteMidi;
   frequency: NoteFreq;
   duration: NoteDuration;
+}>;
+
+type InitMethods = Partial<{
+  comparison: boolean;
+  transposition: boolean;
+  distance: boolean;
+  extension: boolean;
 }>;

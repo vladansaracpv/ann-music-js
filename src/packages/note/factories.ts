@@ -91,11 +91,12 @@ const Validators = {
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
-function createNote(props: InitProps): NoteProps {
+function createNote(props: InitProps, methods?: InitMethods): NoteProps {
   const { name, midi, frequency, duration } = props;
 
-  function createNoteWithName(note: NoteName, nduration?: NoteDuration): NoteProps {
+  function createNoteWithName(note: NoteName, nduration?: NoteDuration, methods?: InitMethods): NoteProps {
     // Example: A#4
+    const { comparison, transposition, distance, extension } = { ...methods };
 
     if (!Validators.isName(note)) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
 
@@ -143,6 +144,15 @@ function createNote(props: InitProps): NoteProps {
     const durationFromToken = Tduration ? +Tduration.split('/')[1] : undefined;
     const duration = durationFromParam || durationFromToken;
 
+    // const compareMethods = comparison ? setCompareMethods(midi) : {};
+    const compareMethods = comparison ? withComparison : {};
+
+    const transposeMethods = transposition ? withTranspose : {};
+
+    const extendMethods = extension ? withExtension : {};
+
+    const distanceMethods = distance ? withDistance : {};
+
     const valid = true;
 
     return Object.freeze({
@@ -159,10 +169,19 @@ function createNote(props: InitProps): NoteProps {
       color,
       duration,
       valid,
+      compare: compareMethods,
+      transpose: transposeMethods,
+      ...extendMethods,
+      distance: distanceMethods,
     });
   }
 
-  function createNoteWithMidi(midi: NoteMidi, useSharps = true, nduration?: NoteDuration): NoteProps {
+  function createNoteWithMidi(
+    midi: NoteMidi,
+    useSharps = true,
+    nduration?: NoteDuration,
+    methods?: InitMethods,
+  ): NoteProps {
     if (!Validators.isMidi(midi)) return NoteError('InvalidConstructor', { midi }, EmptyNote);
 
     const frequency = Midi.toFrequency(midi) as NoteFreq;
@@ -206,14 +225,19 @@ function createNote(props: InitProps): NoteProps {
     });
   }
 
-  function createNoteWithFreq(frequency: NoteFreq, tuning = Theory.A_440, nduration?: NoteDuration): NoteProps {
+  function createNoteWithFreq(
+    frequency: NoteFreq,
+    tuning = Theory.A_440,
+    nduration?: NoteDuration,
+    methods?: InitMethods,
+  ): NoteProps {
     if (!Validators.isFrequency(frequency)) return NoteError('InvalidConstructor', { frequency }, EmptyNote);
 
     const midi = Frequency.toMidi(frequency, tuning);
     return createNoteWithMidi(midi, true, nduration);
   }
 
-  if (name && Validators.isName(name)) return createNoteWithName(name, duration);
+  if (name && Validators.isName(name)) return createNoteWithName(name, duration, methods);
 
   if (midi && Validators.isMidi(midi)) return createNoteWithMidi(midi, true, duration);
 
@@ -273,10 +297,26 @@ const withScaleExpansion = {
   },
 };
 
+const withExtension = { ...withChordExpansion, ...withScaleExpansion };
+
 const withTranspose = {
   transposeBy: function(n: number, b?: NoteProps) {
     return b ? createNote({ midi: b.midi + n }) : createNote({ midi: this.midi + n });
   },
+};
+
+const setCompareMethods = (midi?: NoteMidi) => {
+  if (midi)
+    return {
+      lessThan: (b: NoteMidi) => lt(midi, b),
+      lessOrEqual: (b: NoteMidi) => leq(midi, b),
+      equal: (b: NoteMidi) => eq(midi, b),
+      notEqual: (b: NoteMidi) => neq(midi, b),
+      greaterThan: (b: NoteMidi) => gt(midi, b),
+      greaterOrEqual: (b: NoteMidi) => geq(midi, b),
+      compare: (b: NoteMidi) => cmp(midi, b),
+    };
+  return { lt, leq, eq, neq, gt, geq, cmp };
 };
 
 const withComparison = {
@@ -321,4 +361,5 @@ export const Note = {
   Letter,
   Octave,
   Theory,
+  setCompareMethods,
 };
