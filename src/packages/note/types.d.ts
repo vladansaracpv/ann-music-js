@@ -86,10 +86,6 @@ interface NoteProps extends NoteMethods {
   color: NoteColor;
   duration: NoteDuration;
   valid: boolean;
-  compare?: any;
-  transpose?: any;
-  distance?: any;
-  extend?: any;
 }
 
 interface NoNote extends Partial<NoteProps> {

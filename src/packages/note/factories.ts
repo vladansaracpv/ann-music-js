@@ -1,5 +1,7 @@
 import * as Theory from './theory';
+import { CustomError } from '@base/error';
 import { chord } from '@packages/chord';
+import { scale } from '@packages/scale';
 import {
   isNegative,
   inSegment,
@@ -20,8 +22,6 @@ import {
   isInteger,
   isNumber,
 } from '@base/index';
-import { CustomError } from '@base/error';
-import { scale } from '@packages/scale';
 
 const NoteError = CustomError('Note');
 
@@ -91,7 +91,7 @@ const Validators = {
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
-function createNote(props: InitProps, methods?: InitMethods): NoteProps {
+export function createNote(props: InitProps, methods?: InitMethods): NoteProps {
   const { name, midi, frequency, duration } = props;
 
   function createNoteWithName(note: NoteName, nduration?: NoteDuration, methods?: InitMethods): NoteProps {
@@ -297,26 +297,15 @@ const withScaleExpansion = {
   },
 };
 
-const withExtension = { ...withChordExpansion, ...withScaleExpansion };
+const withExtension = {
+  ...withChordExpansion,
+  ...withScaleExpansion,
+};
 
 const withTranspose = {
   transposeBy: function(n: number, b?: NoteProps) {
     return b ? createNote({ midi: b.midi + n }) : createNote({ midi: this.midi + n });
   },
-};
-
-const setCompareMethods = (midi?: NoteMidi) => {
-  if (midi)
-    return {
-      lessThan: (b: NoteMidi) => lt(midi, b),
-      lessOrEqual: (b: NoteMidi) => leq(midi, b),
-      equal: (b: NoteMidi) => eq(midi, b),
-      notEqual: (b: NoteMidi) => neq(midi, b),
-      greaterThan: (b: NoteMidi) => gt(midi, b),
-      greaterOrEqual: (b: NoteMidi) => geq(midi, b),
-      compare: (b: NoteMidi) => cmp(midi, b),
-    };
-  return { lt, leq, eq, neq, gt, geq, cmp };
 };
 
 const withComparison = {
@@ -347,6 +336,20 @@ const withDistance = {
   distanceTo: function(a: NoteProps, b?: NoteProps) {
     return b ? b.midi - a.midi : a.midi - this.midi;
   },
+};
+
+const setCompareMethods = (midi?: NoteMidi) => {
+  if (midi)
+    return {
+      lessThan: (b: NoteMidi) => lt(midi, b),
+      lessOrEqual: (b: NoteMidi) => leq(midi, b),
+      equal: (b: NoteMidi) => eq(midi, b),
+      notEqual: (b: NoteMidi) => neq(midi, b),
+      greaterThan: (b: NoteMidi) => gt(midi, b),
+      greaterOrEqual: (b: NoteMidi) => geq(midi, b),
+      compare: (b: NoteMidi) => cmp(midi, b),
+    };
+  return { lt, leq, eq, neq, gt, geq, cmp };
 };
 
 export const Note = {
