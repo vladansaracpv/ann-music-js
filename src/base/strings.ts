@@ -9,6 +9,12 @@ export const glue = (...args) => args.reduce((acc, el) => acc + el);
 
 export const len = (str: string) => str.length;
 
+/**
+ * Function for tokenizing parsed string
+ * @param str {string} - string to parse against
+ * @param regex {RegExp}
+ * @returns {<string>[]} || null
+ */
 export const tokenize = (str: string, regex: string | RegExp) => (str.match(regex) ? str.match(regex)['groups'] : null);
 
 export const capitalize = (l: string) => l[0].toUpperCase(); // l.charAt(0).toUpperCase() + l.slice(1);

@@ -79,7 +79,7 @@ const Octave = {
  */
 const Validators = {
   isName: (name: string): boolean => Theory.NOTE_REGEX.test(name) === true,
-  isMidi: (midi: number): boolean => both(isInteger(midi), inSegment(0, 127, midi)),
+  isMidi: (midi: number): boolean => both(isInteger(midi), inSegment(0, 140, midi)),
   isChroma: (chroma: number): boolean => both(isInteger(chroma), inSegment(0, 11, chroma)),
   isFrequency: (freq: number): boolean => both(isNumber(freq), gt(freq, 0)),
   isKey: (key: string): boolean => Theory.KEYS.includes(key),
@@ -139,7 +139,7 @@ export function createNote(props: InitProps, methods?: InitMethods): NoteProps {
 
     const name = (pc + octave) as NoteName; // A#4
 
-    const color = either('white', 'black', Theory.WHITE_KEYS.includes(chroma)); // 'black'
+    const color = either('white', 'black', Theory.WHITE_KEYS.includes(chroma)) as NoteColor; // 'black'
     const durationFromParam = nduration ? nduration : 0;
     const durationFromToken = Tduration ? +Tduration.split('/')[1] : undefined;
     const duration = durationFromParam || durationFromToken;
@@ -169,10 +169,10 @@ export function createNote(props: InitProps, methods?: InitMethods): NoteProps {
       color,
       duration,
       valid,
-      compare: compareMethods,
-      transpose: transposeMethods,
+      ...compareMethods,
+      ...transposeMethods,
       ...extendMethods,
-      distance: distanceMethods,
+      ...distanceMethods,
     });
   }
 

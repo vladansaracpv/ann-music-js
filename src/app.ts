@@ -11,10 +11,10 @@ import { NoteMethodsBuilder } from '@packages/note/builder';
 
 const builder = NoteMethodsBuilder();
 
-const note = {
-  ...builder.createDistanceMethods(),
-  ...builder.createExtensionMethods(),
-  ...builder.createTransposeMethods(),
-};
+// const note = {
+//   ...builder.createDistanceMethods(),
+//   ...builder.createExtensionMethods(),
+//   ...builder.createTransposeMethods(),
+// };
 
-console.log(note);
+console.log(Note.from({ midi: 136 }));
