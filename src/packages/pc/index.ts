@@ -78,7 +78,7 @@ export function toChroma(set: NoteName[] | IvlName[]): PcChroma {
   const binary = Array(12).fill(0);
   // tslint:disable-next-line:prefer-for-of
   for (let i = 0; i < set.length; i++) {
-    pitch = Note && (Note.from({ name: set[i] }) as NoteProps);
+    pitch = Note && (Note({ name: set[i] }) as NoteProps);
     // tslint:disable-next-line: curly
     if (!(pitch && pitch.valid)) pitch = Interval.from({ name: set[i] }) as IvlProps;
     // tslint:disable-next-line: curly
@@ -242,7 +242,7 @@ export const isSupersetOf = curry(fnIsSupersetOf);
  */
 function fnIsNoteIncludedInSet(set: PcSet, note: NoteName) {
   const s = pcset(set);
-  const n = Note && Note.from({ name: note });
+  const n = Note && Note({ name: note });
   return s && n.valid && s.chroma.charAt(n.chroma) === '1';
 }
 
@@ -321,8 +321,8 @@ export const subIntervals = (...args: IvlName[]) => {
 export const semitones = (...args: NoteName[]) => {
   if (args.length === 1) return (t: NoteName) => semitones(args[0], t);
 
-  const f = Note && Note.from({ name: args[0] });
-  const t = Note && Note.from({ name: args[1] });
+  const f = Note && Note({ name: args[0] });
+  const t = Note && Note({ name: args[1] });
 
   return either(t.midi - f.midi, null, both(f.valid, t.valid));
 };
@@ -348,12 +348,12 @@ export const transpose = (...args: string[]): any => {
     return (i: NoteName) => transpose(i, args[0]);
   }
   const [n, i] = args;
-  const note = Note && Note.from({ name: n });
+  const note = Note && Note({ name: n });
   const interval = Interval.from({ name: i });
 
   if (!both(note.valid, interval.valid)) return undefined;
 
   const amount = note.midi + interval.semitones;
 
-  return Note && Note.from({ midi: amount }).name;
+  return Note && Note({ midi: amount }).name;
 };

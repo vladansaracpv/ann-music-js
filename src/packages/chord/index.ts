@@ -66,7 +66,7 @@ export function tokenize(name: string): ChordNameTokens {
  */
 export function chord(src: ChordName | ChordNameTokens): Chord {
   const tokens = Array.isArray(src) ? src : tokenize(src);
-  const tonic = Note.from({ name: tokens[0] });
+  const tonic = Note({ name: tokens[0] });
   const st = chordType(tokens[1]);
 
   if (st.empty || src === '') {

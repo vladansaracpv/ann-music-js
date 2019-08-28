@@ -1,7 +1,7 @@
 import * as Theory from './theory';
 import { CustomError } from '@base/error';
-import { chord } from '@packages/chord';
-import { scale } from '@packages/scale';
+// import { chord } from '../chord';
+// import { scale } from '@packages/scale';
 import {
   isNegative,
   inSegment,
@@ -21,7 +21,8 @@ import {
   and2 as both,
   isInteger,
   isNumber,
-} from '@base/index';
+  curry,
+} from '../../base/index';
 
 const NoteError = CustomError('Note');
 
@@ -37,7 +38,6 @@ const EmptyNote: NoteProps = {
   midi: undefined,
   frequency: undefined,
   color: undefined,
-  duration: undefined,
   valid: false,
 };
 
@@ -79,7 +79,7 @@ const Octave = {
  */
 const Validators = {
   isName: (name: string): boolean => Theory.NOTE_REGEX.test(name) === true,
-  isMidi: (midi: number): boolean => both(isInteger(midi), inSegment(0, 140, midi)),
+  isMidi: (midi: number): boolean => both(isInteger(midi), inSegment(0, 135, midi)),
   isChroma: (chroma: number): boolean => both(isInteger(chroma), inSegment(0, 11, chroma)),
   isFrequency: (freq: number): boolean => both(isNumber(freq), gt(freq, 0)),
   isKey: (key: string): boolean => Theory.KEYS.includes(key),
@@ -91,16 +91,15 @@ const Validators = {
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
-export function createNote(props: InitProps, methods?: InitMethods): NoteProps {
-  const { name, midi, frequency, duration } = props;
+export function Note(props: InitProps): NoteProps {
+  const { name, midi, frequency } = props;
 
-  function createNoteWithName(note: NoteName, nduration?: NoteDuration, methods?: InitMethods): NoteProps {
+  function createNoteWithName(note: NoteName): NoteProps {
     // Example: A#4
-    const { comparison, transposition, distance, extension } = { ...methods };
 
     if (!Validators.isName(note)) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
 
-    const { Tletter, Taccidental, Toct, Tduration, Trest } = tokenize(note, Theory.NOTE_REGEX);
+    const { Tletter, Taccidental, Toct, Trest } = tokenize(note, Theory.NOTE_REGEX);
 
     if (Trest) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
 
@@ -140,18 +139,6 @@ export function createNote(props: InitProps, methods?: InitMethods): NoteProps {
     const name = (pc + octave) as NoteName; // A#4
 
     const color = either('white', 'black', Theory.WHITE_KEYS.includes(chroma)) as NoteColor; // 'black'
-    const durationFromParam = nduration ? nduration : 0;
-    const durationFromToken = Tduration ? +Tduration.split('/')[1] : undefined;
-    const duration = durationFromParam || durationFromToken;
-
-    // const compareMethods = comparison ? setCompareMethods(midi) : {};
-    const compareMethods = comparison ? withComparison : {};
-
-    const transposeMethods = transposition ? withTranspose : {};
-
-    const extendMethods = extension ? withExtension : {};
-
-    const distanceMethods = distance ? withDistance : {};
 
     const valid = true;
 
@@ -167,23 +154,12 @@ export function createNote(props: InitProps, methods?: InitMethods): NoteProps {
       midi,
       frequency,
       color,
-      duration,
       valid,
-      ...compareMethods,
-      ...transposeMethods,
-      ...extendMethods,
-      ...distanceMethods,
     });
   }
 
-  function createNoteWithMidi(
-    midi: NoteMidi,
-    useSharps = true,
-    nduration?: NoteDuration,
-    methods?: InitMethods,
-  ): NoteProps {
+  function createNoteWithMidi(midi: NoteMidi, useSharps = true): NoteProps {
     if (!Validators.isMidi(midi)) return NoteError('InvalidConstructor', { midi }, EmptyNote);
-
     const frequency = Midi.toFrequency(midi) as NoteFreq;
     const octave = dec(Midi.toOctaves(midi)) as NoteOctave;
 
@@ -192,7 +168,7 @@ export function createNote(props: InitProps, methods?: InitMethods): NoteProps {
 
     const name = (pc + octave) as NoteName;
 
-    const { Tletter, Taccidental, Tduration } = tokenize(name, Theory.NOTE_REGEX);
+    const { Tletter, Taccidental } = tokenize(name, Theory.NOTE_REGEX);
 
     const letter = capitalize(Tletter) as NoteLetter;
     const step = Letter.toStep(letter) as NoteStep;
@@ -202,10 +178,6 @@ export function createNote(props: InitProps, methods?: InitMethods): NoteProps {
 
     const color = either('white', 'black', Theory.WHITE_KEYS.includes(chroma)) as NoteColor;
 
-    const durationFromParam = nduration ? nduration : 0;
-    const durationFromToken = Tduration ? +Tduration.split('/')[1] : undefined;
-    const duration = durationFromParam || durationFromToken;
-
     const valid = true;
 
     return Object.freeze({
@@ -220,28 +192,23 @@ export function createNote(props: InitProps, methods?: InitMethods): NoteProps {
       midi,
       frequency,
       color,
-      duration,
       valid,
     });
   }
 
-  function createNoteWithFreq(
-    frequency: NoteFreq,
-    tuning = Theory.A_440,
-    nduration?: NoteDuration,
-    methods?: InitMethods,
-  ): NoteProps {
+  function createNoteWithFreq(frequency: NoteFreq, tuning = Theory.A_440): NoteProps {
     if (!Validators.isFrequency(frequency)) return NoteError('InvalidConstructor', { frequency }, EmptyNote);
 
     const midi = Frequency.toMidi(frequency, tuning);
-    return createNoteWithMidi(midi, true, nduration);
+    return createNoteWithMidi(midi);
   }
 
-  if (name && Validators.isName(name)) return createNoteWithName(name, duration, methods);
+  if (name && Validators && Validators.isName(name)) return createNoteWithName(name);
 
-  if (midi && Validators.isMidi(midi)) return createNoteWithMidi(midi, true, duration);
+  if (isInteger(midi) && Validators.isMidi(midi)) return createNoteWithMidi(midi, true);
 
-  if (frequency && Validators.isFrequency(frequency)) return createNoteWithFreq(frequency, 440, duration);
+  if (frequency && Validators.isFrequency(frequency)) return createNoteWithFreq(frequency, 440);
+  console.log('Here');
 
   return EmptyNote;
 }
@@ -254,13 +221,13 @@ export function createNote(props: InitProps, methods?: InitMethods): NoteProps {
 
 function property(prop: string) {
   return function(name: NoteName) {
-    const note = createNote({ name });
+    const note = Note({ name });
     return note && note[prop];
   };
 }
 
 function simplify(name: NoteName, keepAccidental = true): NoteName {
-  const note = createNote({ name });
+  const note = Note({ name });
 
   if (!note) return undefined;
 
@@ -283,86 +250,86 @@ function eitherOrder(fn: (x: number, y: number) => boolean, a: NoteProps, b?: No
   return b ? fn(a.midi, b.midi) : fn(this.midi, a.midi);
 }
 
-const withChordExpansion = {
-  toChord: function(type: string, tonic?: NoteName) {
-    const name = this.name ? this.name : '';
-    return tonic ? chord([tonic, type]) : chord([name, type]);
-  },
-};
+// const withChordExpansion = {
+//   toChord: function(type: string, tonic?: NoteName) {
+//     const name = this.name ? this.name : '';
+//     return tonic ? chord([tonic, type]) : chord([name, type]);
+//   },
+// };
 
-const withScaleExpansion = {
-  toScale: function(type: string, tonic?: NoteName) {
-    const name = this.name ? this.name : '';
-    return tonic ? scale([tonic, type]) : scale([name, type]);
-  },
-};
+// const withScaleExpansion = {
+//   toScale: function(type: string, tonic?: NoteName) {
+//     const name = this.name ? this.name : '';
+//     return tonic ? scale([tonic, type]) : scale([name, type]);
+//   },
+// };
 
 const withExtension = {
-  ...withChordExpansion,
-  ...withScaleExpansion,
+  // ...withChordExpansion,
+  // ...withScaleExpansion,
 };
 
-const withTranspose = {
-  transposeBy: function(n: number, b?: NoteProps) {
-    return b ? createNote({ midi: b.midi + n }) : createNote({ midi: this.midi + n });
-  },
+const transposeFn = (b: NoteProps, n: number) => Note({ midi: b.midi + n });
+
+const distanceFn = (a: NoteProps, b: NoteProps, compare: NoteComparable = 'midi') => b[compare] - a[compare];
+
+const relationsFn = {
+  lt: (note: NoteProps, other: NoteProps, compare: NoteComparable = 'midi') => lt(note[compare], other[compare]),
+  leq: (note: NoteProps, other: NoteProps, compare: NoteComparable = 'midi') => leq(note[compare], other[compare]),
+  eq: (note: NoteProps, other: NoteProps, compare: NoteComparable = 'midi') => eq(note[compare], other[compare]),
+  neq: (note: NoteProps, other: NoteProps, compare: NoteComparable = 'midi') => neq(note[compare], other[compare]),
+  gt: (note: NoteProps, other: NoteProps, compare: NoteComparable = 'midi') => gt(note[compare], other[compare]),
+  geq: (note: NoteProps, other: NoteProps, compare: NoteComparable = 'midi') => geq(note[compare], other[compare]),
+  cmp: (note: NoteProps, other: NoteProps, compare: NoteComparable = 'midi') => cmp(note[compare], other[compare]),
 };
 
-const withComparison = {
-  lt: function(a: NoteProps, b?: NoteProps) {
-    return eitherOrder.call({ midi: this.midi }, lt, a, b);
-  },
-  leq: function(a: NoteProps, b?: NoteProps) {
-    return eitherOrder.call({ midi: this.midi }, leq, a, b);
-  },
-  eq: function(a: NoteProps, b?: NoteProps) {
-    return eitherOrder.call({ midi: this.midi }, eq, a, b);
-  },
-  neq: function(a: NoteProps, b?: NoteProps) {
-    return eitherOrder.call({ midi: this.midi }, neq, a, b);
-  },
-  gt: function(a: NoteProps, b?: NoteProps) {
-    return eitherOrder.call({ midi: this.midi }, gt, a, b);
-  },
-  geq: function(a: NoteProps, b?: NoteProps) {
-    return eitherOrder.call({ midi: this.midi }, geq, a, b);
-  },
-  cmp: function(a: NoteProps, b?: NoteProps) {
-    return eitherOrder.call({ midi: this.midi }, cmp, a, b);
-  },
+const withTranspose = (prop: NoteProps) => ({
+  transpose: curry(transposeFn)(prop),
+});
+
+const withDistance = (prop: NoteProps) => ({
+  distance: curry(distanceFn)(prop),
+});
+
+const withComparison = (prop: NoteProps) => ({
+  lt: (other: NoteProps, compare: NoteComparable = 'midi') => relationsFn.lt(prop, other, compare),
+  leq: (other: NoteProps, compare: NoteComparable = 'midi') => relationsFn.leq(prop, other, compare),
+  eq: (other: NoteProps, compare: NoteComparable = 'midi') => relationsFn.eq(prop, other, compare),
+  neq: (other: NoteProps, compare: NoteComparable = 'midi') => relationsFn.neq(prop, other, compare),
+  gt: (other: NoteProps, compare: NoteComparable = 'midi') => relationsFn.gt(prop, other, compare),
+  geq: (other: NoteProps, compare: NoteComparable = 'midi') => relationsFn.geq(prop, other, compare),
+  cmp: (other: NoteProps, compare: NoteComparable = 'midi') => relationsFn.cmp(prop, other, compare),
+});
+
+export const NoteBuilder = (initProps: NoteBuilderProps, from: InitProps) => {
+  const { distance, transpose, compare, extend } = initProps;
+  const note = Note(from);
+  const distanceFn = distance ? withDistance(note) : null;
+  const transposeFn = transpose ? withTranspose(note) : null;
+  const comparisonFn = compare ? withComparison(note) : null;
+  const extensionFn = extend ? withExtension : null;
+
+  return {
+    ...note,
+    ...distanceFn,
+    ...transposeFn,
+    ...comparisonFn,
+    ...extensionFn,
+  };
 };
 
-const withDistance = {
-  distanceTo: function(a: NoteProps, b?: NoteProps) {
-    return b ? b.midi - a.midi : a.midi - this.midi;
-  },
-};
-
-const setCompareMethods = (midi?: NoteMidi) => {
-  if (midi)
-    return {
-      lessThan: (b: NoteMidi) => lt(midi, b),
-      lessOrEqual: (b: NoteMidi) => leq(midi, b),
-      equal: (b: NoteMidi) => eq(midi, b),
-      notEqual: (b: NoteMidi) => neq(midi, b),
-      greaterThan: (b: NoteMidi) => gt(midi, b),
-      greaterOrEqual: (b: NoteMidi) => geq(midi, b),
-      compare: (b: NoteMidi) => cmp(midi, b),
-    };
-  return { lt, leq, eq, neq, gt, geq, cmp };
-};
-
-export const Note = {
-  Validators: Validators,
-  from: createNote,
-  property,
-  simplify,
-  enharmonic,
+export const NOTE = {
+  Theory,
   Midi,
   Frequency,
   Accidental,
   Letter,
   Octave,
-  Theory,
-  setCompareMethods,
+  Validators: Validators,
+  property,
+  simplify,
+  enharmonic,
+  distance: distanceFn,
+  transpose: transposeFn,
+  ...relationsFn,
 };

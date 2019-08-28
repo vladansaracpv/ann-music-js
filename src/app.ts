@@ -1,20 +1,8 @@
-import { Note } from '@packages/note';
-import { pcset, EmptySet } from '@packages/pc';
-import { chord } from '@packages/chord';
-import { scale } from '@packages/scale';
-import { NoteMethodsBuilder } from '@packages/note/builder';
+import { NoteBuilder, Note, NOTE } from '@packages/note/factories';
 
-// 'C D E F G A'
-//   .split(' ')
-//   .map(tonic => chord(tonic))
-//   .map(chord => console.log(chord.notes));
+const note = NoteBuilder({ distance: true, transpose: true, compare: true }, { name: 'C4' });
+const C5 = Note({ name: 'C5' });
+const A5 = Note({ name: 'A5' });
 
-const builder = NoteMethodsBuilder();
-
-// const note = {
-//   ...builder.createDistanceMethods(),
-//   ...builder.createExtensionMethods(),
-//   ...builder.createTransposeMethods(),
-// };
-
-console.log(Note.from({ midi: 136 }));
+console.log(note.lt(A5, 'chroma'));
+console.log(NOTE.eq(C5, A5, 'octave'));

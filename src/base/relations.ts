@@ -1,7 +1,7 @@
 type BinRelationFn<T> = (a: T, b: T) => boolean;
 type CurryRelationFn<T> = (b: T) => (a: T) => boolean;
 
-type Comparable = number | string;
+type Comparable = number | string | NoteProps;
 type ComparableBinFn = BinRelationFn<Comparable>;
 type ComparableCurryFn = CurryRelationFn<Comparable>;
 

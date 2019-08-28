@@ -69,43 +69,11 @@ type NoteColor = string;
  */
 type NoteDuration = number;
 
-type ComparableFn<T, U> = (a: T, b?: T) => U;
-
-type TransposableFn<T, U> = (a: T, b?: U) => U;
-
-interface NoteRelations<NoteProps> {
-  lt: ComparableFn<NoteProps, boolean>;
-  leq: ComparableFn<NoteProps, boolean>;
-  eq: ComparableFn<NoteProps, boolean>;
-  neq: ComparableFn<NoteProps, boolean>;
-  gt: ComparableFn<NoteProps, boolean>;
-  geq: ComparableFn<NoteProps, boolean>;
-  cmp: ComparableFn<NoteProps, number>;
-}
-
-interface NoteExtension<NoteProps> {
-  toChord: (a: string, b?: NoteName) => Chord;
-  toScale: (a: string, b?: NoteName) => Scale;
-}
-interface NoteDistance<NoteProps> {
-  distanceTo: ComparableFn<NoteProps, number>;
-}
-
-interface NoteTranspose<NoteProps> {
-  transposeBy: TransposableFn<number, NoteProps>;
-}
-
-interface NoteMethods
-  extends Partial<NoteRelations<NoteProps>>,
-    Partial<NoteDistance<NoteProps>>,
-    Partial<NoteExtension<NoteProps>>,
-    Partial<NoteTranspose<NoteProps>> {}
-
 /**
  * Note object. Collection of note properties.
  * It extends @NoteMethods (optionals) interface in case you want them
  */
-interface NoteProps extends NoteMethods {
+interface NoteProps {
   name: NoteName;
   letter: NoteLetter;
   step: NoteStep;
@@ -117,7 +85,6 @@ interface NoteProps extends NoteMethods {
   midi: NoteMidi;
   frequency: NoteFreq;
   color: NoteColor;
-  duration: NoteDuration;
   valid: boolean;
 }
 
@@ -127,18 +94,53 @@ interface NoNote extends Partial<NoteProps> {
 }
 
 /**
+ * Every note property is of @NoteProp type
+ */
+type NoteProp =
+  | NoteName
+  | NoteLetter
+  | NoteStep
+  | NoteOctave
+  | NoteAccidental
+  | NoteAlteration
+  | NotePC
+  | NoteChroma
+  | NoteMidi
+  | NoteFreq
+  | NoteColor;
+
+/**
+ * Comparable properties are those that can be used for comparing and other operations
+ */
+type NoteComparable = 'midi' | 'frequency' | 'chroma' | 'step' | 'octave';
+
+/**
  * Note properties from which the Note object can be constructed
  */
 type InitProps = Partial<{
   name: NoteName;
   midi: NoteMidi;
   frequency: NoteFreq;
-  duration: NoteDuration;
 }>;
 
-type InitMethods = Partial<{
-  comparison: boolean;
-  transposition: boolean;
-  distance: boolean;
-  extension: boolean;
-}>;
+/**
+ * Applied generic to Note
+ * @param {NoteName} from
+ * @param {NoteName} to
+ * @param {NoteComparable} comparable
+ */
+type NoteDistanceFnParams = DistanceFnParams<NoteName, NoteComparable>;
+
+/**
+ * Applied generic type of DistanceFn<T> for Note
+ * @param {NoteDistanceFnParams} params
+ * @return {number}
+ */
+type NoteDistanceFn = DistanceFn<NoteDistanceFnParams>;
+
+interface NoteBuilderProps {
+  distance?: boolean;
+  transpose?: boolean;
+  compare?: boolean;
+  extend?: boolean;
+}

@@ -1,1 +1,1 @@
-export { Note } from './factories';
+export { Note, NOTE } from './factories';

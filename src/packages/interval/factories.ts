@@ -1,4 +1,4 @@
-import { Note } from '@packages/note';
+import { Note, NOTE } from '@packages/note';
 import * as Theory from './theory';
 import {
   tokenize,
@@ -36,10 +36,10 @@ const EmptyInterval = {
   valid: false,
 };
 
-const NoteValidator = Note && Note.Validators;
-const Letter = Note && Note.Letter;
-const midi = Note && Note.property('midi');
-const letter = Note && Note.property('letter');
+const NoteValidator = NOTE && NOTE.Validators;
+const Letter = NOTE && NOTE.Letter;
+const midi = NOTE && NOTE.property('midi');
+const letter = NOTE && NOTE.property('letter');
 
 /**
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -127,7 +127,7 @@ function createInterval(props: IvlInitProps): IvlProps {
     const quality = (tq || qq) as IvlQuality;
 
     /**
-     *  Similar to Note.letter.
+     *  Similar to NOTE.letter.
      *  Number of steps from first note C to given letter.
      *  Normalized to 1 octave
      */
