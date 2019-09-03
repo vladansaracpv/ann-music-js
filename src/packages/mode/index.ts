@@ -1,8 +1,8 @@
-import { rotate } from '@base/arrays';
-import { Note, NOTE } from '@packages/note';
-import { chordFormula, chord } from '@packages/chord';
+import { Note } from '@packages/note';
+import { chordFormula, Chord } from '@packages/chord';
 import { scale } from '@packages/scale';
-import { MODES, IONIAN_CHORDS, IONIAN_STEPS, MODES_CHORDS, MODES_STEPS } from './theory';
+import { MODES_CHORDS } from './theory';
+import { modes as chromaModes } from '@packages/pc';
 export * from './dictionary';
 
 const midiToNote = (midi: number) => Note({ midi: midi }).name;
@@ -31,5 +31,10 @@ export function chordNotes(root: NoteName, chord: string, octaves: number = 1) {
 export function modeToChords(name: string, root: NoteName) {
   const scaleMode = scale([root, name]).notes;
   const mode = MODES_CHORDS[name];
-  return mode.map((ch, i) => chord([scaleMode[i], ch]).notes);
+  return mode.map((ch, i) => Chord([scaleMode[i], ch]).notes);
+}
+
+export function scaleModes(src: ScaleName | ScaleNameTokens) {
+  const chroma = scale(src).chroma;
+  return chromaModes(chroma).map(mode => scale(mode));
 }

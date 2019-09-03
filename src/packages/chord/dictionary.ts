@@ -1,12 +1,15 @@
 import { pcset, EmptySet } from '@packages/pc';
 import CHORD_LIST from './data';
 
-const NoChordType: ChordType = {
+const NoChordType: Chord = {
   ...EmptySet,
   name: '',
   quality: 'Unknown',
   intervals: [],
   aliases: [],
+  tonic: '',
+  type: '',
+  notes: [],
 };
 
 const chords: ChordType[] = CHORD_LIST.map(dataToChordType);

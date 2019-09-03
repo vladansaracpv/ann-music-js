@@ -16,8 +16,6 @@ export const NoScaleType: ScaleType = {
   aliases: [],
 };
 
-type ScaleTypeName = string | PcChroma | PcNum;
-
 const scales: ScaleType[] = data.map(dataToScaleType);
 const index: Record<ScaleTypeName, ScaleType> = scales.reduce((index: Record<ScaleTypeName, ScaleType>, scale) => {
   index[scale.name] = scale;

@@ -67,7 +67,7 @@ export function tokenize(name: string): ChordNameTokens {
 /**
  * Get a Chord from a chord name.
  */
-export function chord(src: ChordName | ChordNameTokens): Chord {
+export function Chord(src: ChordName | ChordNameTokens): Chord {
   const tokens = Array.isArray(src) ? src : tokenize(src);
   const tonic = Note({ name: tokens[0] });
   const st = chordType(tokens[1]);
@@ -93,7 +93,7 @@ export function chord(src: ChordName | ChordNameTokens): Chord {
  * @example
  * transpose('Dm7', 'P4') // => 'Gm7
  */
-export function transpose(chordName: string, interval: string): string {
+export function transposeByInterval(chordName: ChordName, interval: string): string {
   const [tonic, type] = tokenize(chordName);
   if (!tonic) {
     return name;
@@ -109,7 +109,7 @@ export function transpose(chordName: string, interval: string): string {
  * // => ["phrygian dominant", "flamenco", "spanish heptatonic", "half-whole diminished", "chromatic"]
  */
 export function chordScales(name: string): string[] {
-  const s = chord(name);
+  const s = Chord(name);
   const isChordIncluded = isSupersetOf(s.chroma);
   return scaleTypes()
     .filter(scale => isChordIncluded(scale.chroma))
@@ -125,8 +125,8 @@ export function chordScales(name: string): string[] {
  * extended("CMaj7")
  * // => [ 'Cmaj#4', 'Cmaj7#9#11', 'Cmaj9', 'CM7add13', 'Cmaj13', 'Cmaj9#11', 'CM13#11', 'CM7b9' ]
  */
-export function extended(chordName: string): string[] {
-  const s = chord(chordName);
+export function chordSuperset(chordName: string): string[] {
+  const s = Chord(chordName);
   const isSuperset = isSupersetOf(s.chroma);
   return chordTypes()
     .filter(chord => isSuperset(chord.chroma))
@@ -139,15 +139,25 @@ export function extended(chordName: string): string[] {
  *
  * @example
  */
-export function reduced(chordName: string): string[] {
-  const s = chord(chordName);
+export function chordSubset(chordName: string): string[] {
+  const s = Chord(chordName);
   const isSubset = isSubsetOf(s.chroma);
   return chordTypes()
     .filter(chord => isSubset(chord.chroma))
     .map(chord => s.tonic + chord.aliases[0]);
 }
 
+/**
+ * Get chord formula from chord name
+ *
+ * @function
+ * @param {ChordName} src - the chord name
+ * @return {Array<number>} the transposed chord
+ * @example
+ * chordFormula("Maj7")
+ * // => [0, 4, 7, 11]
+ */
 export const chordFormula = (src: ChordName) => {
-  const props = chord(src);
+  const props = Chord(src);
   return props.intervals.map(ivl => Interval.from({ name: ivl }).semitones);
 };

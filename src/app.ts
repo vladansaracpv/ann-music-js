@@ -1,14 +1,18 @@
-import { chordNotes, modeToChords, mode, entries } from '@packages/mode';
-import { chord, chordScales, extended, reduced, chordType, chordFormula } from '@packages/chord';
+import { chordNotes, modeToChords, mode, scaleModes } from '@packages/mode';
+import {
+  Chord,
+  chordScales,
+  chordSuperset,
+  chordSubset,
+  chordType,
+  chordFormula,
+  entries,
+  transposeByInterval,
+} from '@packages/chord';
 import { scale, scaleFormula, scaleChords, scaleToSteps } from '@packages/scale';
 import { Interval } from '@packages/interval';
 import { NOTE } from '@packages/note';
-import { transpose } from '@packages/pc';
 
-// console.log(chordNotes('C4', 'M', 3));
+// console.log(entries().filter(entry => entry.length == 3));
 
-// console.log(modeToChords('aeolian', 'A4'));
-
-// console.log(scaleFormula('major'));
-
-console.log(scaleToSteps('whole tone'));
+console.log(chordFormula('Maj7'));

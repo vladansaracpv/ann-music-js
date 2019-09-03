@@ -5,15 +5,6 @@ import { isSubsetOf, isSupersetOf, modes, transpose } from '@packages/pc';
 import { entries as chordTypes } from '@packages/chord/dictionary';
 import { entries as scaleTypes, scaleType } from './dictionary';
 
-type ScaleName = string;
-type ScaleNameTokens = [string, string]; // [TONIC, SCALE TYPE]
-
-interface Scale extends ScaleType {
-  tonic: string | null;
-  type: string;
-  notes: NoteName[];
-}
-
 const NoScale: Scale = {
   empty: true,
   name: '',
