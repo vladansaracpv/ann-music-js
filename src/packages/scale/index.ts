@@ -219,3 +219,36 @@ export const scaleFormula = (src: ScaleName) => {
   const props = scale(src);
   return props.intervals.map(ivl => Interval.from({ name: ivl }).semitones);
 };
+
+const semitonesToStep = (semitones: number): string => {
+  let char: string;
+  switch (semitones) {
+    case 1:
+      char = 'H';
+      break;
+    case 2:
+      char = 'W';
+      break;
+    case 3:
+      char = 'W.';
+      break;
+    default:
+      break;
+  }
+  return char;
+};
+
+export const scaleToSteps = (src: ScaleName | ScaleNameTokens) => {
+  const _scale = scale(src);
+  const intervals = _scale.intervals;
+
+  const semitones = intervals.map(ivl => Interval.from({ name: ivl }).semitones);
+  let steps = [];
+  for (let i = 1; i < semitones.length; i++) {
+    const diff = semitones[i] - semitones[i - 1];
+    const step = semitonesToStep(diff);
+    steps.push(step);
+  }
+
+  return steps;
+};

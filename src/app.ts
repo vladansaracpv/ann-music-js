@@ -1,6 +1,6 @@
 import { chordNotes, modeToChords, mode, entries } from '@packages/mode';
 import { chord, chordScales, extended, reduced, chordType, chordFormula } from '@packages/chord';
-import { scale, scaleFormula } from '@packages/scale';
+import { scale, scaleFormula, scaleChords, scaleToSteps } from '@packages/scale';
 import { Interval } from '@packages/interval';
 import { NOTE } from '@packages/note';
 import { transpose } from '@packages/pc';
@@ -11,4 +11,4 @@ import { transpose } from '@packages/pc';
 
 // console.log(scaleFormula('major'));
 
-console.log(mode('aeolian'));
+console.log(scaleToSteps('whole tone'));
