@@ -1,8 +1,11 @@
 import { tokenize as tokenizeNote, either } from '@base/index';
 import { Note } from '@packages/note';
 import { transpose as transposeNote, isSubsetOf, isSupersetOf } from '@packages/pc';
+import { Interval } from '@packages/interval';
+
 import { entries as scaleTypes } from '@packages/scale/dictionary';
 import { chordType, entries as chordTypes } from './dictionary';
+export * from './dictionary';
 
 const NoChord: Chord = {
   empty: true,
@@ -143,3 +146,8 @@ export function reduced(chordName: string): string[] {
     .filter(chord => isSubset(chord.chroma))
     .map(chord => s.tonic + chord.aliases[0]);
 }
+
+export const chordFormula = (src: ChordName) => {
+  const props = chord(src);
+  return props.intervals.map(ivl => Interval.from({ name: ivl }).semitones);
+};

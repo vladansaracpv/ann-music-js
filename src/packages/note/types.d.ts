@@ -142,5 +142,4 @@ interface NoteBuilderProps {
   distance?: boolean;
   transpose?: boolean;
   compare?: boolean;
-  extend?: boolean;
 }

@@ -33,3 +33,7 @@ type ComparableFn<T, U> = (a: T, b?: T) => U;
  * @return {U} returns transposed value
  */
 type TransposableFn<T, U> = (a: T, b?: U) => U;
+
+interface Named {
+  readonly name: string;
+}

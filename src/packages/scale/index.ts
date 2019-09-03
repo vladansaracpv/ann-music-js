@@ -1,5 +1,6 @@
 import { rotate } from '@base/arrays';
 import { Note } from '@packages/note';
+import { Interval } from '@packages/interval';
 import { isSubsetOf, isSupersetOf, modes, transpose } from '@packages/pc';
 import { entries as chordTypes } from '@packages/chord/dictionary';
 import { entries as scaleTypes, scaleType } from './dictionary';
@@ -213,3 +214,8 @@ export function sortedNoteNames(notes: NoteName[]): string[] {
 export function sortedUniqNoteNames(arr: string[]): string[] {
   return sortedNoteNames(arr).filter((n, i, a) => i === 0 || n !== a[i - 1]);
 }
+
+export const scaleFormula = (src: ScaleName) => {
+  const props = scale(src);
+  return props.intervals.map(ivl => Interval.from({ name: ivl }).semitones);
+};

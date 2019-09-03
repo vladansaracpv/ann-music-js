@@ -216,10 +216,10 @@ function createInterval(props: IvlInitProps): IvlProps {
   function createIntervalWithNotes(first: NoteName, second: NoteName): IvlProps {
     if (!NoteValidator.isName(first) || !NoteValidator.isName(second))
       return IntervalError('InvalidIvlConstructor', { notes: [first, second] }, EmptyInterval);
-    const _harmonic = midi(second) - midi(first);
+    const _harmonic = midi({ name: second }) - midi({ name: first });
     // return createIntervalWithSemitones(_harmonic);
     const harmonic = _harmonic % 12;
-    const [l1, l2] = [letter(first), letter(second)];
+    const [l1, l2] = [letter({ name: first }), letter({ name: second })];
     const generic = (Letter.toStep(l2) - Letter.toStep(l1) + 8) % 7;
     const _name = eq(harmonic, 12) ? 'P8' : intervalTypeFrom(harmonic, generic);
 

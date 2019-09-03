@@ -1,8 +1,14 @@
-import { NoteBuilder, Note, NOTE } from '@packages/note/factories';
+import { chordNotes, modeToChords, mode, entries } from '@packages/mode';
+import { chord, chordScales, extended, reduced, chordType, chordFormula } from '@packages/chord';
+import { scale, scaleFormula } from '@packages/scale';
+import { Interval } from '@packages/interval';
+import { NOTE } from '@packages/note';
+import { transpose } from '@packages/pc';
 
-const note = NoteBuilder({ distance: true, transpose: true, compare: true }, { name: 'C4' });
-const C5 = Note({ name: 'C5' });
-const A5 = Note({ name: 'A5' });
+// console.log(chordNotes('C4', 'M', 3));
 
-console.log(note.lt(A5, 'chroma'));
-console.log(NOTE.eq(C5, A5, 'octave'));
+// console.log(modeToChords('aeolian', 'A4'));
+
+// console.log(scaleFormula('major'));
+
+console.log(mode('aeolian'));

@@ -1,7 +1,5 @@
 import * as Theory from './theory';
 import { CustomError } from '@base/error';
-// import { chord } from '../chord';
-// import { scale } from '@packages/scale';
 import {
   isNegative,
   inSegment,
@@ -208,7 +206,6 @@ export function Note(props: InitProps): NoteProps {
   if (isInteger(midi) && Validators.isMidi(midi)) return createNoteWithMidi(midi, true);
 
   if (frequency && Validators.isFrequency(frequency)) return createNoteWithFreq(frequency, 440);
-  console.log('Here');
 
   return EmptyNote;
 }
@@ -219,12 +216,14 @@ export function Note(props: InitProps): NoteProps {
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
-function property(prop: string) {
-  return function(name: NoteName) {
-    const note = Note({ name });
-    return note && note[prop];
-  };
-}
+// function property(prop: string) {
+//   return function(name: NoteName) {
+//     const note = Note({ name });
+//     return note && note[prop];
+//   };
+// }
+
+const property = (prop: NoteProp) => (note: InitProps) => Note(note)[prop];
 
 function simplify(name: NoteName, keepAccidental = true): NoteName {
   const note = Note({ name });
@@ -246,34 +245,11 @@ function enharmonic(note: NoteName): NoteName {
   return simplify(note, false);
 }
 
-function eitherOrder(fn: (x: number, y: number) => boolean, a: NoteProps, b?: NoteProps) {
-  return b ? fn(a.midi, b.midi) : fn(this.midi, a.midi);
-}
-
-// const withChordExpansion = {
-//   toChord: function(type: string, tonic?: NoteName) {
-//     const name = this.name ? this.name : '';
-//     return tonic ? chord([tonic, type]) : chord([name, type]);
-//   },
-// };
-
-// const withScaleExpansion = {
-//   toScale: function(type: string, tonic?: NoteName) {
-//     const name = this.name ? this.name : '';
-//     return tonic ? scale([tonic, type]) : scale([name, type]);
-//   },
-// };
-
-const withExtension = {
-  // ...withChordExpansion,
-  // ...withScaleExpansion,
-};
-
 const transposeFn = (b: NoteProps, n: number) => Note({ midi: b.midi + n });
 
 const distanceFn = (a: NoteProps, b: NoteProps, compare: NoteComparable = 'midi') => b[compare] - a[compare];
 
-const relationsFn = {
+const comparisonFn = {
   lt: (note: NoteProps, other: NoteProps, compare: NoteComparable = 'midi') => lt(note[compare], other[compare]),
   leq: (note: NoteProps, other: NoteProps, compare: NoteComparable = 'midi') => leq(note[compare], other[compare]),
   eq: (note: NoteProps, other: NoteProps, compare: NoteComparable = 'midi') => eq(note[compare], other[compare]),
@@ -292,29 +268,27 @@ const withDistance = (prop: NoteProps) => ({
 });
 
 const withComparison = (prop: NoteProps) => ({
-  lt: (other: NoteProps, compare: NoteComparable = 'midi') => relationsFn.lt(prop, other, compare),
-  leq: (other: NoteProps, compare: NoteComparable = 'midi') => relationsFn.leq(prop, other, compare),
-  eq: (other: NoteProps, compare: NoteComparable = 'midi') => relationsFn.eq(prop, other, compare),
-  neq: (other: NoteProps, compare: NoteComparable = 'midi') => relationsFn.neq(prop, other, compare),
-  gt: (other: NoteProps, compare: NoteComparable = 'midi') => relationsFn.gt(prop, other, compare),
-  geq: (other: NoteProps, compare: NoteComparable = 'midi') => relationsFn.geq(prop, other, compare),
-  cmp: (other: NoteProps, compare: NoteComparable = 'midi') => relationsFn.cmp(prop, other, compare),
+  lt: (other: NoteProps, compare: NoteComparable = 'midi') => comparisonFn.lt(prop, other, compare),
+  leq: (other: NoteProps, compare: NoteComparable = 'midi') => comparisonFn.leq(prop, other, compare),
+  eq: (other: NoteProps, compare: NoteComparable = 'midi') => comparisonFn.eq(prop, other, compare),
+  neq: (other: NoteProps, compare: NoteComparable = 'midi') => comparisonFn.neq(prop, other, compare),
+  gt: (other: NoteProps, compare: NoteComparable = 'midi') => comparisonFn.gt(prop, other, compare),
+  geq: (other: NoteProps, compare: NoteComparable = 'midi') => comparisonFn.geq(prop, other, compare),
+  cmp: (other: NoteProps, compare: NoteComparable = 'midi') => comparisonFn.cmp(prop, other, compare),
 });
 
 export const NoteBuilder = (initProps: NoteBuilderProps, from: InitProps) => {
-  const { distance, transpose, compare, extend } = initProps;
+  const { distance, transpose, compare } = initProps;
   const note = Note(from);
   const distanceFn = distance ? withDistance(note) : null;
   const transposeFn = transpose ? withTranspose(note) : null;
   const comparisonFn = compare ? withComparison(note) : null;
-  const extensionFn = extend ? withExtension : null;
 
   return {
     ...note,
     ...distanceFn,
     ...transposeFn,
     ...comparisonFn,
-    ...extensionFn,
   };
 };
 
@@ -331,5 +305,5 @@ export const NOTE = {
   enharmonic,
   distance: distanceFn,
   transpose: transposeFn,
-  ...relationsFn,
+  ...comparisonFn,
 };

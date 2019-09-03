@@ -19,7 +19,7 @@ interface PcProperties {
   num: number;
   chroma: PcChroma;
   normalized: PcChroma;
-  length: number;
+  length?: number;
 }
 type PcProps = Readonly<PcProperties>;
 
