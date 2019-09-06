@@ -70,3 +70,8 @@ interface IvlBuild {
   direction?: IvlDirection;
   num?: IvlNumber;
 }
+interface IvlBuilderProps {
+  distance?: boolean;
+  transpose?: boolean;
+  compare?: boolean;
+}

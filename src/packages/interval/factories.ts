@@ -1,5 +1,6 @@
-import { Note, NOTE } from '@packages/note';
 import * as Theory from './theory';
+import { CustomError } from '@base/error';
+import { NOTE } from '@packages/note';
 import {
   tokenize,
   fillStr,
@@ -16,109 +17,207 @@ import {
   isInteger,
   isNumber,
 } from '@base/index';
-import { CustomError } from '@base/error';
+
+const { Letter, Validators: NValidators, property: nproperty } = NOTE;
+
+const midi = nproperty('midi');
+const letter = nproperty('letter');
 
 const IntervalError = CustomError('Interval');
 
-const EmptyInterval = {
-  name: undefined,
-  num: undefined,
-  quality: undefined,
-  alteration: undefined,
-  step: undefined,
-  direction: undefined,
-  type: undefined,
-  simple: undefined,
-  semitones: undefined,
-  chroma: undefined,
-  octave: undefined,
-  ic: undefined,
-  valid: false,
-};
-
-const NoteValidator = NOTE && NOTE.Validators;
-const Letter = NOTE && NOTE.Letter;
-const midi = NOTE && NOTE.property('midi');
-const letter = NOTE && NOTE.property('letter');
+const { EmptyInterval } = Theory;
 
 /**
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *             INTERVAL PROPS - VALIDATORS                 *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * Note object builder. Used to assign methods beside note properties
+ * @param {IvlBuildProps} initProps
+ * @param {IvlInitProps} from
  */
-const Validators = {
-  isIntervalName: (name: IvlName) => Theory.INTERVAL_REGEX.test(name),
-  isPerfect: (quality: string) => eq(quality, 'P'),
-  isMajor: (quality: string) => eq(quality, 'M'),
-  isMinor: (quality: string) => eq(quality, 'm'),
-  isDiminished: (quality: string) => /^d{1,2}$/.test(quality),
-  isAugmented: (quality: string) => /^A{1,2}$/.test(quality),
+function IntervalBuilder(initProps: IvlBuilderProps, from: IvlInitProps) {
+  const { distance, transpose, compare } = initProps;
+  const ivl = Interval(from);
+}
+
+/**
+ * Generate Interval static methods
+ */
+function GenerateIntervalStaticMethods() {
+  const Validators = {
+    isIntervalName: (name: IvlName) => Theory.INTERVAL_REGEX.test(name),
+    isPerfect: (quality: string) => eq(quality, 'P'),
+    isMajor: (quality: string) => eq(quality, 'M'),
+    isMinor: (quality: string) => eq(quality, 'm'),
+    isDiminished: (quality: string) => /^d{1,2}$/.test(quality),
+    isAugmented: (quality: string) => /^A{1,2}$/.test(quality),
+  };
+
+  const Quality = {
+    toAlteration(type: string, quality: string) {
+      const len = quality.length;
+      const { isAugmented, isDiminished } = Validators;
+
+      if ('PM'.includes(quality)) return 0;
+
+      if (eq(quality, 'm')) return -1;
+
+      if (isAugmented(quality)) return len;
+
+      if (isDiminished(quality)) return -1 * either(len, inc(len), eq(type, 'P'));
+
+      return undefined;
+    },
+  };
+
+  const Alteration = {
+    toQuality(type: string, alteration: number) {
+      if (eq(0, alteration)) return either('M', 'P', eq(type, 'M'));
+
+      if (both(eq(-1, alteration), eq(type, 'M'))) return 'm';
+
+      if (gt(alteration, 0)) return fillStr('A', alteration);
+
+      if (lt(alteration, 0)) return fillStr('d', either(alteration, inc(alteration), eq(type, 'P')));
+
+      return undefined;
+    },
+  };
+
+  function simplify(ivl: IvlName): IvlName {
+    const interval = Interval({ name: ivl });
+
+    if (!interval.valid) return undefined;
+
+    const { simple, quality } = interval as Partial<IvlProps>;
+
+    return ('' + simple + quality) as IvlName;
+  }
+
+  function invert(ivl: IvlName): IvlName {
+    const interval = Interval({ name: ivl });
+
+    if (!interval.valid) return undefined;
+
+    const { step, type, alteration, direction, octave } = interval;
+
+    const invStep = ((7 - step) % 7) as IvlStep;
+
+    const invAlt = -1 * either(alteration, inc(alteration), eq(type, 'P'));
+
+    return build({ step: invStep, alteration: invAlt, octave, direction });
+  }
+
+  const property = (name: string) => (interval: IvlName) => {
+    const ivl = Interval({ name: interval });
+    return ivl.valid ? ivl[name] : undefined;
+  };
+
+  function build(params: IvlBuild = { octave: 1, direction: 1 }): IvlName {
+    let { step, alteration, octave, direction, num } = params;
+    if (step !== undefined) num = inc(step) + 7 * dec(octave);
+    if (eq(num, undefined)) return undefined;
+    if (!isNumber(alteration)) return undefined;
+    let d = lt(direction, 0) ? '-' : '';
+    const type = Theory.BASE_INTERVAL_TYPES[dec(Math.abs(num)) % 7];
+    return d + num + INTERVAL.Alteration.toQuality(type, alteration);
+  }
+
+  function intervalTable(harmonic: number, generic: number) {
+    const i0 = { 1: '1P', 2: '2d' };
+    const i1 = { 1: '1A', 2: '2m', 3: '3dd' };
+    const i2 = { 1: '1AA', 2: '2M', 3: '3d' };
+    const i3 = { 2: '2A', 3: '3m', 4: '4dd' };
+    const i4 = { 2: '2AA', 3: '3M', 4: '4d' };
+    const i5 = { 3: '3A', 4: '4P', 5: '5dd' };
+    const i6 = { 3: '3AA', 4: '4A', 5: '5d', 6: '6dd' };
+    const i7 = { 4: '4AA', 5: '5P', 6: '6d' };
+    const i8 = { 5: '5A', 6: '6m', 7: '7dd' };
+    const i9 = { 5: '5AA', 6: '6M', 7: '7d' };
+    const i10 = { 6: '6A', 7: '7m', 8: '8dd' };
+    const i11 = { 6: '6AA', 7: '7M', 8: '8d' };
+    const i12 = { 7: '7A', 8: '8P' };
+    const table = [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12];
+
+    return table[harmonic][generic];
+  }
+
+  /**
+   *
+   * @param {IvlName} i1
+   * @param {IvlName} i2
+   * @param {boolean} addition - to add or subtract
+   * @returns sum or difference of 2 intervals
+   */
+  function addIntervals(i1: IvlName, i2: IvlName, addition = true): IvlName {
+    const ivl1 = Interval({ name: i1 });
+    const ivl2 = Interval({ name: i2 });
+
+    const semitones = ivl1.semitones + ivl2.semitones * either(1, -1, addition);
+
+    const interval = Interval({ semitones });
+
+    return interval.valid ? interval.name : undefined;
+  }
+
+  /**
+   * Add two intervals
+   *
+   * Can be partially applied.
+   *
+   * @param {IvlName} interval1
+   * @param {IvlName} interval2
+   * @return {IvlName} the resulting interval
+   */
+  function add(...args: IvlName[]) {
+    if (args.length === 1) return (i2: IvlName) => addIntervals(args[0], i2);
+    return addIntervals(args[0], args[1]);
+  }
+
+  /**
+   * Subtract two intervals
+   *
+   * Can be partially applied
+   *
+   * @param {IvlName} minuend
+   * @param {IvlName} subtrahend
+   * @return {IvlName} interval diference
+   */
+  function sub(...args: IvlName[]) {
+    if (args.length === 1) return (i2: IvlName) => addIntervals(args[0], i2);
+    return addIntervals(args[0], args[1], false);
+  }
+
+  return {
+    Validators,
+    Quality,
+    Alteration,
+    simplify,
+    invert,
+    property,
+    build,
+    intervalTable,
+    add,
+    sub,
+  };
+}
+
+export const INTERVAL = {
+  Theory,
+  build: IntervalBuilder,
+  ...GenerateIntervalStaticMethods(),
 };
 
 /**
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *              INTERVAL PROPS - HELPER FUNCTIONS          *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * Interval factory function
+ * @param {IvlInitProps} props
+ * @return {IvlProps}
  */
-
-const Quality = {
-  toAlteration(type: string, quality: string) {
-    const len = quality.length;
-    const { isAugmented, isDiminished } = Validators;
-
-    if ('PM'.includes(quality)) return 0;
-
-    if (eq(quality, 'm')) return -1;
-
-    if (isAugmented(quality)) return len;
-
-    if (isDiminished(quality)) return -1 * either(len, inc(len), eq(type, 'P'));
-
-    return undefined;
-  },
-};
-
-const Alteration = {
-  toQuality(type: string, alteration: number) {
-    if (eq(0, alteration)) return either('M', 'P', eq(type, 'M'));
-
-    if (both(eq(-1, alteration), eq(type, 'M'))) return 'm';
-
-    if (gt(alteration, 0)) return fillStr('A', alteration);
-
-    if (lt(alteration, 0)) return fillStr('d', either(alteration, inc(alteration), eq(type, 'P')));
-
-    return undefined;
-  },
-};
-/**
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *              INTERVAL FACTORIES                         *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- */
-
-const i0 = { 1: '1P', 2: '2d' };
-const i1 = { 1: '1A', 2: '2m', 3: '3dd' };
-const i2 = { 1: '1AA', 2: '2M', 3: '3d' };
-const i3 = { 2: '2A', 3: '3m', 4: '4dd' };
-const i4 = { 2: '2AA', 3: '3M', 4: '4d' };
-const i5 = { 3: '3A', 4: '4P', 5: '5dd' };
-const i6 = { 3: '3AA', 4: '4A', 5: '5d', 6: '6dd' };
-const i7 = { 4: '4AA', 5: '5P', 6: '6d' };
-const i8 = { 5: '5A', 6: '6m', 7: '7dd' };
-const i9 = { 5: '5AA', 6: '6M', 7: '7d' };
-const i10 = { 6: '6A', 7: '7m', 8: '8dd' };
-const i11 = { 6: '6AA', 7: '7M', 8: '8d' };
-const i12 = { 7: '7A', 8: '8P' };
-const intervalTable = [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12];
-
-function createInterval(props: IvlInitProps): IvlProps {
+export function Interval(props: IvlInitProps): IvlProps {
   const { name, semitones, notes } = props;
+  const IValidators = INTERVAL.Validators;
 
-  const intervalTypeFrom = (harmonic: number, generic: number) => intervalTable[harmonic][generic];
+  const intervalTypeFrom = (harmonic: number, generic: number) => INTERVAL.intervalTable(harmonic, generic);
 
   function createIntervalWithName(interval: IvlName): IvlProps {
-    if (!Validators.isIntervalName(interval))
+    if (!INTERVAL.Validators.isIntervalName(interval))
       return IntervalError('InvalidIvlConstructor', { name: interval }, EmptyInterval);
 
     const { tn, qn, tq, qq } = tokenize(interval, Theory.INTERVAL_REGEX);
@@ -158,7 +257,7 @@ function createInterval(props: IvlInitProps): IvlProps {
     // Ex: 1) diminished can be -2 (when created from minor) or -1 (from Perfect)
     // Ex: 2) Augmented is altered by +1
     // Ex: 3) Perfect/Major intervals are not altered
-    const alteration = Quality.toAlteration(type, quality) as IvlAlteration;
+    const alteration = INTERVAL.Quality.toAlteration(type, quality) as IvlAlteration;
 
     // We calculate width in semitones by adding alteration value to base interval. If is compound we include those octaves
     const width = Theory.BASE_INTERVAL_SIZES[step] + alteration + 12 * dec(octave);
@@ -214,7 +313,7 @@ function createInterval(props: IvlInitProps): IvlProps {
   }
 
   function createIntervalWithNotes(first: NoteName, second: NoteName): IvlProps {
-    if (!NoteValidator.isName(first) || !NoteValidator.isName(second))
+    if (!NValidators.isName(first) || !NValidators.isName(second))
       return IntervalError('InvalidIvlConstructor', { notes: [first, second] }, EmptyInterval);
     const _harmonic = midi({ name: second }) - midi({ name: first });
     // return createIntervalWithSemitones(_harmonic);
@@ -236,66 +335,9 @@ function createInterval(props: IvlInitProps): IvlProps {
     return createIntervalWithName(name);
   }
 
-  if (name && Validators.isIntervalName(name)) return createIntervalWithName(name);
+  if (name && IValidators.isIntervalName(name)) return createIntervalWithName(name);
   if (semitones && isInteger(semitones)) return createIntervalWithSemitones(semitones);
-  if (notes && both(NoteValidator.isName(notes[0]), NoteValidator.isName(notes[1])))
+  if (notes && both(NValidators.isName(notes[0]), NValidators.isName(notes[1])))
     return createIntervalWithNotes(notes[0], notes[1]);
   return EmptyInterval;
 }
-
-/**
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *                 INTERVAL STATIC METHODS                   *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- */
-
-function build(params: IvlBuild = { octave: 1, direction: 1 }): IvlName {
-  let { step, alteration, octave, direction, num } = params;
-  if (step !== undefined) num = inc(step) + 7 * dec(octave);
-  if (eq(num, undefined)) return undefined;
-  if (!isNumber(alteration)) return undefined;
-  let d = lt(direction, 0) ? '-' : '';
-  const type = Theory.BASE_INTERVAL_TYPES[dec(Math.abs(num)) % 7];
-  return d + num + Alteration.toQuality(type, alteration);
-}
-
-function simplify(ivl: IvlName): IvlName {
-  const interval = Interval.from({ name: ivl });
-
-  if (!interval.valid) return undefined;
-
-  const { simple, quality } = interval as Partial<IvlProps>;
-
-  return ('' + simple + quality) as IvlName;
-}
-
-function invert(ivl: IvlName): IvlName {
-  const interval = Interval.from({ name: ivl });
-
-  if (!interval.valid) return undefined;
-
-  const { step, type, alteration, direction, octave } = interval;
-
-  const invStep = ((7 - step) % 7) as IvlStep;
-
-  const invAlt = -1 * either(alteration, inc(alteration), eq(type, 'P'));
-
-  return build({ step: invStep, alteration: invAlt, octave, direction });
-}
-
-const property = (name: string) => (interval: IvlName) => {
-  const ivl = Interval.from({ name: interval });
-  return ivl.valid ? ivl[name] : undefined;
-};
-
-export const Interval = {
-  from: createInterval,
-  build,
-  simplify,
-  invert,
-  property,
-  Validators,
-  Quality,
-  Alteration,
-  Theory,
-};

@@ -42,3 +42,19 @@ export const INTERVAL_NUMBERS = [1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7];
 
 /** Qualities of intervals at index:i */
 export const INTERVAL_QUALITIES = 'P m M m M P d P m M m M'.split(' ');
+
+export const EmptyInterval = {
+  name: '',
+  num: undefined,
+  quality: undefined,
+  alteration: undefined,
+  step: undefined,
+  direction: undefined,
+  type: undefined,
+  simple: undefined,
+  semitones: undefined,
+  chroma: undefined,
+  octave: undefined,
+  ic: undefined,
+  valid: false,
+};

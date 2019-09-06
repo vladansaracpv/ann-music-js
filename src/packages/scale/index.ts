@@ -208,7 +208,7 @@ export function sortedUniqNoteNames(arr: string[]): string[] {
 
 export const scaleFormula = (src: ScaleName) => {
   const props = scale(src);
-  return props.intervals.map(ivl => Interval.from({ name: ivl }).semitones);
+  return props.intervals.map(ivl => Interval({ name: ivl }).semitones);
 };
 
 const semitonesToStep = (semitones: number): string => {
@@ -233,7 +233,7 @@ export const scaleToSteps = (src: ScaleName | ScaleNameTokens) => {
   const _scale = scale(src);
   const intervals = _scale.intervals;
 
-  const semitones = intervals.map(ivl => Interval.from({ name: ivl }).semitones);
+  const semitones = intervals.map(ivl => Interval({ name: ivl }).semitones);
   let steps = [];
   for (let i = 1; i < semitones.length; i++) {
     const diff = semitones[i] - semitones[i - 1];

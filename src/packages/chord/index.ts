@@ -159,5 +159,5 @@ export function chordSubset(chordName: string): string[] {
  */
 export const chordFormula = (src: ChordName) => {
   const props = Chord(src);
-  return props.intervals.map(ivl => Interval.from({ name: ivl }).semitones);
+  return props.intervals.map(ivl => Interval({ name: ivl }).semitones);
 };

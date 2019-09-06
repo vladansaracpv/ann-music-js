@@ -1,18 +1,5 @@
-import { chordNotes, modeToChords, mode, scaleModes } from '@packages/mode';
-import {
-  Chord,
-  chordScales,
-  chordSuperset,
-  chordSubset,
-  chordType,
-  chordFormula,
-  entries,
-  transposeByInterval,
-} from '@packages/chord';
-import { scale, scaleFormula, scaleChords, scaleToSteps } from '@packages/scale';
-import { Interval } from '@packages/interval';
-import { NOTE } from '@packages/note';
+import { Interval, INTERVAL } from '@packages/interval';
 
-// console.log(entries().filter(entry => entry.length == 3));
+const ivl = Interval({ name: '2m' });
 
-console.log(chordFormula('Maj7'));
+console.log(ivl);

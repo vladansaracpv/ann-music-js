@@ -23,25 +23,56 @@ import {
 
 const NoteError = CustomError('Note');
 
-const EmptyNote: NoteProps = {
-  name: '',
-  letter: undefined,
-  step: undefined,
-  octave: undefined,
-  accidental: undefined,
-  alteration: undefined,
-  pc: undefined,
-  chroma: undefined,
-  midi: undefined,
-  frequency: undefined,
-  color: undefined,
-  valid: false,
-};
+const { EmptyNote } = Theory;
+
+/**
+ * Note object builder. Used to assign methods beside note properties
+ * @param {NoteBuilderProps} initProps
+ * @param {InitProps} from
+ */
+function NoteBuilder(initProps: NoteBuilderProps, from: InitProps) {
+  const { distance, transpose, compare } = initProps;
+
+  const note = Note(from);
+
+  const transposeFns = {
+    transpose: (n: number) => NOTE.transpose(note, n),
+  };
+
+  const distanceFns: NoteComparisonPartial = {
+    distance: (other, comparable = 'midi') => NOTE.distance(note, other, comparable),
+  };
+
+  const partialCompare = (fn: NoteCompareFn): NoteComparePartialFn => (other, compare) => fn(note, other, compare);
+
+  const compareFns: NoteComparisonPartial = {
+    lt: partialCompare(NOTE.compare.lt),
+    leq: partialCompare(NOTE.compare.leq),
+    eq: partialCompare(NOTE.compare.eq),
+    neq: partialCompare(NOTE.compare.neq),
+    gt: partialCompare(NOTE.compare.gt),
+    geq: partialCompare(NOTE.compare.geq),
+    cmp: partialCompare(NOTE.compare.cmp),
+  };
+
+  const withTranspose = transpose ? transposeFns : {};
+
+  const withDistance = distance ? distanceFns : {};
+
+  const withCompare = compare ? compareFns : {};
+
+  return {
+    ...note,
+    ...withTranspose,
+    ...withDistance,
+    ...withCompare,
+  };
+}
 
 /**
  * Generate Note static methods
  */
-const NoteStaticMethods = (function() {
+function GenerateNoteStaticMethods() {
   const Midi = {
     toFrequency: function(key: NoteMidi, tuning = Theory.A_440): NoteFreq {
       return tuning * 2 ** ((key - Theory.MIDDLE_KEY) / Theory.OCTAVE_RANGE);
@@ -148,11 +179,12 @@ const NoteStaticMethods = (function() {
     distance,
     compare,
   };
-})();
+}
 
 export const NOTE = {
   Theory,
-  ...NoteStaticMethods,
+  build: NoteBuilder,
+  ...GenerateNoteStaticMethods(),
 };
 
 /**
@@ -279,49 +311,4 @@ export function Note(props: InitProps): NoteProps {
   if (frequency && NOTE.Validators.isFrequency(frequency)) return createNoteWithFreq(frequency, 440);
 
   return EmptyNote;
-}
-
-/**
- * Note object builder. Used to assign methods beside note properties
- * @param {NoteBuilderProps} initProps
- * @param {InitProps} from
- */
-export function NoteBuilder(initProps: NoteBuilderProps, from: InitProps) {
-  const { distance, transpose, compare } = initProps;
-
-  const note = Note(from);
-
-  const transposeFns = {
-    transpose: (n: number) => NOTE.transpose(note, n),
-  };
-
-  const distanceFns: NoteComparisonPartial = {
-    distance: (other, comparable = 'midi') => NOTE.distance(note, other, comparable),
-  };
-
-  const partialCompare = (fn: NoteCompareFn) => (other: NoteProps, compare: NoteComparable = 'midi') =>
-    fn(note, other, compare);
-
-  const compareFns: NoteComparisonPartial = {
-    lt: partialCompare(NOTE.compare.lt),
-    leq: partialCompare(NOTE.compare.leq),
-    eq: partialCompare(NOTE.compare.eq),
-    neq: partialCompare(NOTE.compare.neq),
-    gt: partialCompare(NOTE.compare.gt),
-    geq: partialCompare(NOTE.compare.geq),
-    cmp: partialCompare(NOTE.compare.cmp),
-  };
-
-  const withTranspose = transpose ? transposeFns : {};
-
-  const withDistance = distance ? distanceFns : {};
-
-  const withCompare = compare ? compareFns : {};
-
-  return {
-    ...note,
-    ...withTranspose,
-    ...withDistance,
-    ...withCompare,
-  };
 }

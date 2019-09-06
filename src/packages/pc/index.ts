@@ -1,37 +1,21 @@
 import { Note } from '@packages/note';
-import { Interval } from '@packages/interval';
+import { Interval, INTERVAL } from '@packages/interval';
 import { CustomError } from '@base/error';
-
+import * as Theory from './theory';
 import { range, compact, rotate, toBinary, isArray, isNumber, inSegment, either, and2 as both } from '../../base/index';
 import { curry } from '@base/functional';
+export * from './theory';
 
 const PcError = CustomError('PC');
-const IVLS = Interval && Interval.Theory.INTERVAL_NAMES;
 
-export const EmptySet: PcProps = {
-  empty: true,
-  num: 0,
-  chroma: '000000000000',
-  normalized: '000000000000',
-  length: 0,
-};
-
-/**
- *  Valid PcChroma is binary string of length = 12
- */
-const PC_SET_REGEX = /^[01]{12}$/;
+const ITheory = INTERVAL && INTERVAL.Theory;
+const IVLS = ITheory && ITheory.INTERVAL_NAMES;
 
 const cache: { [key in string]: PcProps } = {};
 
-/**
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- *                 PC PROPS - VALIDATORS                   *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- */
-
 export const PcValidator = {
   isPcsetNum: (set: any): set is PcNum => isNumber(set) && inSegment(0, 4095, set),
-  isChroma: (set: any): set is PcChroma => PC_SET_REGEX.test(set),
+  isChroma: (set: any): set is PcChroma => Theory.PC_SET_REGEX.test(set),
   isPcset: (set: any): set is PcProps => set && this.isChroma(set.chroma),
 };
 
@@ -40,10 +24,10 @@ export const PcValidator = {
  * @param {PcChroma} chroma
  * @returns {string}
  */
-const normalize = (chroma: PcChroma): PcChroma => {
+function normalize(chroma: PcChroma): PcChroma {
   const first = chroma.indexOf('1');
   return chroma.slice(first, 12) + chroma.slice(0, first);
-};
+}
 
 /**
  * Calculate PcChroma set from given PcChroma string
@@ -71,7 +55,7 @@ function properties(chroma: PcChroma): PcProps {
  */
 export function toChroma(set: NoteName[] | IvlName[]): PcChroma {
   if (set.length === 0) {
-    return EmptySet.chroma;
+    return Theory.EmptySet.chroma;
   }
 
   let pitch: NoNote | NoteProps | IvlProps | null;
@@ -80,9 +64,9 @@ export function toChroma(set: NoteName[] | IvlName[]): PcChroma {
   for (let i = 0; i < set.length; i++) {
     pitch = Note && (Note({ name: set[i] }) as NoteProps);
     // tslint:disable-next-line: curly
-    if (!(pitch && pitch.valid)) pitch = Interval.from({ name: set[i] }) as IvlProps;
+    if (!(pitch && pitch.valid)) pitch = Interval({ name: set[i] }) as IvlProps;
     // tslint:disable-next-line: curly
-    if (!pitch.valid) return EmptySet.chroma;
+    if (!pitch.valid) return Theory.EmptySet.chroma;
     if (pitch.valid) binary[pitch.chroma] = 1;
   }
   return binary.join('');
@@ -93,7 +77,7 @@ export function toChroma(set: NoteName[] | IvlName[]): PcChroma {
  * @param {PcSet} src
  * @returns {PcProps}
  */
-export const pcset = function(src: PcSet): PcProps {
+export function pcset(src: PcSet): PcProps {
   const chroma: PcChroma = PcValidator.isChroma(src)
     ? src
     : PcValidator.isPcsetNum(src)
@@ -104,10 +88,10 @@ export const pcset = function(src: PcSet): PcProps {
     ? toChroma(src)
     : PcValidator.isPcset(src)
     ? src.chroma
-    : EmptySet.chroma;
+    : Theory.EmptySet.chroma;
 
   return (cache[chroma] = cache[chroma] || properties(chroma));
-};
+}
 
 /**
  * Get PcProps value for given key
@@ -119,21 +103,6 @@ export function pcsetProp(key: keyof PcProps) {
     const s = pcset(src);
     return s ? s[key] : null;
   };
-}
-
-/**
- * Get the intervals of a pcset *starting from C*
- * @param {PcSet} src - the pitch class set
- * @returns {IntervalName[]} an array of interval names or an empty array if not a valid pitch class set
- */
-export function intervals(src: PcSet): IvlName[] {
-  const intervals: IvlName[] = [];
-  const set = pcset(src);
-
-  // PcChroma to array
-  const chroma = set.chroma.split('');
-  // Map every c == '1' to Interval at position i, then filter existing values
-  return compact(chroma.map((c, i) => (c == '1' ? IVLS[i] : null)));
 }
 
 /**
@@ -200,13 +169,12 @@ export function isEqual(one: PcSet, other: PcSet) {
  * @param {PcSet} set - the superset to test against (chroma or list of notes)
  * @return {boolean}
  */
-function fnIsSubsetOf(set: PcSet, notes: PcSet) {
+export const isSubsetOf = curry((set: PcSet, notes: PcSet) => {
   const s = pcset(set).num;
   const o = pcset(notes).num;
 
   return s !== o && (o & s) === o;
-}
-export const isSubsetOf = curry(fnIsSubsetOf);
+});
 
 /**
  * Create a function that test if a collection of notes is a
@@ -219,12 +187,11 @@ export const isSubsetOf = curry(fnIsSubsetOf);
  * extendsCMajor(["e6", "a", "c4", "g2"]) // => true
  * extendsCMajor(["c6", "e4", "g3"]) // => false
  */
-function fnIsSupersetOf(set: PcSet, notes: PcSet) {
+export const isSupersetOf = curry((set: PcSet, notes: PcSet) => {
   const s = pcset(set).num;
   const o = pcset(notes).num;
   return s !== o && (o | s) === o;
-}
-export const isSupersetOf = curry(fnIsSupersetOf);
+});
 
 /**
  * Test if a given pitch class set includes a note
@@ -240,13 +207,11 @@ export const isSupersetOf = curry(fnIsSupersetOf);
  * isNoteInCMajor('C4') // => true
  * isNoteInCMajor('C#4') // => false
  */
-function fnIsNoteIncludedInSet(set: PcSet, note: NoteName) {
+export const isNoteIncludedInSet = curry((set: PcSet, note: NoteName) => {
   const s = pcset(set);
   const n = Note && Note({ name: note });
   return s && n.valid && s.chroma.charAt(n.chroma) === '1';
-}
-
-export const isNoteIncludedInSet = curry(fnIsNoteIncludedInSet);
+});
 
 /**
  * Filter a list with a pitch class set
@@ -259,57 +224,10 @@ export const isNoteIncludedInSet = curry(fnIsNoteIncludedInSet);
  * Pcset.filter(["C", "D", "E"], ["c2", "c#2", "d2", "c3", "c#3", "d3"]) // => [ "c2", "d2", "c3", "d3" ])
  * Pcset.filter(["C2"], ["c2", "c#2", "d2", "c3", "c#3", "d3"]) // => [ "c2", "c3" ])
  */
-function filterNotesFn(set: PcSet, notes: NoteName[]) {
-  const isIncluded = isNoteIncludedInSet(set);
-  return notes.filter(isIncluded);
-}
-export const filterNotes = curry(filterNotesFn);
-
-/**
- *
- * @param {IvlName} i1
- * @param {IvlName} i2
- * @param {boolean} addition - to add or subtract
- * @returns sum or difference of 2 intervals
- */
-export const add = (i1: IvlName, i2: IvlName, addition = true): IvlName => {
-  const ivl1 = Interval.from({ name: i1 });
-  const ivl2 = Interval.from({ name: i2 });
-
-  const semitones = ivl1.semitones + ivl2.semitones * either(1, -1, addition);
-
-  const interval = Interval.from({ semitones });
-
-  return interval.valid ? interval.name : undefined;
-};
-
-/**
- * Add two intervals
- *
- * Can be partially applied.
- *
- * @param {IvlName} interval1
- * @param {IvlName} interval2
- * @return {IvlName} the resulting interval
- */
-export const addIntervals = (...args: IvlName[]) => {
-  if (args.length === 1) return (i2: IvlName) => add(args[0], i2);
-  return add(args[0], args[1]);
-};
-
-/**
- * Subtract two intervals
- *
- * Can be partially applied
- *
- * @param {IvlName} minuend
- * @param {IvlName} subtrahend
- * @return {IvlName} interval diference
- */
-export const subIntervals = (...args: IvlName[]) => {
-  if (args.length === 1) return (i2: IvlName) => add(args[0], i2);
-  return add(args[0], args[1], false);
-};
+export const filterNotes = curry((set: PcSet, notes: NoteName[]) => {
+  const memberOfSet = isNoteIncludedInSet(set);
+  return notes.filter(memberOfSet);
+});
 
 /**
  * Get the distance between two notes in semitones
@@ -326,6 +244,27 @@ export const semitones = (...args: NoteName[]) => {
 
   return either(t.midi - f.midi, null, both(f.valid, t.valid));
 };
+
+/**
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *                 INTERVAL - PC methods                   *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ */
+
+/**
+ * Get the intervals of a pcset *starting from C*
+ * @param {PcSet} src - the pitch class set
+ * @returns {IntervalName[]} an array of interval names or an empty array if not a valid pitch class set
+ */
+export function intervals(src: PcSet): IvlName[] {
+  const intervals: IvlName[] = [];
+  const set = pcset(src);
+
+  // PcChroma to array
+  const chroma = set.chroma.split('');
+  // Map every c == '1' to Interval at position i, then filter existing values
+  return compact(chroma.map((c, i) => (c == '1' ? IVLS[i] : null)));
+}
 
 /**
  * Transpose a note by an interval. The note can be a pitch class.
@@ -349,7 +288,7 @@ export const transpose = (...args: string[]): any => {
   }
   const [n, i] = args;
   const note = Note && Note({ name: n });
-  const interval = Interval.from({ name: i });
+  const interval = Interval({ name: i });
 
   if (!both(note.valid, interval.valid)) return undefined;
 

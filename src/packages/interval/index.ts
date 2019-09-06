@@ -1,1 +1,1 @@
-export { Interval } from './factories';
+export { Interval, INTERVAL } from './factories';
