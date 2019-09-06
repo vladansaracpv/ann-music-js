@@ -15,7 +15,7 @@ type NoteName = string;
 type NoteLetter = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G';
 
 /**
- * Note step represents index of NoteLetter
+ * Note step represents index of NoteLetter.
  * It starts from 'C' at index 0
  */
 type NoteStep = 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -113,6 +113,19 @@ type NoteProp =
  * Comparable properties are those that can be used for comparing and other operations
  */
 type NoteComparable = 'midi' | 'frequency' | 'chroma' | 'step' | 'octave';
+
+/**
+ * Comparable function type has @note and @other (note) to compare and param @compare to represent property on which to compare
+ */
+type NoteCompareFn = (note: NoteProps, other: NoteProps, compare: NoteComparable) => boolean | number;
+
+type NoteComparePartialFn = (other: NoteProps, compare: NoteComparable) => boolean | number;
+/**
+ * Note comparison type represents record of comparison functions
+ */
+type NoteComparison = Record<string, NoteCompareFn>;
+
+type NoteComparisonPartial = Record<string, NoteComparePartialFn>;
 
 /**
  * Note properties from which the Note object can be constructed
