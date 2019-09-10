@@ -1,5 +1,8 @@
-import { Interval, INTERVAL } from '@packages/interval';
+import { toChroma } from '@packages/pc';
+import { NOTE, Note } from '@packages/note';
+import { Chord } from '@packages/chord';
+import { number } from 'prop-types';
 
-const ivl = Interval({ name: '2m' });
+// console.log(Chord('C major ninth'));
 
-console.log(ivl);
+console.log(Note({ frequency: 440 }));

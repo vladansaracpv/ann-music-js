@@ -26,50 +26,6 @@ const NoteError = CustomError('Note');
 const { EmptyNote } = Theory;
 
 /**
- * Note object builder. Used to assign methods beside note properties
- * @param {NoteBuilderProps} initProps
- * @param {InitProps} from
- */
-function NoteBuilder(initProps: NoteBuilderProps, from: InitProps) {
-  const { distance, transpose, compare } = initProps;
-
-  const note = Note(from);
-
-  const transposeFns = {
-    transpose: (n: number) => NOTE.transpose(note, n),
-  };
-
-  const distanceFns: NoteComparisonPartial = {
-    distance: (other, comparable = 'midi') => NOTE.distance(note, other, comparable),
-  };
-
-  const partialCompare = (fn: NoteCompareFn): NoteComparePartialFn => (other, compare) => fn(note, other, compare);
-
-  const compareFns: NoteComparisonPartial = {
-    lt: partialCompare(NOTE.compare.lt),
-    leq: partialCompare(NOTE.compare.leq),
-    eq: partialCompare(NOTE.compare.eq),
-    neq: partialCompare(NOTE.compare.neq),
-    gt: partialCompare(NOTE.compare.gt),
-    geq: partialCompare(NOTE.compare.geq),
-    cmp: partialCompare(NOTE.compare.cmp),
-  };
-
-  const withTranspose = transpose ? transposeFns : {};
-
-  const withDistance = distance ? distanceFns : {};
-
-  const withCompare = compare ? compareFns : {};
-
-  return {
-    ...note,
-    ...withTranspose,
-    ...withDistance,
-    ...withCompare,
-  };
-}
-
-/**
  * Generate Note static methods
  */
 function GenerateNoteStaticMethods() {
@@ -156,13 +112,13 @@ function GenerateNoteStaticMethods() {
   }
 
   const compare: NoteComparison = {
-    lt: (note, other, compare) => lt(note[compare], other[compare]),
-    leq: (note, other, compare) => leq(note[compare], other[compare]),
-    eq: (note, other, compare) => eq(note[compare], other[compare]),
-    neq: (note, other, compare) => neq(note[compare], other[compare]),
-    gt: (note, other, compare) => gt(note[compare], other[compare]),
-    geq: (note, other, compare) => geq(note[compare], other[compare]),
-    cmp: (note, other, compare) => cmp(note[compare], other[compare]),
+    lt: (note, other, compare = 'midi') => lt(note[compare], other[compare]),
+    leq: (note, other, compare = 'midi') => leq(note[compare], other[compare]),
+    eq: (note, other, compare = 'midi') => eq(note[compare], other[compare]),
+    neq: (note, other, compare = 'midi') => neq(note[compare], other[compare]),
+    gt: (note, other, compare = 'midi') => gt(note[compare], other[compare]),
+    geq: (note, other, compare = 'midi') => geq(note[compare], other[compare]),
+    cmp: (note, other, compare = 'midi') => cmp(note[compare], other[compare]),
   };
 
   return {
@@ -183,7 +139,7 @@ function GenerateNoteStaticMethods() {
 
 export const NOTE = {
   Theory,
-  build: NoteBuilder,
+  withMethods: NoteBuilder,
   ...GenerateNoteStaticMethods(),
 };
 
@@ -194,31 +150,37 @@ export const NOTE = {
  */
 export function Note(props: InitProps): NoteProps {
   const { name, midi, frequency } = props;
+  const { isName, isMidi, isFrequency } = NOTE.Validators;
+  const { toIndex, toStep } = NOTE.Letter;
+  const { toAlteration } = NOTE.Accidental;
+  const { toSemitones, parse } = NOTE.Octave;
+  const { toFrequency, toOctaves } = NOTE.Midi;
+  const { toMidi } = NOTE.Frequency;
 
-  function createNoteWithName(note: NoteName): NoteProps {
+  function fromName(note: NoteName): NoteProps {
     // Example: A#4
 
-    if (!NOTE.Validators.isName(note)) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
+    if (!isName(note)) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
 
     const { Tletter, Taccidental, Toct, Trest } = tokenize(note, Theory.NOTE_REGEX);
 
     if (Trest) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
 
     const letter = capitalize(Tletter) as NoteLetter; // A
-    const step = NOTE.Letter.toStep(letter) as NoteStep; // 5
+    const step = toStep(letter) as NoteStep; // 5
 
     const accidental = substitute(Taccidental, /x/g, '##') as NoteAccidental; // #
-    const alteration = NOTE.Accidental.toAlteration(accidental) as NoteAlteration; // +1
+    const alteration = toAlteration(accidental) as NoteAlteration; // +1
 
     /** Offset (number of keys) from first letter - C **/
-    const offset = NOTE.Letter.toIndex(letter); // 10
+    const offset = toIndex(letter); // 10
 
     /** Note position is calculated as: letter offset from the start + in place alteration **/
     const semitonesAltered = offset + alteration; // 11
 
     /** Because of the alteration, note can slip into the previous/next octave **/
     const octavesAltered = Math.floor(semitonesAltered / Theory.OCTAVE_RANGE); // 0
-    const octave = NOTE.Octave.parse(Toct) as NoteOctave; // 4
+    const octave = parse(Toct) as NoteOctave; // 4
 
     const pc = (letter + accidental) as NotePC; // A#
 
@@ -229,13 +191,13 @@ export function Note(props: InitProps): NoteProps {
      *  alteredOct == -1
      */
     const chroma = either(
-      (semitonesAltered - NOTE.Octave.toSemitones(octavesAltered) + 12) % Theory.OCTAVE_RANGE,
+      (semitonesAltered - toSemitones(octavesAltered) + 12) % Theory.OCTAVE_RANGE,
       semitonesAltered % Theory.OCTAVE_RANGE,
       isNegative(octavesAltered),
     ) as NoteChroma; // 10
 
-    const midi = (NOTE.Octave.toSemitones(octave + octavesAltered) + chroma) as NoteMidi; // 70
-    const frequency = NOTE.Midi.toFrequency(midi) as NoteFreq; // 466.164
+    const midi = (toSemitones(octave + octavesAltered) + chroma) as NoteMidi; // 70
+    const frequency = toFrequency(midi) as NoteFreq; // 466.164
 
     const name = (pc + octave) as NoteName; // A#4
 
@@ -259,12 +221,12 @@ export function Note(props: InitProps): NoteProps {
     });
   }
 
-  function createNoteWithMidi(midi: NoteMidi, useSharps = true): NoteProps {
-    if (!NOTE.Validators.isMidi(midi)) return NoteError('InvalidConstructor', { midi }, EmptyNote);
-    const frequency = NOTE.Midi.toFrequency(midi) as NoteFreq;
-    const octave = dec(NOTE.Midi.toOctaves(midi)) as NoteOctave;
+  function fromMidi(midi: NoteMidi, useSharps = true): NoteProps {
+    if (!isMidi(midi)) return NoteError('InvalidConstructor', { midi }, EmptyNote);
+    const frequency = toFrequency(midi) as NoteFreq;
+    const octave = dec(toOctaves(midi)) as NoteOctave;
 
-    const chroma = (midi - NOTE.Octave.toSemitones(octave)) as NoteChroma;
+    const chroma = (midi - toSemitones(octave)) as NoteChroma;
     const pc = either(Theory.SHARPS[chroma], Theory.FLATS[chroma], useSharps) as NotePC;
 
     const name = (pc + octave) as NoteName;
@@ -272,10 +234,10 @@ export function Note(props: InitProps): NoteProps {
     const { Tletter, Taccidental } = tokenize(name, Theory.NOTE_REGEX);
 
     const letter = capitalize(Tletter) as NoteLetter;
-    const step = NOTE.Letter.toStep(letter) as NoteStep;
+    const step = toStep(letter) as NoteStep;
 
     const accidental = substitute(Taccidental, /x/g, '##') as NoteAccidental;
-    const alteration = NOTE.Accidental.toAlteration(accidental) as NoteAlteration;
+    const alteration = toAlteration(accidental) as NoteAlteration;
 
     const color = either('white', 'black', Theory.WHITE_KEYS.includes(chroma)) as NoteColor;
 
@@ -297,18 +259,63 @@ export function Note(props: InitProps): NoteProps {
     });
   }
 
-  function createNoteWithFreq(frequency: NoteFreq, tuning = Theory.A_440): NoteProps {
-    if (!NOTE.Validators.isFrequency(frequency)) return NoteError('InvalidConstructor', { frequency }, EmptyNote);
+  function fromFrequency(frequency: NoteFreq, tuning = Theory.A_440): NoteProps {
+    if (!isFrequency(frequency)) return NoteError('InvalidConstructor', { frequency }, EmptyNote);
 
-    const midi = NOTE.Frequency.toMidi(frequency, tuning);
-    return createNoteWithMidi(midi);
+    const midi = toMidi(frequency, tuning);
+    return fromMidi(midi);
   }
 
-  if (name && NOTE.Validators && NOTE.Validators.isName(name)) return createNoteWithName(name);
+  return isName(name)
+    ? fromName(name)
+    : isMidi(midi)
+    ? fromMidi(midi, true)
+    : isFrequency(frequency)
+    ? fromFrequency(frequency, 440)
+    : EmptyNote;
+}
 
-  if (isInteger(midi) && NOTE.Validators.isMidi(midi)) return createNoteWithMidi(midi, true);
+/**
+ * Note object builder. Used to assign methods beside note properties
+ * @param {NoteBuilderProps} initProps
+ * @param {InitProps} from
+ */
+function NoteBuilder(initProps: NoteBuilderProps, from: InitProps) {
+  const { distance, transpose, compare } = initProps;
 
-  if (frequency && NOTE.Validators.isFrequency(frequency)) return createNoteWithFreq(frequency, 440);
+  const note = Note(from);
 
-  return EmptyNote;
+  const transposeFns = {
+    transpose: (n: number) => NOTE.transpose(note, n),
+  };
+
+  const distanceFns: NoteComparisonPartial = {
+    distance: (other, comparable = 'midi') => NOTE.distance(note, other, comparable),
+  };
+
+  const partialCompare = (fn: NoteCompareFn): NoteComparePartialFn => (other, compare = 'midi') =>
+    fn(note, other, compare);
+
+  const compareFns: NoteComparisonPartial = {
+    lt: partialCompare(NOTE.compare.lt),
+    leq: partialCompare(NOTE.compare.leq),
+    eq: partialCompare(NOTE.compare.eq),
+    neq: partialCompare(NOTE.compare.neq),
+    gt: partialCompare(NOTE.compare.gt),
+    geq: partialCompare(NOTE.compare.geq),
+    cmp: partialCompare(NOTE.compare.cmp),
+  };
+
+  const withTranspose = transpose ? transposeFns : {};
+
+  const withDistance = distance ? distanceFns : {};
+
+  const withCompare = compare ? compareFns : {};
+
+  return {
+    ...note,
+    ...withTranspose,
+    ...withDistance,
+    ...withCompare,
+  };
 }

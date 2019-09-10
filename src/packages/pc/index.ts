@@ -1,4 +1,4 @@
-import { Note } from '@packages/note';
+import { Note, NOTE } from '@packages/note';
 import { Interval, INTERVAL } from '@packages/interval';
 import { CustomError } from '@base/error';
 import * as Theory from './theory';
@@ -22,7 +22,7 @@ export const PcValidator = {
 /**
  * Rotates chroma string so that it starts with 1
  * @param {PcChroma} chroma
- * @returns {string}
+ * @returns {PcChroma}
  */
 function normalize(chroma: PcChroma): PcChroma {
   const first = chroma.indexOf('1');
@@ -38,13 +38,14 @@ function properties(chroma: PcChroma): PcProps {
   const num = parseInt(chroma, 2);
   const normalized = normalize(chroma);
 
-  const pcs = chroma.split('');
   let length = 0;
+
   for (let i = 0; i < 12; i++) {
-    // tslint:disable-next-line: curly
     if (chroma.charAt(i) === '1') length++;
   }
+
   const empty = length == 0;
+
   return { empty, num, chroma, normalized, length };
 }
 
@@ -58,16 +59,33 @@ export function toChroma(set: NoteName[] | IvlName[]): PcChroma {
     return Theory.EmptySet.chroma;
   }
 
+  const isNote = NOTE.Validators.isName;
+  const isIvl = (name: string) => INTERVAL.Theory.INTERVAL_REGEX.test(name);
+
   let pitch: NoNote | NoteProps | IvlProps | null;
+
   const binary = Array(12).fill(0);
-  // tslint:disable-next-line:prefer-for-of
+
   for (let i = 0; i < set.length; i++) {
-    pitch = Note && (Note({ name: set[i] }) as NoteProps);
-    // tslint:disable-next-line: curly
-    if (!(pitch && pitch.valid)) pitch = Interval({ name: set[i] }) as IvlProps;
-    // tslint:disable-next-line: curly
-    if (!pitch.valid) return Theory.EmptySet.chroma;
-    if (pitch.valid) binary[pitch.chroma] = 1;
+    // Is it Note?
+    if (isNote(set[i])) {
+      pitch = Note && (Note({ name: set[i] }) as NoteProps);
+    }
+
+    // Is it Interval?
+    if (isIvl(set[i])) {
+      pitch = Interval({ name: set[i] }) as IvlProps;
+    }
+
+    // Is it neither Note or Interval?
+    if (!pitch) {
+      return Theory.EmptySet.chroma;
+    }
+
+    // Is it Note or Interval?
+    if (pitch.valid) {
+      binary[pitch.chroma] = 1;
+    }
   }
   return binary.join('');
 }
@@ -167,6 +185,7 @@ export function isEqual(one: PcSet, other: PcSet) {
  * The function is curryfied.
  *
  * @param {PcSet} set - the superset to test against (chroma or list of notes)
+ * @param {PcSet} notes - the subset to test (chroma or list of notes)
  * @return {boolean}
  */
 export const isSubsetOf = curry((set: PcSet, notes: PcSet) => {
@@ -181,6 +200,7 @@ export const isSubsetOf = curry((set: PcSet, notes: PcSet) => {
  * superset of a given set (it contains all notes and at least one more)
  *
  * @param {PcSet} set - the subset to test against (chroma or list of notes)
+ * @param {PcSet} notes - the subset to test (chroma or list of notes)
  * @return {boolean}
  * @example
  * const extendsCMajor = Pcset.isSupersetOf(["C", "E", "G"])
@@ -203,15 +223,17 @@ export const isSupersetOf = curry((set: PcSet, notes: PcSet) => {
  * Can be partially applied
  *
  * @example
- * const isNoteInCMajor = isNoteIncludedInSet(['C', 'E', 'G'])
+ * const isNoteInCMajor = isNoteInSet(['C', 'E', 'G'])
  * isNoteInCMajor('C4') // => true
  * isNoteInCMajor('C#4') // => false
  */
-export const isNoteIncludedInSet = curry((set: PcSet, note: NoteName) => {
-  const s = pcset(set);
-  const n = Note && Note({ name: note });
-  return s && n.valid && s.chroma.charAt(n.chroma) === '1';
-});
+export const isNoteInSet = curry(
+  (set: PcSet, note: NoteName): boolean => {
+    const s = pcset(set);
+    const n = Note && Note({ name: note });
+    return s && n.valid && s.chroma.charAt(n.chroma) === '1';
+  },
+);
 
 /**
  * Filter a list with a pitch class set
@@ -225,7 +247,7 @@ export const isNoteIncludedInSet = curry((set: PcSet, note: NoteName) => {
  * Pcset.filter(["C2"], ["c2", "c#2", "d2", "c3", "c#3", "d3"]) // => [ "c2", "c3" ])
  */
 export const filterNotes = curry((set: PcSet, notes: NoteName[]) => {
-  const memberOfSet = isNoteIncludedInSet(set);
+  const memberOfSet = isNoteInSet(set);
   return notes.filter(memberOfSet);
 });
 

@@ -114,12 +114,14 @@ type NoteProp =
  */
 type NoteComparable = 'midi' | 'frequency' | 'chroma' | 'step' | 'octave';
 
+type NoteTransposable = 'midi' | 'frequency' | 'octave';
+
 /**
  * Comparable function type has @note and @other (note) to compare and param @compare to represent property on which to compare
  */
-type NoteCompareFn = (note: NoteProps, other: NoteProps, compare: NoteComparable) => boolean | number;
+type NoteCompareFn = (note: NoteProps, other: NoteProps, compare?: NoteComparable) => boolean | number;
 
-type NoteComparePartialFn = (other: NoteProps, compare: NoteComparable) => boolean | number;
+type NoteComparePartialFn = (other: NoteProps, compare?: NoteComparable) => boolean | number;
 /**
  * Note comparison type represents record of comparison functions
  */

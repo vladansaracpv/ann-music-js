@@ -1,6 +1,6 @@
 import * as Theory from './theory';
 import { CustomError } from '@base/error';
-import { NOTE } from '@packages/note';
+import { NOTE, Note } from '@packages/note';
 import {
   tokenize,
   fillStr,
@@ -18,10 +18,12 @@ import {
   isNumber,
 } from '@base/index';
 
-const { Letter, Validators: NValidators, property: nproperty } = NOTE;
+const Letter = NOTE && NOTE.Letter;
+const NValidators = NOTE && NOTE.Validators;
+const nproperty = NOTE && NOTE.property;
 
-const midi = nproperty('midi');
-const letter = nproperty('letter');
+const midi = nproperty && nproperty('midi');
+const letter = nproperty && nproperty('letter');
 
 const IntervalError = CustomError('Interval');
 
@@ -213,6 +215,7 @@ export const INTERVAL = {
 export function Interval(props: IvlInitProps): IvlProps {
   const { name, semitones, notes } = props;
   const IValidators = INTERVAL.Validators;
+  const isNoteName = NValidators.isName;
 
   const intervalTypeFrom = (harmonic: number, generic: number) => INTERVAL.intervalTable(harmonic, generic);
 
@@ -336,8 +339,10 @@ export function Interval(props: IvlInitProps): IvlProps {
   }
 
   if (name && IValidators.isIntervalName(name)) return createIntervalWithName(name);
+
   if (semitones && isInteger(semitones)) return createIntervalWithSemitones(semitones);
-  if (notes && both(NValidators.isName(notes[0]), NValidators.isName(notes[1])))
-    return createIntervalWithNotes(notes[0], notes[1]);
+
+  if (notes && both(isNoteName(notes[0]), isNoteName(notes[1]))) return createIntervalWithNotes(notes[0], notes[1]);
+
   return EmptyInterval;
 }

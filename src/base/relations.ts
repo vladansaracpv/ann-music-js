@@ -1,9 +1,9 @@
-type BinRelationFn<T> = (a: T, b: T) => boolean;
-type CurryRelationFn<T> = (b: T) => (a: T) => boolean;
+export type BinRelationFn<T> = (a: T, b: T) => boolean;
+export type CurryRelationFn<T> = (b: T) => (a: T) => boolean;
 
-type Comparable = number | string | NoteProps;
-type ComparableBinFn = BinRelationFn<Comparable>;
-type ComparableCurryFn = CurryRelationFn<Comparable>;
+export type Comparable = number | string | NoteProps;
+export type ComparableBinFn = BinRelationFn<Comparable>;
+export type ComparableCurryFn = CurryRelationFn<Comparable>;
 
 /** Relational binary operators  */
 
@@ -67,3 +67,5 @@ export const inIntervalc = (a: Comparable, b: Comparable) => (x: Comparable): bo
 
 // segmentc := (a,b) => x => a <= x <= b
 export const inSegmentc = (a: Comparable, b: Comparable) => (x: Comparable): boolean => leqc(x)(a) && leqc(b)(x);
+
+/** Relational array operators */
