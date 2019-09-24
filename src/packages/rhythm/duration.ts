@@ -1,6 +1,6 @@
-import { compose2, compose } from '@base/functional';
-import { tokenize } from '@base/strings';
-import { gsum } from '@base/math';
+import { compose2, compose } from '@packages/base/functional';
+import { tokenize } from '@packages/base/strings';
+import { gsum } from '@packages/base/math';
 
 type DurationValue = 1 | 2 | 4 | 8 | 16 | 32 | 0;
 type DurationType = 'n' | 'r' | 't' | '';

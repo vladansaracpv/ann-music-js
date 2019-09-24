@@ -1,4 +1,4 @@
-import { Logger } from '@base/logger';
+import { Logger } from '@packages/base/logger';
 
 /** Error handling */
 export enum ErrorCode {

@@ -1,10 +1,3 @@
-export type BinRelationFn<T> = (a: T, b: T) => boolean;
-export type CurryRelationFn<T> = (b: T) => (a: T) => boolean;
-
-export type Comparable = number | string | NoteProps;
-export type ComparableBinFn = BinRelationFn<Comparable>;
-export type ComparableCurryFn = CurryRelationFn<Comparable>;
-
 /** Relational binary operators  */
 
 // lt := (a,b) => a < b

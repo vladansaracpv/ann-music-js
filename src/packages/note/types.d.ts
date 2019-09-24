@@ -110,7 +110,7 @@ type NoteProp =
   | NoteColor;
 
 /**
- * Comparable properties are those that can be used for comparing and other operations
+ * Comparable properties are those that can be used for comparing 2 Notes
  */
 type NoteComparable = 'midi' | 'frequency' | 'chroma' | 'step' | 'octave';
 
@@ -122,6 +122,7 @@ type NoteTransposable = 'midi' | 'frequency' | 'octave';
 type NoteCompareFn = (note: NoteProps, other: NoteProps, compare?: NoteComparable) => boolean | number;
 
 type NoteComparePartialFn = (other: NoteProps, compare?: NoteComparable) => boolean | number;
+
 /**
  * Note comparison type represents record of comparison functions
  */

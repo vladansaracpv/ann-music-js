@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
-    "module": "esnext",
+    "target": "es5",
+    "module": "commonjs",
+    "declaration": false,
+    "outDir": "dist",
     "strict": false,
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
@@ -9,20 +12,16 @@
     "allowJs": true,
     "baseUrl": "src",
     "paths": {
-      "@base/*": ["base/*"],
       "@packages/*": ["packages/*"]
     },
     "sourceMap": false,
-    "declaration": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
-    "target": "es5",
     "lib": ["dom", "es6", "es2015", "es2016", "es2017"],
-    "outDir": "dist",
     "noEmitOnError": true,
     "removeComments": true
   },
-  "include": ["src/**/*"],
+  "include": ["src"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }

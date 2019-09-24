@@ -1,4 +1,4 @@
-import { tokenize as tokenizeNote, either } from '@base/index';
+import { tokenize as tokenizeNote, either } from '@packages/base/index';
 import { Note } from '@packages/note';
 import { transpose as transposeNote, isSubsetOf, isSupersetOf } from '@packages/pc';
 import { Interval } from '@packages/interval';

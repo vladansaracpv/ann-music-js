@@ -1,4 +1,4 @@
-import { rotate } from '@base/arrays';
+import { rotate } from '@packages/base/arrays';
 import { Note } from '@packages/note';
 import { Interval } from '@packages/interval';
 import { isSubsetOf, isSupersetOf, modes, transpose } from '@packages/pc';

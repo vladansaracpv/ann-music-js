@@ -1,5 +1,5 @@
 import * as Theory from './theory';
-import { CustomError } from '@base/error';
+import { CustomError } from '@packages/base/error';
 import {
   isNegative,
   inSegment,
@@ -17,9 +17,9 @@ import {
   inc,
   dec,
   and2 as both,
-  isInteger,
-  isNumber,
-} from '@base/index';
+} from '@packages/base';
+
+import { isInteger, isNumber } from '@packages/base/typings';
 
 const NoteError = CustomError('Note');
 

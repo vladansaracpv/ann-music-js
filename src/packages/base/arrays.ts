@@ -2,7 +2,7 @@
 import { eq, neq, lt } from './relations';
 import { add2, sub2, abs } from './math';
 import { either } from './boolean';
-import { isInteger, isUndefinedOrNull } from './types';
+import { isInteger, isUndefinedOrNull } from './typings';
 import { or2 } from './logical';
 
 const id = n => n;
