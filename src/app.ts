@@ -1,7 +1,7 @@
 import { Note, NOTE } from '@packages/note';
 
-const n = Note({ name: 'B4' }) as NoteProps;
-const o = Note({ name: 'G4' }) as NoteProps;
+const n = Note('B4') as NoteProps;
+const o = Note(69) as NoteProps;
+const p = Note(440.0) as NoteProps;
 
-const a4 = NOTE.withMethods({ transpose: true, compare: false, distance: true }, { name: 'A4' });
-console.log(a4.distance(n));
+console.log(n, o, p);

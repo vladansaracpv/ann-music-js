@@ -74,7 +74,7 @@ export function toChroma(set: NoteName[] | IvlName[]): PcChroma {
   for (let i = 0; i < set.length; i++) {
     // Is it Note?
     if (isNote(set[i])) {
-      pitch = Note && (Note({ name: set[i] }) as NoteProps);
+      pitch = Note && (Note(set[i]) as NoteProps);
     }
 
     // Is it Interval?
@@ -235,7 +235,7 @@ export const isSupersetOf = curry((set: PcSet, notes: PcSet) => {
 export const isNoteInSet = curry(
   (set: PcSet, note: NoteName): boolean => {
     const s = pcset(set);
-    const n = Note && Note({ name: note });
+    const n = Note && Note(note);
     return s && n.valid && s.chroma.charAt(n.chroma) === '1';
   },
 );
@@ -266,8 +266,8 @@ export const filterNotes = curry((set: PcSet, notes: NoteName[]) => {
 export const semitones = (...args: NoteName[]) => {
   if (args.length === 1) return (t: NoteName) => semitones(args[0], t);
 
-  const f = Note && Note({ name: args[0] });
-  const t = Note && Note({ name: args[1] });
+  const f = Note && Note(args[0] as NoteName);
+  const t = Note && Note(args[1] as NoteName);
 
   return either(t.midi - f.midi, null, both(f.valid, t.valid));
 };
@@ -314,12 +314,12 @@ export const transpose = (...args: string[]): any => {
     return (i: NoteName) => transpose(i, args[0]);
   }
   const [n, i] = args;
-  const note = Note && Note({ name: n });
+  const note = Note && Note(n);
   const interval = Interval({ name: i });
 
   if (!both(note.valid, interval.valid)) return undefined;
 
-  const amount = note.midi + interval.semitones;
+  const amount: NoteMidi = note.midi + interval.semitones;
 
-  return Note && Note({ midi: amount }).name;
+  return Note && Note(amount).name;
 };

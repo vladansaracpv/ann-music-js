@@ -33,123 +33,150 @@ const { partial } = BaseFunctional;
 /**
  * Generate Note static methods
  */
-function GenerateNoteStaticMethods() {
-  const Midi = {
-    toFrequency(key: NoteMidi, tuning = A_440): NoteFreq {
-      return tuning * 2 ** ((key - MIDDLE_KEY) / OCTAVE_RANGE);
-    },
-    toOctaves(key: NoteMidi) {
-      return Math.floor(key / OCTAVE_RANGE);
-    },
+const Midi = {
+  toFrequency(key: NoteMidi, tuning = A_440): NoteFreq {
+    return tuning * 2 ** ((key - MIDDLE_KEY) / OCTAVE_RANGE);
+  },
+  toOctaves(key: NoteMidi) {
+    return Math.floor(key / OCTAVE_RANGE);
+  },
+};
+
+const Frequency = {
+  toMidi(freq: NoteFreq, tuning = A_440) {
+    return Math.ceil(OCTAVE_RANGE * Math.log2(freq / tuning) + MIDDLE_KEY);
+  },
+};
+
+const Accidental = {
+  toAlteration(accidental: NoteAccidental): number {
+    return accidental.length * (accidental[0] === 'b' ? -1 : 1);
+  },
+};
+
+const Letter = {
+  toStep(letter: NoteLetter): number {
+    return (letter.charCodeAt(0) + 3) % 7;
+  },
+  toIndex(letter: NoteLetter) {
+    return SHARPS.indexOf(letter);
+  },
+};
+
+const Octave = {
+  parse(octave?: string): NoteOctave {
+    return either(Number.parseInt(octave), STANDARD_OCTAVE, Number.isInteger(Number.parseInt(octave)));
+  },
+  toSemitones(octave: number) {
+    return OCTAVE_RANGE * inc(octave);
+  },
+};
+
+const Validators = {
+  isName: (name: NoteName): boolean => NOTE_REGEX.test(name) === true,
+  isMidi: (midi: NoteMidi): boolean => both(isInteger(midi), inSegment(0, 135, midi)),
+  isChroma: (chroma: NoteChroma): boolean => both(isInteger(chroma), inSegment(0, 11, chroma)),
+  isFrequency: (freq: NoteFreq): boolean => both(isNumber(freq), gt(freq, 0)),
+  isKey: (key: string): boolean => KEYS.includes(key),
+};
+
+const property = (prop: NoteProp) => (note: InitProp) => Note(note)[prop];
+
+function simplify(name: NoteName, keepAccidental = true): NoteName {
+  const note = Note(name);
+
+  if (!note) return undefined;
+
+  const { chroma, alteration, octave } = note;
+
+  const isSharp = alteration >= 0;
+
+  /**
+   * Use sharps if:
+   * 1) It's already sharp && keepAccidental = true
+   * 2) It's not sharp && keepAccidental = false (don't use given accidental)
+   */
+  const useSharps = isSharp == keepAccidental;
+
+  const pc = either(SHARPS[chroma], FLATS[chroma], useSharps);
+
+  return pc + octave;
+}
+
+function enharmonic(note: NoteName): NoteName {
+  return simplify(note, false);
+}
+
+function transposeNote(b: NoteProps, n: number, key = 'midi'): Note {
+  return key == 'midi' ? Note(b.midi + n) : key == 'frequency' ? Note(b.frequency + n) : Note(b.pc + (b.octave + n));
+}
+
+function distanceNote(note: Note, other: Note, compare: NoteComparableKeys): number {
+  return other[compare] - note[compare];
+}
+
+const compareNotes: NoteComparison = {
+  lt: (note, other, compare = 'midi') => lt(note[compare], other[compare]),
+  leq: (note, other, compare = 'midi') => leq(note[compare], other[compare]),
+  eq: (note, other, compare = 'midi') => eq(note[compare], other[compare]),
+  neq: (note, other, compare = 'midi') => neq(note[compare], other[compare]),
+  gt: (note, other, compare = 'midi') => gt(note[compare], other[compare]),
+  geq: (note, other, compare = 'midi') => geq(note[compare], other[compare]),
+  cmp: (note, other, compare = 'midi') => cmp(note[compare], other[compare]),
+};
+
+/**
+ * Note object builder. Used to assign methods beside note properties
+ * @param {NoteBuilderProps} initProps
+ * @param {InitProps} from
+ */
+function NoteWithMethods(initMethods: NoteBuilderProps, from: InitProp): NoteBuilder {
+  const { distance, transpose, compare } = initMethods;
+  const { lt, leq, eq, neq, gt, geq, cmp } = NOTE;
+
+  const note = Note(from) as NoteProps;
+
+  const withTranspose: NoteTranspositionPartial = transpose && {
+    transpose: partial(transposeNote, note),
   };
 
-  const Frequency = {
-    toMidi(freq: NoteFreq, tuning = A_440) {
-      return Math.ceil(OCTAVE_RANGE * Math.log2(freq / tuning) + MIDDLE_KEY);
-    },
+  const withDistance: NoteDistancePartial = distance && {
+    distance: partial(distanceNote, note),
   };
 
-  const Accidental = {
-    toAlteration(accidental: NoteAccidental): number {
-      return accidental.length * (accidental[0] === 'b' ? -1 : 1);
-    },
-  };
-
-  const Letter = {
-    toStep(letter: NoteLetter): number {
-      return (letter.charCodeAt(0) + 3) % 7;
-    },
-    toIndex(letter: NoteLetter) {
-      return SHARPS.indexOf(letter);
-    },
-  };
-
-  const Octave = {
-    parse(octave?: string): NoteOctave {
-      return either(Number.parseInt(octave), STANDARD_OCTAVE, Number.isInteger(Number.parseInt(octave)));
-    },
-    toSemitones(octave: number) {
-      return OCTAVE_RANGE * inc(octave);
-    },
-  };
-
-  const Validators = {
-    isName: (name: NoteName): boolean => NOTE_REGEX.test(name) === true,
-    isMidi: (midi: NoteMidi): boolean => both(isInteger(midi), inSegment(0, 135, midi)),
-    isChroma: (chroma: NoteChroma): boolean => both(isInteger(chroma), inSegment(0, 11, chroma)),
-    isFrequency: (freq: NoteFreq): boolean => both(isNumber(freq), gt(freq, 0)),
-    isKey: (key: string): boolean => KEYS.includes(key),
-  };
-
-  const property = (prop: NoteProp) => (note: InitProps) => Note(note)[prop];
-
-  function simplify(name: NoteName, keepAccidental = true): NoteName {
-    const note = Note({ name });
-
-    if (!note) return undefined;
-
-    const { chroma, alteration, octave } = note;
-
-    const isSharp = alteration >= 0;
-
-    /**
-     * Use sharps if:
-     * 1) It's already sharp && keepAccidental = true
-     * 2) It's not sharp && keepAccidental = false (don't use given accidental)
-     */
-    const useSharps = isSharp == keepAccidental;
-
-    const pc = either(SHARPS[chroma], FLATS[chroma], useSharps);
-
-    return pc + octave;
-  }
-
-  function enharmonic(note: NoteName): NoteName {
-    return simplify(note, false);
-  }
-
-  function transpose(b: NoteProps, n: number, key = 'midi'): Note {
-    return key == 'midi'
-      ? Note({ midi: b.midi + n })
-      : key == 'frequency'
-      ? Note({ frequency: b.frequency + n })
-      : Note({ name: b.pc + (b.octave + n) });
-  }
-
-  function distance(note: Note, other: Note, compare: NoteComparableKeys): number {
-    return other[compare] - note[compare];
-  }
-
-  const compare: NoteComparison = {
-    lt: (note, other, compare = 'midi') => lt(note[compare], other[compare]),
-    leq: (note, other, compare = 'midi') => leq(note[compare], other[compare]),
-    eq: (note, other, compare = 'midi') => eq(note[compare], other[compare]),
-    neq: (note, other, compare = 'midi') => neq(note[compare], other[compare]),
-    gt: (note, other, compare = 'midi') => gt(note[compare], other[compare]),
-    geq: (note, other, compare = 'midi') => geq(note[compare], other[compare]),
-    cmp: (note, other, compare = 'midi') => cmp(note[compare], other[compare]),
+  const withCompare: NoteComparisonPartial = compare && {
+    lt: partial(lt, note),
+    leq: partial(leq, note),
+    eq: partial(eq, note),
+    neq: partial(neq, note),
+    gt: partial(gt, note),
+    geq: partial(geq, note),
+    cmp: partial(cmp, note),
   };
 
   return {
-    Midi,
-    Frequency,
-    Accidental,
-    Letter,
-    Octave,
-    Validators,
-    property,
-    simplify,
-    enharmonic,
-    transpose,
-    distance,
-    ...compare,
+    ...note,
+    ...withTranspose,
+    ...withDistance,
+    ...withCompare,
   };
 }
 
 export const NOTE = {
   Theory,
-  withMethods: NoteBuilder,
-  ...GenerateNoteStaticMethods(),
+  Midi,
+  Frequency,
+  Accidental,
+  Letter,
+  Octave,
+  Validators,
+  property,
+  simplify,
+  enharmonic,
+  transposeNote,
+  distanceNote,
+  ...compareNotes,
+  withMethods: NoteWithMethods,
 };
 
 /**
@@ -157,8 +184,10 @@ export const NOTE = {
  * @param {InitProps} props
  * @return {Note}
  */
-export function Note(props: InitProps): Note {
-  const { name, midi, frequency } = props;
+export function Note(prop: InitProp): Note {
+  const name = prop as NoteName;
+  const midi = prop as NoteMidi;
+  const frequency = prop as NoteFreq;
   const { isName, isMidi, isFrequency } = NOTE.Validators;
   const { toIndex, toStep } = NOTE.Letter;
   const { toAlteration } = NOTE.Accidental;
@@ -282,48 +311,4 @@ export function Note(props: InitProps): Note {
     : isFrequency(frequency)
     ? fromFrequency(frequency, 440)
     : EmptyNote;
-}
-
-/**
- * Note object builder. Used to assign methods beside note properties
- * @param {NoteBuilderProps} initProps
- * @param {InitProps} from
- */
-function NoteBuilder(initProps: NoteBuilderProps, from: InitProps): NoteBuilder {
-  const { distance, transpose, compare } = initProps;
-
-  const note = Note(from) as NoteProps;
-
-  const transposeFns: NoteTranspositionPartial = {
-    transpose: (by: number, key = 'midi') => NOTE.transpose(note, by, key),
-  };
-
-  const distanceFns: NoteDistancePartial = {
-    distance: (other, comparable: NoteComparableKeys = 'midi') => NOTE.distance(note, other, comparable),
-  };
-
-  const partialCmp = (fn: NoteCompareFn): NoteCompareFnPartial => partial(fn, note);
-
-  const compareFns: NoteComparisonPartial = {
-    lt: partialCmp(NOTE.lt),
-    leq: partialCmp(NOTE.leq),
-    eq: partialCmp(NOTE.eq),
-    neq: partialCmp(NOTE.neq),
-    gt: partialCmp(NOTE.gt),
-    geq: partialCmp(NOTE.geq),
-    cmp: partialCmp(NOTE.cmp),
-  };
-
-  const withTranspose = transpose && transposeFns;
-
-  const withDistance = distance && distanceFns;
-
-  const withCompare = compare && compareFns;
-
-  return {
-    ...note,
-    ...withTranspose,
-    ...withDistance,
-    ...withCompare,
-  };
 }

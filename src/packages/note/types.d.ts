@@ -150,6 +150,9 @@ type NoteDistancePartial = Record<DistanceFnKeys, NoteDistancePartialFn>;
 /**
  * Note properties from which the Note object can be constructed
  */
+
+type InitProp = NoteName | NoteMidi | NoteFreq;
+
 type InitProps = Partial<{
   name: NoteName;
   midi: NoteMidi;

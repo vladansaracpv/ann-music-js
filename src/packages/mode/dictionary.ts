@@ -31,6 +31,9 @@ all.forEach(mode => {
   });
 });
 
+interface Named {
+  readonly name: string;
+}
 type ModeLiteral = string | Named;
 
 /**

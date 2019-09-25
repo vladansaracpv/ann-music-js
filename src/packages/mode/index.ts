@@ -5,13 +5,13 @@ import { MODES_CHORDS } from './theory';
 import { modes as chromaModes } from '@packages/pc';
 export * from './dictionary';
 
-const midiToNote = (midi: number) => Note({ midi: midi }).name;
+const midiToNote = (midi: NoteMidi) => Note(midi).name;
 
 const transposeFormula = (formula: number[], octave: number) => formula.map(t => t + 12 * octave);
 
 export function chordNotes(root: NoteName, chord: string, octaves: number = 1) {
   // Note object for @root
-  const note = Note({ name: root });
+  const note = Note(root);
 
   // Create chord formula for @root@type
   const formula = chordFormula(chord);

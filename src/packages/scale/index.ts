@@ -40,9 +40,9 @@ export function tokenize(name: ScaleName): ScaleNameTokens {
     return ['', ''];
   }
   const i = name.indexOf(' ');
-  const tonic = Note({ name: name.substring(0, i) });
+  const tonic = Note(name.substring(0, i));
   if (!tonic.valid) {
-    const n = Note({ name });
+    const n = Note(name);
     return !n.valid ? ['', name] : [n.name, ''];
   }
 
@@ -55,7 +55,7 @@ export function tokenize(name: ScaleName): ScaleNameTokens {
  */
 export function scale(src: ScaleName | ScaleNameTokens): Scale {
   const tokens = Array.isArray(src) ? src : tokenize(src);
-  const tonic = Note({ name: tokens[0] }).name;
+  const tonic = Note(tokens[0]).name;
   const st = scaleType(tokens[1]);
   if (st.empty) {
     return NoScale;
@@ -134,7 +134,7 @@ export function reduced(name: string): string[] {
  * scaleNotes(['D4', 'c#5', 'A5', 'F#6']) // => ["D", "F#", "A", "C#"]
  */
 export function scaleNotes(notes: NoteName[]) {
-  const pcset: string[] = notes.map(n => Note({ name: n }).pc).filter(x => x);
+  const pcset: string[] = notes.map(n => Note(n).pc).filter(x => x);
   const tonic = pcset[0];
   const scale = sortedUniqNoteNames(pcset);
   return rotate(scale.indexOf(tonic), scale);
@@ -186,7 +186,7 @@ export function modeNames(name: string): ScaleMode[] {
  * // => ['C', 'F', 'G', 'A', 'B']
  */
 export function sortedNoteNames(notes: NoteName[]): string[] {
-  const valid = notes.map(n => Note({ name: n })).filter(n => n.valid) as NoteProps[];
+  const valid = notes.map(n => Note(n)).filter(n => n.valid) as NoteProps[];
   return valid.sort((a, b) => a.midi - b.midi).map(n => n.name);
 }
 
