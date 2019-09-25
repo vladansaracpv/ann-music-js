@@ -1,79 +1,84 @@
-import * as Theory from './theory';
-import { CustomError } from '@packages/base/error';
 import {
-  isNegative,
-  inSegment,
-  lt,
-  leq,
-  eq,
-  neq,
-  gt,
-  geq,
-  cmp,
-  tokenize,
-  capitalize,
-  substitute,
-  either,
-  inc,
-  dec,
-  and2 as both,
+  BaseBoolean,
+  BaseError,
+  BaseFunctional,
+  BaseMath,
+  BaseRelations,
+  BaseStrings,
+  BaseTypings,
 } from '@packages/base';
 
-import { isInteger, isNumber } from '@packages/base/typings';
+import * as Theory from './theory';
 
-const NoteError = CustomError('Note');
-
-const { EmptyNote } = Theory;
+const {
+  EmptyNote,
+  A_440,
+  MIDDLE_KEY,
+  OCTAVE_RANGE,
+  SHARPS,
+  FLATS,
+  STANDARD_OCTAVE,
+  KEYS,
+  NOTE_REGEX,
+  WHITE_KEYS,
+} = Theory;
+const { isInteger, isNumber } = BaseTypings;
+const { tokenize, capitalize, substitute } = BaseStrings;
+const { isNegative, inSegment, lt, leq, eq, neq, gt, geq, cmp } = BaseRelations;
+const { either, both } = BaseBoolean;
+const { inc, dec } = BaseMath;
+const NoteError = BaseError.CustomError('Note');
+const { partial } = BaseFunctional;
 
 /**
  * Generate Note static methods
  */
 function GenerateNoteStaticMethods() {
   const Midi = {
-    toFrequency: function(key: NoteMidi, tuning = Theory.A_440): NoteFreq {
-      return tuning * 2 ** ((key - Theory.MIDDLE_KEY) / Theory.OCTAVE_RANGE);
+    toFrequency(key: NoteMidi, tuning = A_440): NoteFreq {
+      return tuning * 2 ** ((key - MIDDLE_KEY) / OCTAVE_RANGE);
     },
-    toOctaves: function(key: NoteMidi) {
-      return Math.floor(key / Theory.OCTAVE_RANGE);
+    toOctaves(key: NoteMidi) {
+      return Math.floor(key / OCTAVE_RANGE);
     },
   };
 
   const Frequency = {
-    toMidi: function(freq: NoteFreq, tuning = Theory.A_440) {
-      return Math.ceil(Theory.OCTAVE_RANGE * Math.log2(freq / tuning) + Theory.MIDDLE_KEY);
+    toMidi(freq: NoteFreq, tuning = A_440) {
+      return Math.ceil(OCTAVE_RANGE * Math.log2(freq / tuning) + MIDDLE_KEY);
     },
   };
 
   const Accidental = {
-    toAlteration: function(accidental: NoteAccidental): number {
+    toAlteration(accidental: NoteAccidental): number {
       return accidental.length * (accidental[0] === 'b' ? -1 : 1);
     },
   };
 
   const Letter = {
-    toStep: function(letter: NoteLetter): number {
+    toStep(letter: NoteLetter): number {
       return (letter.charCodeAt(0) + 3) % 7;
     },
-    toIndex: function(letter: NoteLetter) {
-      return Theory.SHARPS.indexOf(letter);
+    toIndex(letter: NoteLetter) {
+      return SHARPS.indexOf(letter);
     },
   };
 
   const Octave = {
-    parse: function(octave?: string): NoteOctave {
-      return either(Number.parseInt(octave), Theory.STANDARD_OCTAVE, Number.isInteger(Number.parseInt(octave)));
+    parse(octave?: string): NoteOctave {
+      return either(Number.parseInt(octave), STANDARD_OCTAVE, Number.isInteger(Number.parseInt(octave)));
     },
-    toSemitones: function(octave: number) {
-      return Theory.OCTAVE_RANGE * inc(octave);
+    toSemitones(octave: number) {
+      return OCTAVE_RANGE * inc(octave);
     },
   };
 
   const Validators = {
-    isName: (name: string): boolean => Theory.NOTE_REGEX.test(name) === true,
-    isMidi: (midi: number): boolean => both(isInteger(midi), inSegment(0, 135, midi)),
-    isChroma: (chroma: number): boolean => both(isInteger(chroma), inSegment(0, 11, chroma)),
-    isFrequency: (freq: number): boolean => both(isNumber(freq), gt(freq, 0)),
-    isKey: (key: string): boolean => Theory.KEYS.includes(key),
+    isName: (name: NoteName): boolean => NOTE_REGEX.test(name) === true,
+    isMidi: (midi: NoteMidi): boolean => both(isInteger(midi), inSegment(0, 135, midi)),
+    isChroma: (chroma: NoteChroma): boolean => both(isInteger(chroma), inSegment(0, 11, chroma)),
+    isFrequency: (freq: NoteFreq): boolean => both(isNumber(freq), gt(freq, 0)),
+    isKey: (key: string): boolean => KEYS.includes(key),
   };
 
   const property = (prop: NoteProp) => (note: InitProps) => Note(note)[prop];
@@ -94,7 +99,7 @@ function GenerateNoteStaticMethods() {
      */
     const useSharps = isSharp == keepAccidental;
 
-    const pc = either(Theory.SHARPS[chroma], Theory.FLATS[chroma], useSharps);
+    const pc = either(SHARPS[chroma], FLATS[chroma], useSharps);
 
     return pc + octave;
   }
@@ -103,11 +108,15 @@ function GenerateNoteStaticMethods() {
     return simplify(note, false);
   }
 
-  function transpose(b: NoteProps, n: number) {
-    return Note({ midi: b.midi + n });
+  function transpose(b: NoteProps, n: number, key = 'midi'): Note {
+    return key == 'midi'
+      ? Note({ midi: b.midi + n })
+      : key == 'frequency'
+      ? Note({ frequency: b.frequency + n })
+      : Note({ name: b.pc + (b.octave + n) });
   }
 
-  function distance(note: NoteProps, other: NoteProps, compare: NoteComparable) {
+  function distance(note: Note, other: Note, compare: NoteComparableKeys): number {
     return other[compare] - note[compare];
   }
 
@@ -133,7 +142,7 @@ function GenerateNoteStaticMethods() {
     enharmonic,
     transpose,
     distance,
-    compare,
+    ...compare,
   };
 }
 
@@ -146,9 +155,9 @@ export const NOTE = {
 /**
  * Note factory function
  * @param {InitProps} props
- * @return {NoteProps}
+ * @return {Note}
  */
-export function Note(props: InitProps): NoteProps {
+export function Note(props: InitProps): Note {
   const { name, midi, frequency } = props;
   const { isName, isMidi, isFrequency } = NOTE.Validators;
   const { toIndex, toStep } = NOTE.Letter;
@@ -157,12 +166,12 @@ export function Note(props: InitProps): NoteProps {
   const { toFrequency, toOctaves } = NOTE.Midi;
   const { toMidi } = NOTE.Frequency;
 
-  function fromName(note: NoteName): NoteProps {
+  function fromName(note: NoteName): Note {
     // Example: A#4
 
     if (!isName(note)) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
 
-    const { Tletter, Taccidental, Toct, Trest } = tokenize(note, Theory.NOTE_REGEX);
+    const { Tletter, Taccidental, Toct, Trest } = tokenize(note, NOTE_REGEX);
 
     if (Trest) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
 
@@ -179,7 +188,7 @@ export function Note(props: InitProps): NoteProps {
     const semitonesAltered = offset + alteration; // 11
 
     /** Because of the alteration, note can slip into the previous/next octave **/
-    const octavesAltered = Math.floor(semitonesAltered / Theory.OCTAVE_RANGE); // 0
+    const octavesAltered = Math.floor(semitonesAltered / OCTAVE_RANGE); // 0
     const octave = parse(Toct) as NoteOctave; // 4
 
     const pc = (letter + accidental) as NotePC; // A#
@@ -191,8 +200,8 @@ export function Note(props: InitProps): NoteProps {
      *  alteredOct == -1
      */
     const chroma = either(
-      (semitonesAltered - toSemitones(octavesAltered) + 12) % Theory.OCTAVE_RANGE,
-      semitonesAltered % Theory.OCTAVE_RANGE,
+      (semitonesAltered - toSemitones(octavesAltered) + 12) % OCTAVE_RANGE,
+      semitonesAltered % OCTAVE_RANGE,
       isNegative(octavesAltered),
     ) as NoteChroma; // 10
 
@@ -201,11 +210,11 @@ export function Note(props: InitProps): NoteProps {
 
     const name = (pc + octave) as NoteName; // A#4
 
-    const color = either('white', 'black', Theory.WHITE_KEYS.includes(chroma)) as NoteColor; // 'black'
+    const color = either('white', 'black', WHITE_KEYS.includes(chroma)) as NoteColor; // 'black'
 
     const valid = true;
 
-    return Object.freeze({
+    return {
       name,
       letter,
       step,
@@ -218,20 +227,20 @@ export function Note(props: InitProps): NoteProps {
       frequency,
       color,
       valid,
-    });
+    };
   }
 
-  function fromMidi(midi: NoteMidi, useSharps = true): NoteProps {
+  function fromMidi(midi: NoteMidi, useSharps = true): Note {
     if (!isMidi(midi)) return NoteError('InvalidConstructor', { midi }, EmptyNote);
     const frequency = toFrequency(midi) as NoteFreq;
     const octave = dec(toOctaves(midi)) as NoteOctave;
 
     const chroma = (midi - toSemitones(octave)) as NoteChroma;
-    const pc = either(Theory.SHARPS[chroma], Theory.FLATS[chroma], useSharps) as NotePC;
+    const pc = either(SHARPS[chroma], FLATS[chroma], useSharps) as NotePC;
 
     const name = (pc + octave) as NoteName;
 
-    const { Tletter, Taccidental } = tokenize(name, Theory.NOTE_REGEX);
+    const { Tletter, Taccidental } = tokenize(name, NOTE_REGEX);
 
     const letter = capitalize(Tletter) as NoteLetter;
     const step = toStep(letter) as NoteStep;
@@ -239,11 +248,11 @@ export function Note(props: InitProps): NoteProps {
     const accidental = substitute(Taccidental, /x/g, '##') as NoteAccidental;
     const alteration = toAlteration(accidental) as NoteAlteration;
 
-    const color = either('white', 'black', Theory.WHITE_KEYS.includes(chroma)) as NoteColor;
+    const color = either('white', 'black', WHITE_KEYS.includes(chroma)) as NoteColor;
 
     const valid = true;
 
-    return Object.freeze({
+    return {
       name,
       letter,
       step,
@@ -256,10 +265,10 @@ export function Note(props: InitProps): NoteProps {
       frequency,
       color,
       valid,
-    });
+    };
   }
 
-  function fromFrequency(frequency: NoteFreq, tuning = Theory.A_440): NoteProps {
+  function fromFrequency(frequency: NoteFreq, tuning = A_440): Note {
     if (!isFrequency(frequency)) return NoteError('InvalidConstructor', { frequency }, EmptyNote);
 
     const midi = toMidi(frequency, tuning);
@@ -280,37 +289,36 @@ export function Note(props: InitProps): NoteProps {
  * @param {NoteBuilderProps} initProps
  * @param {InitProps} from
  */
-function NoteBuilder(initProps: NoteBuilderProps, from: InitProps) {
+function NoteBuilder(initProps: NoteBuilderProps, from: InitProps): NoteBuilder {
   const { distance, transpose, compare } = initProps;
 
-  const note = Note(from);
+  const note = Note(from) as NoteProps;
 
-  const transposeFns = {
-    transpose: (n: number) => NOTE.transpose(note, n),
+  const transposeFns: NoteTranspositionPartial = {
+    transpose: (by: number, key = 'midi') => NOTE.transpose(note, by, key),
   };
 
-  const distanceFns: NoteComparisonPartial = {
-    distance: (other, comparable = 'midi') => NOTE.distance(note, other, comparable),
+  const distanceFns: NoteDistancePartial = {
+    distance: (other, comparable: NoteComparableKeys = 'midi') => NOTE.distance(note, other, comparable),
   };
 
-  const partialCompare = (fn: NoteCompareFn): NoteComparePartialFn => (other, compare = 'midi') =>
-    fn(note, other, compare);
+  const partialCmp = (fn: NoteCompareFn): NoteCompareFnPartial => partial(fn, note);
 
   const compareFns: NoteComparisonPartial = {
-    lt: partialCompare(NOTE.compare.lt),
-    leq: partialCompare(NOTE.compare.leq),
-    eq: partialCompare(NOTE.compare.eq),
-    neq: partialCompare(NOTE.compare.neq),
-    gt: partialCompare(NOTE.compare.gt),
-    geq: partialCompare(NOTE.compare.geq),
-    cmp: partialCompare(NOTE.compare.cmp),
+    lt: partialCmp(NOTE.lt),
+    leq: partialCmp(NOTE.leq),
+    eq: partialCmp(NOTE.eq),
+    neq: partialCmp(NOTE.neq),
+    gt: partialCmp(NOTE.gt),
+    geq: partialCmp(NOTE.geq),
+    cmp: partialCmp(NOTE.cmp),
   };
 
-  const withTranspose = transpose ? transposeFns : {};
+  const withTranspose = transpose && transposeFns;
 
-  const withDistance = distance ? distanceFns : {};
+  const withDistance = distance && distanceFns;
 
-  const withCompare = compare ? compareFns : {};
+  const withCompare = compare && compareFns;
 
   return {
     ...note,

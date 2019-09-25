@@ -1,11 +1,14 @@
-import { Note, NOTE } from '@packages/note';
-import { Interval, INTERVAL } from '@packages/interval';
+import { both, either } from '@packages/base/boolean';
 import { CustomError } from '@packages/base/error';
-import * as Theory from './theory';
-import { range, compact, rotate, toBinary, inSegment, either, and2 as both } from '../base/index';
-import { isArray, isNumber } from '@packages/base/typings';
-
 import { curry } from '@packages/base/functional';
+import { inSegment } from '@packages/base/relations';
+import { isArray, isNumber } from '@packages/base/typings';
+import { Interval, INTERVAL } from '@packages/interval';
+import { Note, NOTE } from '@packages/note';
+
+import { compact, range, rotate, toBinary } from '../base/arrays';
+import * as Theory from './theory';
+
 export * from './theory';
 
 const PcError = CustomError('PC');

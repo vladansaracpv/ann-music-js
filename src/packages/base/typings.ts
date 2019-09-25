@@ -1,8 +1,18 @@
-// export const isInteger = (x: number): boolean => Number.isInteger(x);
-
-// export const isString = (x: any): boolean => typeof x === 'string';
-
-// export const isArray = (x: any): boolean => Array.isArray(x);
+/**
+ 
+ isNumber
+ isInteger
+ isString
+ isUndefined
+ isUndefinedOrNull
+ isArray
+ isStringArray
+ isObject
+ isBoolean
+ isEmptyObject
+ isFunction
+ 
+ */
 
 enum type {
   number = 'number',
@@ -99,12 +109,12 @@ export function isBoolean(obj: any): obj is boolean {
   return obj === true || obj === false;
 }
 
-const hasOwnProperty = Object.prototype.hasOwnProperty;
-
 /**
  * @returns whether the provided parameter is an empty JavaScript Object or not.
  */
 export function isEmptyObject(obj: any): obj is any {
+  const hasOwnProperty = Object.prototype.hasOwnProperty;
+
   if (!isObject(obj)) {
     return false;
   }

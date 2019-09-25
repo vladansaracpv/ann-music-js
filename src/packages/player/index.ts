@@ -157,7 +157,7 @@ export class SequenceParser {
     return { notes };
   }
 
-  parseTextNote(textNote: string): Note {
+  parseTextNote(textNote: string): PlayerNote {
     const chunks = textNote.split('/');
     const isNote = chunks[0] !== 'r';
     return {

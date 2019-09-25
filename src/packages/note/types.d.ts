@@ -93,6 +93,8 @@ interface NoNote extends Partial<NoteProps> {
   readonly name: '';
 }
 
+type Note = Readonly<NoteProps> | NoNote;
+
 /**
  * Every note property is of @NoteProp type
  */
@@ -110,25 +112,40 @@ type NoteProp =
   | NoteColor;
 
 /**
- * Comparable properties are those that can be used for comparing 2 Notes
+ * Note comparison types
  */
-type NoteComparable = 'midi' | 'frequency' | 'chroma' | 'step' | 'octave';
+type ComparisonFnKeys = 'lt' | 'leq' | 'eq' | 'neq' | 'gt' | 'geq' | 'cmp';
+type NoteComparableKeys = 'midi' | 'frequency' | 'chroma' | 'step' | 'octave';
 
-type NoteTransposable = 'midi' | 'frequency' | 'octave';
+type NoteCompareFn = (note: NoteProps, other: NoteProps, compare?: NoteComparableKeys) => boolean | number;
+type NoteComparison = Record<ComparisonFnKeys, NoteCompareFn>;
+
+type NoteCompareFnPartial = (other: NoteProps, compare?: NoteComparableKeys) => boolean | number;
+type NoteComparisonPartial = Record<ComparisonFnKeys, NoteCompareFnPartial>;
 
 /**
- * Comparable function type has @note and @other (note) to compare and param @compare to represent property on which to compare
+ * Note transposition types
  */
-type NoteCompareFn = (note: NoteProps, other: NoteProps, compare?: NoteComparable) => boolean | number;
+type TranspositionFnKeys = 'transpose';
+type NoteTransposableKeys = 'midi' | 'frequency' | 'octave';
 
-type NoteComparePartialFn = (other: NoteProps, compare?: NoteComparable) => boolean | number;
+type NoteTransposeFn = (note: NoteProps, by: number, key?: NoteTransposableKeys) => Note;
+type NoteTransposition = Record<TranspositionFnKeys, NoteTransposeFn>;
+
+type NoteTransposePartialFn = (by: number, key?: NoteTransposableKeys) => Note;
+type NoteTranspositionPartial = Record<TranspositionFnKeys, NoteTransposePartialFn>;
 
 /**
- * Note comparison type represents record of comparison functions
+ * Note distance types
  */
-type NoteComparison = Record<string, NoteCompareFn>;
+type DistanceFnKeys = 'distance';
+type NoteDistanceKeys = 'midi' | 'frequency' | 'chroma' | 'step';
 
-type NoteComparisonPartial = Record<string, NoteComparePartialFn>;
+type NoteDistanceFn = (note: NoteProps, other: NoteProps, compare?: NoteDistanceKeys) => number;
+type NoteDistance = Record<DistanceFnKeys, NoteDistanceFn>;
+
+type NoteDistancePartialFn = (other: NoteProps, compare?: NoteDistanceKeys) => number;
+type NoteDistancePartial = Record<DistanceFnKeys, NoteDistancePartialFn>;
 
 /**
  * Note properties from which the Note object can be constructed
@@ -139,23 +156,12 @@ type InitProps = Partial<{
   frequency: NoteFreq;
 }>;
 
-/**
- * Applied generic to Note
- * @param {NoteName} from
- * @param {NoteName} to
- * @param {NoteComparable} comparable
- */
-type NoteDistanceFnParams = DistanceFnParams<NoteName, NoteComparable>;
+type NoteBuilderProps = Partial<{
+  distance: boolean;
+  transpose: boolean;
+  compare: boolean;
+}>;
 
-/**
- * Applied generic type of DistanceFn<T> for Note
- * @param {NoteDistanceFnParams} params
- * @return {number}
- */
-type NoteDistanceFn = DistanceFn<NoteDistanceFnParams>;
+type NoteWithMethods = NoteTranspositionPartial & NoteComparisonPartial & NoteDistancePartial;
 
-interface NoteBuilderProps {
-  distance?: boolean;
-  transpose?: boolean;
-  compare?: boolean;
-}
+type NoteBuilder = Note & Partial<NoteWithMethods>;

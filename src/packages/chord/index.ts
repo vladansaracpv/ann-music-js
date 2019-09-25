@@ -1,4 +1,5 @@
-import { tokenize as tokenizeNote, either } from '@packages/base/index';
+import { tokenize as tokenizeNote } from '@packages/base/strings';
+import { either } from '@packages/base/boolean';
 import { Note } from '@packages/note';
 import { transpose as transposeNote, isSubsetOf, isSupersetOf } from '@packages/pc';
 import { Interval } from '@packages/interval';

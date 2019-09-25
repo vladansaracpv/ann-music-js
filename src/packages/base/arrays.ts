@@ -1,12 +1,11 @@
 // /** Array methods */
 import { eq, neq, lt } from './relations';
-import { add2, sub2, abs } from './math';
+import { add, sub, abs } from './math';
 import { either } from './boolean';
 import { isInteger, isUndefinedOrNull } from './typings';
-import { or2 } from './logical';
+import { or } from './logical';
 
 const id = n => n;
-const name = id;
 const notNull = n => !isUndefinedOrNull(n);
 const uniqueLocal = (n: any, i: number, a: any[]) => eq(i, 0) || neq(n, a[--i]);
 
@@ -27,7 +26,7 @@ export const compact = (array: any[]) => array.filter(notNull);
 
 export const toBinary = (n: number) => n.toString(2);
 
-export const sort = (src: any[], fn = id) => compact(src.map(name)).sort((a, b) => fn(a) - fn(b));
+export const sort = (src: any[], fn = id) => compact(src.map(id)).sort((a, b) => fn(a) - fn(b));
 
 export const unique = (array: any[]) => sort(array).filter(uniqueLocal);
 
@@ -36,17 +35,16 @@ export const rangeUp = (start: number, l: number): number[] => {
     .fill(start)
     .map(add2);
 };
-
 export const rangeDown = (start: number, l: number): number[] => {
   return Array(l)
     .fill(start)
-    .map(sub2);
+    .map(sub);
 };
 
 export const swap = (arr: any[], a: number, b: number) => ([arr[a], arr[b]] = [arr[b], arr[a]]);
 
 export const range = (a: number, b: number): number[] => {
-  if (or2(!isInteger(a), !isInteger(b))) return [];
+  if (or(!isInteger(a), !isInteger(b))) return [];
 
   return either(rangeUp(a, abs(b - a + 1)), rangeDown(a, abs(a - b + 1)), lt(a, b));
 };

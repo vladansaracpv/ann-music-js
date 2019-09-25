@@ -10,14 +10,14 @@ interface TimeSignature {
 
 type NoteType = 'r' | 'n' | 't';
 
-interface Note {
+interface PlayerNote {
   type: NoteType;
   name: string;
   duration: string;
 }
 
 interface Measure {
-  notes: Note[];
+  notes: PlayerNote[];
 }
 
 interface Sequence {

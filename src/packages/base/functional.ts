@@ -1,17 +1,22 @@
 /** Functional Programming */
 
-export const partial = (fn, ...first) => (...rest) => fn(...first, ...rest);
+export const curry = (fn: Function) => {
+  function curried(cargs: any[]) {
+    return cargs.length >= fn.length ? fn.apply(this, cargs) : (...args: any[]) => curried([...cargs, ...args]);
+  }
 
-export const curry = fn =>
-  (function curried(cargs) {
-    return cargs.length >= fn.length ? fn.apply(this, cargs) : (...args) => curried([...cargs, ...args]);
-  })([]);
+  return curried([]);
+};
 
-export const compose2 = (f, g) => (...args) => f(g(...args));
-export const compose = (...fns) => fns.reduce(compose2);
-export const pipe = (...fns) => fns.reduceRight(compose2);
+export const partial = (fn: Function, ...head) => (...tail) => fn(...head, ...tail);
 
-export const pipeDebug = (...fns) => value => {
+/** Compose functions */
+export const compose2 = (f: Function, g: Function) => (...args: any[]) => f(g(...args));
+export const compose = (...fns: Function[]) => fns.reduce(compose2);
+
+/** Pipe functions */
+export const pipe = (...fns: Function[]) => fns.reduceRight(compose2);
+export const pipeDebug = (...fns: Function[]) => (value: any) => {
   debugger;
   return fns.reduce((currentValue, currentFunction) => {
     debugger;
@@ -19,25 +24,12 @@ export const pipeDebug = (...fns) => value => {
   }, value);
 };
 
-export const trace = label => value => {
+/** Trace function */
+export const trace = (label: string) => (value: any) => {
   console.log(`${label}: ${value}`);
   return value;
 };
 
-export const map = fn => mappable => mappable.map(fn);
-export const log = (...args) => console.log(...args);
-
-/*
-  const arr = [1, 2, 3, 4];
-  const isEven = n => n % 2 === 0;
-  const stripe = n => isEven(n) ? 'dark' : 'light';
-  const stripeAll = map(stripe);
-  const striped = stripeAll(arr); 
-  log(striped);
-  // => ["light", "dark", "light", "dark"]
-  const double = n => n * 2;
-  const doubleAll = map(double);
-  const doubled = doubleAll(arr);
-  log(doubled);
-  // => [2, 4, 6, 8]
-*/
+/** Mapping functions */
+type FunctionMap = (currentValue: any, index?: any, array?: any[]) => any[];
+export const map = (fn: FunctionMap) => (mappable: any[]) => mappable.map(fn);
