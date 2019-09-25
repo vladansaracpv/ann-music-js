@@ -44,8 +44,8 @@ const NUM_TYPES = /^(6|64|7|9|11|13)$/;
  * tokenize("Cnonsense") // => [ null, "nonsense" ]
  */
 export function tokenize(name: string): ChordNameTokens {
-  const NOTE_REGEX = /^(?<Tletter>[a-gA-G]?)(?<Taccidental>#{1,}|b{1,}|x{1,}|)(?<Toct>-?\d*)\s*(?<Trest>.*)$/;
-  const { Tletter: lt, Taccidental: acc, Toct: oct, Trest: type } = tokenizeNote(name, NOTE_REGEX);
+  const REGEX = /^(?<Tletter>[a-gA-G]?)(?<Taccidental>#{1,}|b{1,}|x{1,}|)(?<Toct>-?\d*)\s*(?<Trest>.*)$/;
+  const { Tletter: lt, Taccidental: acc, Toct: oct, Trest: type } = tokenizeNote(name, REGEX);
   if (lt === '') {
     return ['', name];
   }

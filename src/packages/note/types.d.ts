@@ -114,38 +114,38 @@ type NoteProp =
 /**
  * Note comparison types
  */
-type ComparisonFnKeys = 'lt' | 'leq' | 'eq' | 'neq' | 'gt' | 'geq' | 'cmp';
-type NoteComparableKeys = 'midi' | 'frequency' | 'chroma' | 'step' | 'octave';
+type NoteComparableProp = 'midi' | 'frequency' | 'chroma' | 'step' | 'octave';
+type NoteComparableFns = 'lt' | 'leq' | 'eq' | 'neq' | 'gt' | 'geq' | 'cmp';
 
-type NoteCompareFn = (note: NoteProps, other: NoteProps, compare?: NoteComparableKeys) => boolean | number;
-type NoteComparison = Record<ComparisonFnKeys, NoteCompareFn>;
+type NoteCompareFn = (note: NoteProps, other: NoteProps, compare?: NoteComparableProp) => boolean | number;
+type NoteCompareFns = Record<NoteComparableFns, NoteCompareFn>;
 
-type NoteCompareFnPartial = (other: NoteProps, compare?: NoteComparableKeys) => boolean | number;
-type NoteComparisonPartial = Record<ComparisonFnKeys, NoteCompareFnPartial>;
+type NoteCompareTo = (other: NoteProps, compare?: NoteComparableProp) => boolean | number;
+type NoteCompareToFns = Record<NoteComparableFns, NoteCompareTo>;
 
 /**
  * Note transposition types
  */
-type TranspositionFnKeys = 'transpose';
-type NoteTransposableKeys = 'midi' | 'frequency' | 'octave';
+type NoteTransposableProp = 'midi' | 'frequency' | 'octave';
+type NoteTransposableFns = 'transpose';
 
-type NoteTransposeFn = (note: NoteProps, by: number, key?: NoteTransposableKeys) => Note;
-type NoteTransposition = Record<TranspositionFnKeys, NoteTransposeFn>;
+type NoteTransposeFn = (note: NoteProps, by: number, key?: NoteTransposableProp) => Note;
+type NoteTransposeFns = Record<NoteTransposableFns, NoteTransposeFn>;
 
-type NoteTransposePartialFn = (by: number, key?: NoteTransposableKeys) => Note;
-type NoteTranspositionPartial = Record<TranspositionFnKeys, NoteTransposePartialFn>;
+type NoteTransposeBy = (by: number, key?: NoteTransposableProp) => Note;
+type NoteTransposeByFns = Record<NoteTransposableFns, NoteTransposeBy>;
 
 /**
  * Note distance types
  */
-type DistanceFnKeys = 'distance';
-type NoteDistanceKeys = 'midi' | 'frequency' | 'chroma' | 'step';
+type NoteDistProp = 'midi' | 'frequency' | 'chroma' | 'step';
+type NoteDistFns = 'distance';
 
-type NoteDistanceFn = (note: NoteProps, other: NoteProps, compare?: NoteDistanceKeys) => number;
-type NoteDistance = Record<DistanceFnKeys, NoteDistanceFn>;
+type NoteDistanceFn = (note: NoteProps, other: NoteProps, compare?: NoteDistProp) => number;
+type NoteDistanceFns = Record<NoteDistFns, NoteDistanceFn>;
 
-type NoteDistancePartialFn = (other: NoteProps, compare?: NoteDistanceKeys) => number;
-type NoteDistancePartial = Record<DistanceFnKeys, NoteDistancePartialFn>;
+type NoteDistanceTo = (other: NoteProps, compare?: NoteDistProp) => number;
+type NoteDistanceToFns = Record<NoteDistFns, NoteDistanceTo>;
 
 /**
  * Note properties from which the Note object can be constructed
@@ -165,6 +165,6 @@ type NoteBuilderProps = Partial<{
   compare: boolean;
 }>;
 
-type NoteWithMethods = NoteTranspositionPartial & NoteComparisonPartial & NoteDistancePartial;
+type NoteWithMethods = NoteTransposeByFns & NoteCompareToFns & NoteDistanceToFns;
 
 type NoteBuilder = Note & Partial<NoteWithMethods>;

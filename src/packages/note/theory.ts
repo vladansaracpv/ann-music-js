@@ -29,38 +29,38 @@ export const A_440 = 440.0;
  * Midi value of A4.
  * We can use this to find out all the other midi keys easily
  */
-export const MIDDLE_KEY = 69;
+export const A4_KEY = 69;
 
 /**
  * Number of tones in octave
  */
-export const OCTAVE_RANGE = 12;
+export const OCT_RANGE = 12;
 
 /**
  * Default octave value used if no octave given
  */
-export const STANDARD_OCTAVE = 4;
+export const OCTAVE = 4;
 
 /**
  * Letters used for note naming.
  */
-export const NOTE_LETTERS = 'CDEFGAB';
+export const LETTERS = 'CDEFGAB';
 
 /**
  * Accidental types for flat/sharp note
  */
-export const NOTE_ACCIDENTALS = ['b', '#'];
+export const ACCIDENTALS = ['b', '#'];
 
 /**
  * All pitch (classes) in standard use
  */
-export const ALL_NOTES = 'C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B'.split(' ');
+export const NOTES = 'C C# Db D D# Eb E F F# Gb G G# Ab A A# Bb B'.split(' ');
 
 /**
- * Function to extract note types from @ALL_NOTES
+ * Function to extract note types from @NOTES
  * @param acc {string}
  */
-export const notes = acc => ALL_NOTES.filter(note => acc.indexOf(note[1] || ' ') >= 0);
+export const notes = acc => NOTES.filter(note => acc.indexOf(note[1] || ' ') >= 0);
 
 /**
  * 12 standard pitch classes with # used for black keys
@@ -108,7 +108,7 @@ export const BLACK_KEYS = [1, 3, 4, 8, 10];
  * 2) @NoteAccidental - On or more (exclusively) #, b or x (= ##)
  *    (?<Taccidental>#{1,}|b{1,}|x{1,}|)
  *
- * 3) Optional number for octave. Default is @STANDARD_OCTAVE
+ * 3) Optional number for octave. Default is @OCTAVE
  *    (?<Toct>-?\d*)
  *
  * 4) Optional note duration value @NoteDuration
@@ -117,7 +117,7 @@ export const BLACK_KEYS = [1, 3, 4, 8, 10];
  * 5) Collecting whitespace and part not being parsed (can be used to check for errors)
  *    \s*(?<Trest>.*)
  */
-export const NOTE_REGEX = /^(?<Tletter>[a-gA-G])(?<Taccidental>#{1,}|b{1,}|x{1,}|)(?<Toct>-?\d*)(?<Tduration>(\/(1|2|4|8|16|32|64))?)\s*(?<Trest>.*)$/;
+export const REGEX = /^(?<Tletter>[a-gA-G])(?<Taccidental>#{1,}|b{1,}|x{1,}|)(?<Toct>-?\d*)(?<Tduration>(\/(1|2|4|8|16|32|64))?)\s*(?<Trest>.*)$/;
 
 // export const EmptyNote: NoteProps = {
 //   name: '',

@@ -1,27 +1,27 @@
-import * as BaseArray from './arrays';
-import * as BaseBoolean from './boolean';
-import * as BaseCharCode from './charCode';
-import * as BaseError from './error';
-import * as BaseFunctional from './functional';
-import * as BaseLogger from './logger';
-import * as BaseLogical from './logical';
-import * as BaseMath from './math';
-import * as BaseRange from './range';
-import * as BaseRelations from './relations';
-import * as BaseStrings from './strings';
-import * as BaseTypings from './typings';
+import * as Arrays from './arrays';
+import * as Boolean from './boolean';
+import * as CharCodes from './charCode';
+import * as Errors from './error';
+import * as Functional from './functional';
+import * as Logger from './logger';
+import * as Logical from './logical';
+import * as Maths from './math';
+import * as Range from './range';
+import * as Relations from './relations';
+import * as Strings from './strings';
+import * as Typings from './typings';
 
-export {
-  BaseArray,
-  BaseBoolean,
-  BaseCharCode,
-  BaseError,
-  BaseFunctional,
-  BaseLogger,
-  BaseLogical,
-  BaseMath,
-  BaseRange,
-  BaseRelations,
-  BaseStrings,
-  BaseTypings,
+export const Base = {
+  Array,
+  Boolean,
+  CharCodes,
+  Errors,
+  Functional,
+  Logger,
+  Logical,
+  Maths,
+  Range,
+  Relations,
+  Strings,
+  Typings,
 };

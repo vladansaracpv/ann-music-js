@@ -39,39 +39,3 @@ type IvlOctave = number;
 
 /** Interval class is the minimum distance in steps of I(N1,N2), I(N2, N1) */
 type IvlClass = 0 | 1 | 2 | 3 | 4 | 5 | 6;
-
-interface IvlProps {
-  name: IvlName;
-  num: IvlNumber;
-  quality: IvlQuality;
-  alteration: IvlAlteration;
-  step: IvlStep;
-  direction: IvlDirection;
-  type: IvlType;
-  simple: IvlSimpleNumber;
-  semitones: IvlSemitones;
-  chroma: IvlChroma;
-  octave: IvlOctave;
-  ic: IvlClass;
-  valid: boolean;
-}
-
-/** Interval properties from which the Interval object can be constructed **/
-type IvlInitProps = Partial<{
-  name: string;
-  semitones: number;
-  notes: NoteName[];
-}>;
-
-interface IvlBuild {
-  step?: IvlStep;
-  alteration?: IvlAlteration;
-  octave?: IvlOctave;
-  direction?: IvlDirection;
-  num?: IvlNumber;
-}
-interface IvlBuilderProps {
-  distance?: boolean;
-  transpose?: boolean;
-  compare?: boolean;
-}

@@ -71,7 +71,7 @@ type IvlOctave = number;
 /** Interval class is the minimum distance in steps of I(N1,N2), I(N2, N1) */
 type IvlClass = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
-interface IvlProps {
+export interface IvlProps {
   name: IvlName;
   num: IvlNumber;
   quality: IvlQuality;

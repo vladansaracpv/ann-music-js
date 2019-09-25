@@ -1,4 +1,11 @@
 /** Relational binary operators  */
+type Comparable = number | string;
+
+type BinRelationFn<T> = (a: T, b: T) => boolean;
+type ComparableBinFn = BinRelationFn<Comparable>;
+
+type CurryRelationFn<T> = (b: T) => (a: T) => boolean;
+type ComparableCurryFn = CurryRelationFn<Comparable>;
 
 // lt := (a,b) => a < b
 export const lt: ComparableBinFn = (a, b) => a < b;

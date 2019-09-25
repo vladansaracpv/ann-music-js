@@ -1,7 +1,16 @@
 import { Note, NOTE } from '@packages/note';
+import { lt } from './packages/base/relations';
+import { compose2 } from '@packages/base/functional';
 
-const n = Note('B4') as NoteProps;
-const o = Note(69) as NoteProps;
-const p = Note(440.0) as NoteProps;
+function toMidi(a: NoteProps, b: NoteProps) {
+  var normalArray: NoteProps[] = Array.from(arguments);
+  return normalArray.map(n => n.midi);
+}
 
-console.log(n, o, p);
+const id = n => n;
+const convert = (a, b, fn: Function = id) => lt(fn(a), fn(b));
+
+const a = Note('C4') as NoteProps;
+const b = Note('D4') as NoteProps;
+
+console.log(convert(2, 2));

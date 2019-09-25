@@ -3,7 +3,7 @@ import { CustomError } from '@packages/base/error';
 import { curry } from '@packages/base/functional';
 import { inSegment } from '@packages/base/relations';
 import { isArray, isNumber } from '@packages/base/typings';
-import { Interval, INTERVAL } from '@packages/interval';
+import { Interval, INTERVAL, IvlProps } from '@packages/interval';
 import { Note, NOTE } from '@packages/note';
 
 import { compact, range, rotate, toBinary } from '../base/arrays';

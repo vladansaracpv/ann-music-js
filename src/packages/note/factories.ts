@@ -1,50 +1,31 @@
-import {
-  BaseBoolean,
-  BaseError,
-  BaseFunctional,
-  BaseMath,
-  BaseRelations,
-  BaseStrings,
-  BaseTypings,
-} from '@packages/base';
+import { Base } from '@packages/base';
 
 import * as Theory from './theory';
 
-const {
-  EmptyNote,
-  A_440,
-  MIDDLE_KEY,
-  OCTAVE_RANGE,
-  SHARPS,
-  FLATS,
-  STANDARD_OCTAVE,
-  KEYS,
-  NOTE_REGEX,
-  WHITE_KEYS,
-} = Theory;
-const { isInteger, isNumber } = BaseTypings;
-const { tokenize, capitalize, substitute } = BaseStrings;
-const { isNegative, inSegment, lt, leq, eq, neq, gt, geq, cmp } = BaseRelations;
-const { either, both } = BaseBoolean;
-const { inc, dec } = BaseMath;
-const NoteError = BaseError.CustomError('Note');
-const { partial } = BaseFunctional;
+const { EmptyNote, A_440, A4_KEY, OCT_RANGE, SHARPS, FLATS, OCTAVE, KEYS, REGEX, WHITE_KEYS } = Theory;
+const { isInteger, isNumber } = Base.Typings;
+const { tokenize, capitalize, substitute } = Base.Strings;
+const { isNegative, inSegment, lt, leq, eq, neq, gt, geq, cmp } = Base.Relations;
+const { either, both } = Base.Boolean;
+const { inc, dec } = Base.Maths;
+const NoteError = Base.Errors.CustomError('Note');
+const { partial } = Base.Functional;
 
 /**
  * Generate Note static methods
  */
 const Midi = {
   toFrequency(key: NoteMidi, tuning = A_440): NoteFreq {
-    return tuning * 2 ** ((key - MIDDLE_KEY) / OCTAVE_RANGE);
+    return tuning * 2 ** ((key - A4_KEY) / OCT_RANGE);
   },
   toOctaves(key: NoteMidi) {
-    return Math.floor(key / OCTAVE_RANGE);
+    return Math.floor(key / OCT_RANGE);
   },
 };
 
 const Frequency = {
   toMidi(freq: NoteFreq, tuning = A_440) {
-    return Math.ceil(OCTAVE_RANGE * Math.log2(freq / tuning) + MIDDLE_KEY);
+    return Math.ceil(OCT_RANGE * Math.log2(freq / tuning) + A4_KEY);
   },
 };
 
@@ -65,15 +46,15 @@ const Letter = {
 
 const Octave = {
   parse(octave?: string): NoteOctave {
-    return either(Number.parseInt(octave), STANDARD_OCTAVE, Number.isInteger(Number.parseInt(octave)));
+    return either(Number.parseInt(octave), OCTAVE, Number.isInteger(Number.parseInt(octave)));
   },
   toSemitones(octave: number) {
-    return OCTAVE_RANGE * inc(octave);
+    return OCT_RANGE * inc(octave);
   },
 };
 
 const Validators = {
-  isName: (name: NoteName): boolean => NOTE_REGEX.test(name) === true,
+  isName: (name: NoteName): boolean => REGEX.test(name) === true,
   isMidi: (midi: NoteMidi): boolean => both(isInteger(midi), inSegment(0, 135, midi)),
   isChroma: (chroma: NoteChroma): boolean => both(isInteger(chroma), inSegment(0, 11, chroma)),
   isFrequency: (freq: NoteFreq): boolean => both(isNumber(freq), gt(freq, 0)),
@@ -111,11 +92,11 @@ function transposeNote(b: NoteProps, n: number, key = 'midi'): Note {
   return key == 'midi' ? Note(b.midi + n) : key == 'frequency' ? Note(b.frequency + n) : Note(b.pc + (b.octave + n));
 }
 
-function distanceNote(note: Note, other: Note, compare: NoteComparableKeys): number {
+function distanceNote(note: Note, other: Note, compare: NoteComparableProp): number {
   return other[compare] - note[compare];
 }
 
-const compareNotes: NoteComparison = {
+const compareNotes: NoteCompareFns = {
   lt: (note, other, compare = 'midi') => lt(note[compare], other[compare]),
   leq: (note, other, compare = 'midi') => leq(note[compare], other[compare]),
   eq: (note, other, compare = 'midi') => eq(note[compare], other[compare]),
@@ -136,15 +117,15 @@ function NoteWithMethods(initMethods: NoteBuilderProps, from: InitProp): NoteBui
 
   const note = Note(from) as NoteProps;
 
-  const withTranspose: NoteTranspositionPartial = transpose && {
+  const withTranspose: NoteTransposeByFns = transpose && {
     transpose: partial(transposeNote, note),
   };
 
-  const withDistance: NoteDistancePartial = distance && {
+  const withDistance: NoteDistanceToFns = distance && {
     distance: partial(distanceNote, note),
   };
 
-  const withCompare: NoteComparisonPartial = compare && {
+  const withCompare: NoteCompareToFns = compare && {
     lt: partial(lt, note),
     leq: partial(leq, note),
     eq: partial(eq, note),
@@ -200,7 +181,7 @@ export function Note(prop: InitProp): Note {
 
     if (!isName(note)) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
 
-    const { Tletter, Taccidental, Toct, Trest } = tokenize(note, NOTE_REGEX);
+    const { Tletter, Taccidental, Toct, Trest } = tokenize(note, REGEX);
 
     if (Trest) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
 
@@ -217,7 +198,7 @@ export function Note(prop: InitProp): Note {
     const semitonesAltered = offset + alteration; // 11
 
     /** Because of the alteration, note can slip into the previous/next octave **/
-    const octavesAltered = Math.floor(semitonesAltered / OCTAVE_RANGE); // 0
+    const octavesAltered = Math.floor(semitonesAltered / OCT_RANGE); // 0
     const octave = parse(Toct) as NoteOctave; // 4
 
     const pc = (letter + accidental) as NotePC; // A#
@@ -229,8 +210,8 @@ export function Note(prop: InitProp): Note {
      *  alteredOct == -1
      */
     const chroma = either(
-      (semitonesAltered - toSemitones(octavesAltered) + 12) % OCTAVE_RANGE,
-      semitonesAltered % OCTAVE_RANGE,
+      (semitonesAltered - toSemitones(octavesAltered) + 12) % OCT_RANGE,
+      semitonesAltered % OCT_RANGE,
       isNegative(octavesAltered),
     ) as NoteChroma; // 10
 
@@ -269,7 +250,7 @@ export function Note(prop: InitProp): Note {
 
     const name = (pc + octave) as NoteName;
 
-    const { Tletter, Taccidental } = tokenize(name, NOTE_REGEX);
+    const { Tletter, Taccidental } = tokenize(name, REGEX);
 
     const letter = capitalize(Tletter) as NoteLetter;
     const step = toStep(letter) as NoteStep;
