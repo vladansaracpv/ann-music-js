@@ -165,6 +165,6 @@ type NoteBuilderProps = Partial<{
   compare: boolean;
 }>;
 
-type NoteWithMethods = NoteTransposeByFns & NoteCompareToFns & NoteDistanceToFns;
+type NoteMethods = NoteTransposeByFns & NoteCompareToFns & NoteDistanceToFns;
 
-type NoteBuilder = Note & Partial<NoteWithMethods>;
+type NoteBuilder = Note & Partial<NoteMethods>;

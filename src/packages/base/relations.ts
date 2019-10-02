@@ -3,31 +3,35 @@ type Comparable = number | string;
 
 type BinRelationFn<T> = (a: T, b: T) => boolean;
 type ComparableBinFn = BinRelationFn<Comparable>;
+type BinRelationFnNum<T> = (a: T, b: T) => number;
+type ComparableBinFnNum = BinRelationFnNum<Comparable>;
 
 type CurryRelationFn<T> = (b: T) => (a: T) => boolean;
 type ComparableCurryFn = CurryRelationFn<Comparable>;
 
 // lt := (a,b) => a < b
-export const lt: ComparableBinFn = (a, b) => a < b;
+export const lt: ComparableBinFn = args => args[0] < args[1];
 
 // leq := (a,b) => a <= b
-export const leq: ComparableBinFn = (a, b) => a <= b;
+export const leq: ComparableBinFn = args => args[0] <= args[1];
 
 // eq := (a,b) => a === b
-export const eq: ComparableBinFn = (a, b) => a === b;
+export const eq: ComparableBinFn = args => args[0] === args[1];
 
 // neq := (a,b) => a !== b
-export const neq: ComparableBinFn = (a, b) => a !== b;
+export const neq: ComparableBinFn = args => args[0] !== args[1];
 
-// gt := (a,b) => a > b
-export const gt: ComparableBinFn = (a, b) => a > b;
+// gt := (a,b) => args[0]> b
+export const gt: ComparableBinFn = args => args[0] > args[1];
 
 // geq := (a,b) => a >= b
-export const geq: ComparableBinFn = (a, b) => a >= b;
+export const geq: ComparableBinFn = args => args[0] >= args[1];
 
-export const cmp = (a: Comparable, b: Comparable): number => {
-  if (eq(a, b)) return 0;
-  return lt(a, b) ? -1 : 1;
+export const cmp: ComparableBinFnNum = args => {
+  const a: Comparable = args[0];
+  const b: Comparable = args[1];
+  if (a === b) return 0;
+  return a < b ? -1 : 1;
 };
 
 // interval := (a,b,n) => a < n < b

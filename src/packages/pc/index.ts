@@ -4,7 +4,7 @@ import { curry } from '@packages/base/functional';
 import { inSegment } from '@packages/base/relations';
 import { isArray, isNumber } from '@packages/base/typings';
 import { Interval, INTERVAL, IvlProps } from '@packages/interval';
-import { Note, NOTE } from '@packages/note';
+import { Note, NoteStatic } from '@packages/note';
 
 import { compact, range, rotate, toBinary } from '../base/arrays';
 import * as Theory from './theory';
@@ -64,7 +64,7 @@ export function toChroma(set: NoteName[] | IvlName[]): PcChroma {
     return Theory.EmptySet.chroma;
   }
 
-  const isNote = NOTE.Validators.isName;
+  const isNote = NoteStatic.Validators.isName;
   const isIvl = (name: string) => INTERVAL.Theory.INTERVAL_REGEX.test(name);
 
   let pitch: NoNote | NoteProps | IvlProps | null;

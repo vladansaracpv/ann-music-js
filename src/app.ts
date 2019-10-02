@@ -1,16 +1,12 @@
-import { Note, NOTE } from '@packages/note';
-import { lt } from './packages/base/relations';
 import { compose2 } from '@packages/base/functional';
+import { Note, NoteStatic, Theory } from '@packages/note';
 
-function toMidi(a: NoteProps, b: NoteProps) {
-  var normalArray: NoteProps[] = Array.from(arguments);
-  return normalArray.map(n => n.midi);
-}
+const a = Note('C3') as NoteProps;
+const b = Note('C4') as NoteProps;
+const c = Note('D4') as NoteProps;
+const d = Note('D4') as NoteProps;
+const notes = [a, b];
 
-const id = n => n;
-const convert = (a, b, fn: Function = id) => lt(fn(a), fn(b));
+const g = (notes: NoteProps[], prop: NoteComparableProp = 'midi') => notes.map(n => n[prop]);
 
-const a = Note('C4') as NoteProps;
-const b = Note('D4') as NoteProps;
-
-console.log(convert(2, 2));
+console.log(NoteStatic.cmp(b, c));

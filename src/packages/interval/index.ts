@@ -1,3 +1,4 @@
 import { Interval, INTERVAL, IvlProps } from './factories';
+import * as Theory from './theory';
 
-export { Interval, INTERVAL, IvlProps };
+export { Theory, Interval, INTERVAL, IvlProps };
