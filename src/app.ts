@@ -1,16 +1,14 @@
-import { compose2 } from '@packages/base/functional';
+import { Scale } from '@packages/scale';
+import { Chord } from '@packages/chord';
+import { Interval } from '@packages/interval';
 import { Note, NoteStatic, NoteMethods } from '@packages/note';
 
-// const initMethods: NoteBuilderProps = { distance: false, transpose: false, compare: false };
-const initMethods2: NoteBuilderProps = { compare: false, transpose: false, distance: false };
-// const a = Note('C3');
-const b = Note('C4');
-// const c = Note('X4');
+const a = Note('A4');
+const i = Interval({ name: 'P4' });
+const c = Chord('Am');
+const s = Scale('A blues');
 
-// console.log(a);
-// console.log(b);
-// console.log(c);
-
-const a = NoteMethods('A4', initMethods2);
-console.log(b);
 console.log(a);
+console.log(i);
+console.log(c);
+console.log(s);

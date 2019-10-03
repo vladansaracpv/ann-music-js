@@ -1,6 +1,6 @@
 import { Note } from '@packages/note';
 import { chordFormula, Chord } from '@packages/chord';
-import { scale } from '@packages/scale';
+import { Scale } from '@packages/scale';
 import { MODES_CHORDS } from './theory';
 import { modes as chromaModes } from '@packages/pc';
 export * from './dictionary';
@@ -29,12 +29,12 @@ export function chordNotes(root: NoteName, chord: string, octaves: number = 1) {
 }
 
 export function modeToChords(name: string, root: NoteName) {
-  const scaleMode = scale([root, name]).notes;
+  const scaleMode = Scale([root, name]).notes;
   const mode = MODES_CHORDS[name];
   return mode.map((ch, i) => Chord([scaleMode[i], ch]).notes);
 }
 
 export function scaleModes(src: ScaleName | ScaleNameTokens) {
-  const chroma = scale(src).chroma;
-  return chromaModes(chroma).map(mode => scale(mode));
+  const chroma = Scale(src).chroma;
+  return chromaModes(chroma).map(mode => Scale(mode));
 }

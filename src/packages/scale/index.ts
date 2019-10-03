@@ -53,9 +53,9 @@ export function tokenize(name: ScaleName): ScaleNameTokens {
 /**
  * Get a Scale from a scale name.
  */
-export function scale(src: ScaleName | ScaleNameTokens): Scale {
+export function Scale(src: ScaleName | ScaleNameTokens): Scale {
   const tokens = Array.isArray(src) ? src : tokenize(src);
-  const tonic = Note(tokens[0]).name;
+  const tonic = Note(tokens[0]).pc;
   const st = scaleType(tokens[1]);
   if (st.empty) {
     return NoScale;
@@ -80,7 +80,7 @@ export function scale(src: ScaleName | ScaleNameTokens): Scale {
  * scaleChords("pentatonic") // => ["5", "64", "M", "M6", "Madd9", "Msus2"]
  */
 export function scaleChords(name: string): string[] {
-  const s = scale(name);
+  const s = Scale(name);
   const inScale = isSubsetOf(s.chroma);
   return chordTypes()
     .filter(chord => inScale(chord.chroma))
@@ -97,7 +97,7 @@ export function scaleChords(name: string): string[] {
  * extended("major") // => ["bebop", "bebop dominant", "bebop major", "chromatic", "ichikosucho"]
  */
 export function extended(name: string): string[] {
-  const s = scale(name);
+  const s = Scale(name);
   const isSuperset = isSupersetOf(s.chroma);
   return scaleTypes()
     .filter(scale => isSuperset(scale.chroma))
@@ -116,7 +116,7 @@ export function extended(name: string): string[] {
  * reduced("major") // => ["ionian pentatonic", "major pentatonic", "ritusen"]
  */
 export function reduced(name: string): string[] {
-  const isSubset = isSubsetOf(scale(name).chroma);
+  const isSubset = isSubsetOf(Scale(name).chroma);
   return scaleTypes()
     .filter(scale => isSubset(scale.chroma))
     .map(scale => scale.name);
@@ -156,7 +156,7 @@ type ScaleMode = [string, string];
  * ]
  */
 export function modeNames(name: string): ScaleMode[] {
-  const s = scale(name);
+  const s = Scale(name);
   if (s.empty) {
     return [];
   }
@@ -165,7 +165,7 @@ export function modeNames(name: string): ScaleMode[] {
   return modes(s.chroma)
     .map(
       (chroma: string, i: number): ScaleMode => {
-        const modeName = scale(chroma).name;
+        const modeName = Scale(chroma).name;
         return modeName ? [tonics[i], modeName] : ['', ''];
       },
     )
@@ -207,7 +207,7 @@ export function sortedUniqNoteNames(arr: string[]): string[] {
 }
 
 export const scaleFormula = (src: ScaleName) => {
-  const props = scale(src);
+  const props = Scale(src);
   return props.intervals.map(ivl => Interval({ name: ivl }).semitones);
 };
 
@@ -230,7 +230,7 @@ const semitonesToStep = (semitones: number): string => {
 };
 
 export const scaleToSteps = (src: ScaleName | ScaleNameTokens) => {
-  const _scale = scale(src);
+  const _scale = Scale(src);
   const intervals = _scale.intervals;
 
   const semitones = intervals.map(ivl => Interval({ name: ivl }).semitones);

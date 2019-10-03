@@ -19,12 +19,12 @@ function StaticMethods() {
   const { inSegment, gt, isPositive } = Base.Relations;
 
   const Midi = {
-    toFrequency: (key: NoteMidi, tuning = A_440): NoteFreq => tuning * 2 ** ((key - A4_KEY) / OCT_RANGE),
-    toOctaves: (key: NoteMidi) => Math.floor(key / OCT_RANGE),
+    toFrequency: (midi: NoteMidi, tuning = A_440): NoteFreq => 2 ** ((midi - A4_KEY) / OCT_RANGE) * tuning,
+    toOctaves: (midi: NoteMidi) => Math.floor(midi / OCT_RANGE),
   };
 
   const Frequency = {
-    toMidi: (freq: NoteFreq, tuning = A_440) => Math.ceil(OCT_RANGE * Math.log2(freq / tuning) + A4_KEY),
+    toMidi: (f: NoteFreq, tuning = A_440) => Math.ceil(OCT_RANGE * Math.log2(f / tuning) + A4_KEY),
   };
 
   const Accidental = {
@@ -37,16 +37,15 @@ function StaticMethods() {
   };
 
   const Octave = {
-    parse: (octave?: string): NoteOctave =>
-      either(Number.parseInt(octave), OCTAVE, Number.isInteger(Number.parseInt(octave))),
+    parse: (octave?: string): NoteOctave => either(Number.parseInt(octave), 4, isInteger(Number.parseInt(octave))),
     toSemitones: (octave: number) => OCT_RANGE * inc(octave),
   };
 
   const Validators = {
     isName: (name: InitProp): name is NoteName => REGEX.test(name as string) === true,
     isMidi: (midi: InitProp): midi is NoteMidi => both(isInteger(midi), inSegment(0, 135, midi as number)),
-    isChroma: (chroma: InitProp): chroma is NoteChroma => both(isInteger(chroma), inSegment(0, 11, chroma as number)),
-    isFrequency: (freq: NoteFreq): boolean => both(isNumber(freq), gt(freq, 0)),
+    isChroma: (chroma: NoteChroma): boolean => both(isInteger(chroma), inSegment(0, 11, chroma as number)),
+    isFrequency: (freq: InitProp): freq is NoteFreq => both(isNumber(freq), gt(freq, 0)),
     isKey: (key: string): boolean => KEYS.includes(key),
   };
 
@@ -93,15 +92,9 @@ function TransposeMethods(isPartialFn = false, note?: NoteProps): NoteTransposeF
     return key == 'midi' ? Note(b.midi + n) : key == 'frequency' ? Note(b.frequency + n) : Note(b.pc + (b.octave + n));
   }
 
-  const regular: NoteTransposeFns = {
-    transpose: transposeNote,
+  return {
+    transpose: either(partial(transposeNote, note), transposeNote, isPartialFn),
   };
-
-  const _partial: NoteTransposeByFns = {
-    transpose: partial(transposeNote, note),
-  };
-
-  return isPartialFn ? _partial : regular;
 }
 
 function DistanceMethods(isPartialFn = false, note?: NoteProps): NoteDistanceFns | NoteDistanceToFns {
@@ -110,39 +103,32 @@ function DistanceMethods(isPartialFn = false, note?: NoteProps): NoteDistanceFns
   }
 
   return {
-    distance: either(partial(distanceNote, note) as NoteDistanceTo, distanceNote as NoteDistanceFn, isPartialFn),
+    distance: either(partial(distanceNote, note), distanceNote, isPartialFn),
   };
 }
 
 function CompareMethods(isPartialFn = false, note?: NoteProps): NoteCompareFns | NoteCompareToFns {
   const { lt, leq, eq, neq, gt, geq, cmp } = Base.Relations;
 
-  const comparableFn = (compareFn: Function): NoteCompareFn => {
-    const toComparable: NoteToComparableFn = (note, other, prop = 'midi') => [note, other].map(n => n[prop]);
-    return compose2(compareFn, toComparable);
+  const NoteRelation = (fn: Function): NoteCompareFn => (a, b, c = 'midi') => fn(a[c], b[c]);
+
+  const ltn = NoteRelation(lt);
+  const leqn = NoteRelation(leq);
+  const eqn = NoteRelation(eq);
+  const neqn = NoteRelation(neq);
+  const gtn = NoteRelation(gt);
+  const geqn = NoteRelation(geq);
+  const cmpn = NoteRelation(cmp);
+
+  return {
+    ltn: either(partial(ltn, note), ltn, isPartialFn),
+    leqn: either(partial(leqn, note), leqn, isPartialFn),
+    eqn: either(partial(eqn, note), eqn, isPartialFn),
+    neqn: either(partial(neqn, note), neqn, isPartialFn),
+    gtn: either(partial(gtn, note), gtn, isPartialFn),
+    geqn: either(partial(geqn, note), geqn, isPartialFn),
+    cmpn: either(partial(cmpn, note), cmpn, isPartialFn),
   };
-
-  const ltn = comparableFn(lt);
-  const leqn = comparableFn(leq);
-  const eqn = comparableFn(eq);
-  const neqn = comparableFn(neq);
-  const gtn = comparableFn(gt);
-  const geqn = comparableFn(geq);
-  const cmpn = comparableFn(cmp);
-
-  const compareNotes: NoteCompareFns = { ltn, leqn, eqn, neqn, gtn, geqn, cmpn };
-
-  const compareNoteTo: NoteCompareToFns = {
-    ltn: partial(ltn, note),
-    leqn: partial(leqn, note),
-    eqn: partial(eqn, note),
-    neqn: partial(neqn, note),
-    gtn: partial(gtn, note),
-    geqn: partial(geqn, note),
-    cmpn: partial(cmpn, note),
-  };
-
-  return isPartialFn ? compareNoteTo : compareNotes;
 }
 
 export const NoteStatic = {
