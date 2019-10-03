@@ -5,6 +5,7 @@ import { compose2 } from '@packages/base/functional';
 
 const { either, both } = Base.Boolean;
 const { partial } = Base.Functional;
+const { isObject } = Base.Typings;
 
 const NoteError = Base.Errors.CustomError('Note');
 
@@ -42,9 +43,9 @@ function StaticMethods() {
   };
 
   const Validators = {
-    isName: (name: NoteName): boolean => REGEX.test(name) === true,
-    isMidi: (midi: NoteMidi): boolean => both(isInteger(midi), inSegment(0, 135, midi)),
-    isChroma: (chroma: NoteChroma): boolean => both(isInteger(chroma), inSegment(0, 11, chroma)),
+    isName: (name: InitProp): name is NoteName => REGEX.test(name as string) === true,
+    isMidi: (midi: InitProp): midi is NoteMidi => both(isInteger(midi), inSegment(0, 135, midi as number)),
+    isChroma: (chroma: InitProp): chroma is NoteChroma => both(isInteger(chroma), inSegment(0, 11, chroma as number)),
     isFrequency: (freq: NoteFreq): boolean => both(isNumber(freq), gt(freq, 0)),
     isKey: (key: string): boolean => KEYS.includes(key),
   };
@@ -92,82 +93,56 @@ function TransposeMethods(isPartialFn = false, note?: NoteProps): NoteTransposeF
     return key == 'midi' ? Note(b.midi + n) : key == 'frequency' ? Note(b.frequency + n) : Note(b.pc + (b.octave + n));
   }
 
-  return {
-    transpose: either(partial(transposeNote, note), transposeNote, isPartialFn),
+  const regular: NoteTransposeFns = {
+    transpose: transposeNote,
   };
+
+  const _partial: NoteTransposeByFns = {
+    transpose: partial(transposeNote, note),
+  };
+
+  return isPartialFn ? _partial : regular;
 }
 
 function DistanceMethods(isPartialFn = false, note?: NoteProps): NoteDistanceFns | NoteDistanceToFns {
-  function distanceNote(note: Note, other: Note, compare: NoteComparableProp): number {
+  function distanceNote(note: NoteProps, other: NoteProps, compare: NoteComparableProp = 'midi'): number {
     return other[compare] - note[compare];
   }
 
   return {
-    distance: either(partial(distanceNote, note), distanceNote, isPartialFn),
+    distance: either(partial(distanceNote, note) as NoteDistanceTo, distanceNote as NoteDistanceFn, isPartialFn),
   };
 }
 
-function CompareMethods(isPartialFn = false, note?: NoteProps) {
+function CompareMethods(isPartialFn = false, note?: NoteProps): NoteCompareFns | NoteCompareToFns {
   const { lt, leq, eq, neq, gt, geq, cmp } = Base.Relations;
 
-  const toComparable = (note: NoteProps, other: NoteProps, prop: NoteComparableProp = 'midi') =>
-    [note, other].map(n => n[prop]);
-
-  const note2Comparable = (fn: Function) => compose2(fn, toComparable);
-
-  const ltn: NoteCompareFn = (...args) => note2Comparable(lt)(...args);
-  const leqn: NoteCompareFn = (...args) => note2Comparable(leq)(...args);
-  const eqn: NoteCompareFn = (...args) => note2Comparable(eq)(...args);
-  const neqn: NoteCompareFn = (...args) => note2Comparable(neq)(...args);
-  const gtn: NoteCompareFn = (...args) => note2Comparable(gt)(...args);
-  const geqn: NoteCompareFn = (...args) => note2Comparable(geq)(...args);
-  const cmpn: NoteCompareFn = (...args) => note2Comparable(cmp)(...args);
-
-  const compareNotes: NoteCompareFns = {
-    lt: ltn,
-    leq: leqn,
-    eq: eqn,
-    neq: neqn,
-    gt: gtn,
-    geq: geqn,
-    cmp: cmpn,
+  const comparableFn = (compareFn: Function): NoteCompareFn => {
+    const toComparable: NoteToComparableFn = (note, other, prop = 'midi') => [note, other].map(n => n[prop]);
+    return compose2(compareFn, toComparable);
   };
 
+  const ltn = comparableFn(lt);
+  const leqn = comparableFn(leq);
+  const eqn = comparableFn(eq);
+  const neqn = comparableFn(neq);
+  const gtn = comparableFn(gt);
+  const geqn = comparableFn(geq);
+  const cmpn = comparableFn(cmp);
+
+  const compareNotes: NoteCompareFns = { ltn, leqn, eqn, neqn, gtn, geqn, cmpn };
+
   const compareNoteTo: NoteCompareToFns = {
-    lt: partial(ltn, note),
-    leq: partial(leqn, note),
-    eq: partial(eqn, note),
-    neq: partial(neqn, note),
-    gt: partial(gtn, note),
-    geq: partial(geqn, note),
-    cmp: partial(cmpn, note),
+    ltn: partial(ltn, note),
+    leqn: partial(leqn, note),
+    eqn: partial(eqn, note),
+    neqn: partial(neqn, note),
+    gtn: partial(gtn, note),
+    geqn: partial(geqn, note),
+    cmpn: partial(cmpn, note),
   };
 
   return isPartialFn ? compareNoteTo : compareNotes;
-}
-
-/**
- * Note object builder. Used to assign methods beside note properties
- * @param {NoteBuilderProps} initProps
- * @param {InitProps} from
- */
-function NoteBuilder(initMethods: NoteBuilderProps, from: InitProp): NoteBuilder {
-  NoteBuilder;
-  const { distance: useDistance, transpose: useTranspose, compare: useCompare } = initMethods;
-  const note = Note(from) as NoteProps;
-
-  const transposeMethods: NoteTransposeByFns = useTranspose && (TransposeMethods(true, note) as NoteTransposeByFns);
-
-  const distanceMethods: NoteDistanceToFns = useDistance && (DistanceMethods(true, note) as NoteDistanceToFns);
-
-  const compareMethods: NoteCompareToFns = useCompare && (CompareMethods(true, note) as NoteCompareToFns);
-
-  return {
-    ...note,
-    ...transposeMethods,
-    ...distanceMethods,
-    ...compareMethods,
-  };
 }
 
 export const NoteStatic = {
@@ -175,30 +150,25 @@ export const NoteStatic = {
   ...(TransposeMethods() as NoteTransposeFns),
   ...(DistanceMethods() as NoteDistanceFns),
   ...(CompareMethods() as NoteCompareFns),
-  withMethods: NoteBuilder,
 };
 
 /**
  * Note factory function
- * @param {InitProps} props
- * @return {Note}
+ * @param {InitProp} prop
+ * @param {NoteBuilderProps} initMethods
+ * @return {NoteType}
  */
-export function Note(prop: InitProp): Note {
-  const name = prop as NoteName;
-  const midi = prop as NoteMidi;
-  const frequency = prop as NoteFreq;
+export function Note(prop: InitProp): NoteType {
   const { isName, isMidi, isFrequency } = NoteStatic.Validators;
   const { toIndex, toStep } = NoteStatic.Letter;
   const { toAlteration } = NoteStatic.Accidental;
   const { toSemitones, parse } = NoteStatic.Octave;
   const { toFrequency, toOctaves } = NoteStatic.Midi;
   const { toMidi } = NoteStatic.Frequency;
-
   const { tokenize, capitalize, substitute } = Base.Strings;
 
-  function fromName(note: NoteName): Note {
+  function fromName(note: NoteName): NoteType {
     // Example: A#4
-
     if (!isName(note)) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
 
     const { isNegative } = Base.Relations;
@@ -262,7 +232,7 @@ export function Note(prop: InitProp): Note {
     };
   }
 
-  function fromMidi(midi: NoteMidi, useSharps = true): Note {
+  function fromMidi(midi: NoteMidi, useSharps = true): NoteType {
     if (!isMidi(midi)) return NoteError('InvalidConstructor', { midi }, EmptyNote);
     const { dec } = Base.Maths;
     const frequency = toFrequency(midi) as NoteFreq;
@@ -301,18 +271,43 @@ export function Note(prop: InitProp): Note {
     };
   }
 
-  function fromFrequency(frequency: NoteFreq, tuning = A_440): Note {
+  function fromFrequency(frequency: NoteFreq, tuning = A_440): NoteType {
     if (!isFrequency(frequency)) return NoteError('InvalidConstructor', { frequency }, EmptyNote);
 
     const midi = toMidi(frequency, tuning);
     return fromMidi(midi);
   }
 
-  return isName(name)
-    ? fromName(name)
-    : isMidi(midi)
-    ? fromMidi(midi, true)
-    : isFrequency(frequency)
-    ? fromFrequency(frequency, 440)
-    : EmptyNote;
+  if (isName(prop)) return fromName(prop);
+  if (isMidi(prop)) return fromMidi(prop);
+  if (isFrequency(prop)) return fromFrequency(prop);
+
+  return EmptyNote;
+}
+
+/**
+ * Note with methods factory function
+ * @param {InitProp | NoteType } from
+ * @param {NoteBuilderProps} initMethods
+ * @return {Note}
+ */
+
+export function NoteMethods(initNote: InitProp | NoteType, initMethods?: NoteBuilderProps): Note {
+  const { distance, transpose, compare } = { distance: true, transpose: true, compare: true, ...initMethods };
+
+  const noteObj: NoteType = either(initNote, Note(initNote as InitProp), isObject(initNote));
+  if (!noteObj.valid) return EmptyNote;
+
+  const note = noteObj as NoteProps;
+
+  const transposeMethods: NoteTransposeByFns = transpose && (TransposeMethods(true, note) as NoteTransposeByFns);
+  const distanceMethods: NoteDistanceToFns = distance && (DistanceMethods(true, note) as NoteDistanceToFns);
+  const compareMethods: NoteCompareToFns = compare && (CompareMethods(true, note) as NoteCompareToFns);
+
+  return {
+    ...note,
+    ...transposeMethods,
+    ...distanceMethods,
+    ...compareMethods,
+  };
 }

@@ -93,7 +93,7 @@ interface NoNote extends Partial<NoteProps> {
   readonly name: '';
 }
 
-type Note = Readonly<NoteProps> | NoNote;
+type NoteType = Readonly<NoteProps> | NoNote;
 
 /**
  * Every note property is of @NoteProp type
@@ -115,7 +115,7 @@ type NoteProp =
  * Note comparison types
  */
 type NoteComparableProp = 'midi' | 'frequency' | 'chroma' | 'step' | 'octave';
-type NoteComparableFns = 'lt' | 'leq' | 'eq' | 'neq' | 'gt' | 'geq' | 'cmp';
+type NoteComparableFns = 'ltn' | 'leqn' | 'eqn' | 'neqn' | 'gtn' | 'geqn' | 'cmpn';
 
 type NoteCompareFn = (note: NoteProps, other: NoteProps, compare?: NoteComparableProp) => boolean | number;
 type NoteCompareFns = Record<NoteComparableFns, NoteCompareFn>;
@@ -123,16 +123,18 @@ type NoteCompareFns = Record<NoteComparableFns, NoteCompareFn>;
 type NoteCompareTo = (other: NoteProps, compare?: NoteComparableProp) => boolean | number;
 type NoteCompareToFns = Record<NoteComparableFns, NoteCompareTo>;
 
+type NoteToComparableFn = (note: NoteProps, other: NoteProps, prop: NoteComparableProp) => NoteProp[];
+
 /**
  * Note transposition types
  */
 type NoteTransposableProp = 'midi' | 'frequency' | 'octave';
 type NoteTransposableFns = 'transpose';
 
-type NoteTransposeFn = (note: NoteProps, by: number, key?: NoteTransposableProp) => Note;
+type NoteTransposeFn = (note: NoteProps, by: number, key?: NoteTransposableProp) => NoteType;
 type NoteTransposeFns = Record<NoteTransposableFns, NoteTransposeFn>;
 
-type NoteTransposeBy = (by: number, key?: NoteTransposableProp) => Note;
+type NoteTransposeBy = (by: number, key?: NoteTransposableProp) => NoteType;
 type NoteTransposeByFns = Record<NoteTransposableFns, NoteTransposeBy>;
 
 /**
@@ -153,18 +155,12 @@ type NoteDistanceToFns = Record<NoteDistFns, NoteDistanceTo>;
 
 type InitProp = NoteName | NoteMidi | NoteFreq;
 
-type InitProps = Partial<{
-  name: NoteName;
-  midi: NoteMidi;
-  frequency: NoteFreq;
-}>;
-
 type NoteBuilderProps = Partial<{
   distance: boolean;
   transpose: boolean;
   compare: boolean;
 }>;
 
-type NoteMethods = NoteTransposeByFns & NoteCompareToFns & NoteDistanceToFns;
+type NoteMethods = Partial<NoteTransposeByFns & NoteCompareToFns & NoteDistanceToFns>;
 
-type NoteBuilder = Note & Partial<NoteMethods>;
+type Note = NoteType & NoteMethods;

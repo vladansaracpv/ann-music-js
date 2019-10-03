@@ -8,10 +8,10 @@ interface TimeSignature {
   denominator: number;
 }
 
-type NoteType = 'r' | 'n' | 't';
+type NotesType = 'r' | 'n' | 't';
 
 interface PlayerNote {
-  type: NoteType;
+  type: NotesType;
   name: string;
   duration: string;
 }

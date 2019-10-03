@@ -35,16 +35,16 @@ export const cmp: ComparableBinFnNum = args => {
 };
 
 // interval := (a,b,n) => a < n < b
-export const inInterval = (lower: number, higher: number, num: number): boolean => lt(lower, num) && lt(num, higher);
+export const inInterval = (lower: number, higher: number, num: number): boolean => lower < num && num < higher;
 
 // segment := (a,b,n) => a <= n <= b
-export const inSegment = (lower: number, higher: number, num: number): boolean => leq(lower, num) && leq(num, higher);
+export const inSegment = (lower: number, higher: number, num: number): boolean => lower <= num && num <= higher;
 
-export const isNegative = (a: number): boolean => lt(a, 0);
+export const isNegative = (a: number): boolean => a < 0;
 
-export const isPositive = (a: number): boolean => gt(a, 0);
+export const isPositive = (a: number): boolean => a > 0;
 
-export const isNonNegative = (a: number): boolean => geq(a, 0);
+export const isNonNegative = (a: number): boolean => a >= 0;
 
 /** Relational curried operators  */
 
