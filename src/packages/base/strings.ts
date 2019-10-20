@@ -13,7 +13,7 @@ export const len = (str: string) => str.length;
  * Function for tokenizing parsed string
  * @param str {string} - string to parse against
  * @param regex {RegExp}
- * @returns {<string>[]} || null
+ * @return {<string>[]} || null
  */
 export const tokenize = (str: string, regex: string | RegExp) => (str.match(regex) ? str.match(regex)['groups'] : null);
 
@@ -31,7 +31,7 @@ export function isFalsyOrWhitespace(str: string | undefined): boolean {
 }
 
 /**
- * @returns the provided number with the given number of preceding zeros.
+ * @return the provided number with the given number of preceding zeros.
  */
 export function pad(n: number, l: number, char: string = '0'): string {
   const str = '' + n;
@@ -422,7 +422,7 @@ export function startsWithIgnoreCase(str: string, candidate: string): boolean {
 }
 
 /**
- * @returns the length of the common prefix of the two strings.
+ * @return the length of the common prefix of the two strings.
  */
 export function commonPrefixLength(a: string, b: string): number {
   let i: number,
@@ -438,7 +438,7 @@ export function commonPrefixLength(a: string, b: string): number {
 }
 
 /**
- * @returns the length of the common suffix of the two strings.
+ * @return the length of the common suffix of the two strings.
  */
 export function commonSuffixLength(a: string, b: string): number {
   let i: number,

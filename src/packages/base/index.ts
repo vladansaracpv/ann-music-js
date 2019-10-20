@@ -1,5 +1,5 @@
 import * as Arrays from './arrays';
-import * as Boolean from './boolean';
+import * as Booleans from './boolean';
 import * as CharCodes from './charCode';
 import * as Errors from './error';
 import * as Functional from './functional';
@@ -11,17 +11,15 @@ import * as Relations from './relations';
 import * as Strings from './strings';
 import * as Typings from './typings';
 
-export const Base = {
-  Array,
-  Boolean,
-  CharCodes,
-  Errors,
-  Functional,
-  Logger,
-  Logical,
-  Maths,
-  Range,
-  Relations,
-  Strings,
-  Typings,
-};
+export const BaseArray = Arrays;
+export const BaseBoolean = Booleans;
+export const BaseCharCodes = CharCodes;
+export const BaseErrors = Errors;
+export const BaseFunctional = Functional;
+export const BaseLogger = Logger;
+export const BaseLogical = Logical;
+export const BaseMaths = Maths;
+export const BaseRange = Range;
+export const BaseRelations = Relations;
+export const BaseStrings = Strings;
+export const BaseTypings = Typings;

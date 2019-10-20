@@ -1,14 +1,16 @@
-import { Scale } from '@packages/scale';
 import { Chord } from '@packages/chord';
-import { Interval } from '@packages/interval';
-import { Note, NoteStatic, NoteMethods } from '@packages/note';
+import { Interval, INTERVAL, IntervalBuilder } from '@packages/interval';
+import { Note, NOTE, NoteBuilder } from '@packages/note';
+import { Scale } from '@packages/scale';
 
-const a = Note('A4');
-const i = Interval({ name: 'P4' });
-const c = Chord('Am');
-const s = Scale('A blues');
+// const a = Note('A4');
+// const i = Interval({ name: 'P4' });
+// const c = Chord('Am');
+// const s = Scale('A blues');
 
-console.log(a);
-console.log(i);
-console.log(c);
-console.log(s);
+// console.log(a);
+// console.log(i);
+// console.log(c);
+// console.log(s);
+
+console.log(Interval(['A4', 'C5']));

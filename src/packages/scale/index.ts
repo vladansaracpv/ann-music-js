@@ -1,9 +1,96 @@
 import { rotate } from '@packages/base/arrays';
-import { Note } from '@packages/note';
-import { Interval } from '@packages/interval';
-import { isSubsetOf, isSupersetOf, modes, transpose } from '@packages/pc';
-import { entries as chordTypes } from '@packages/chord/dictionary';
-import { entries as scaleTypes, scaleType } from './dictionary';
+import { Note, NoteName, NoteProps } from '@packages/note';
+import { Interval, IntervalName } from '@packages/interval';
+import { isSubsetOf, isSupersetOf, modes, transpose, PcChroma, PcNum, PcProps } from '@packages/pc';
+import { entries as chordTypes } from '@packages/chord';
+import { ChordQuality } from '@packages/chord';
+import { EmptySet, pcset } from '@packages/pc';
+import { ScaleType, ScaleTypeName } from '.';
+import data from './data';
+
+export type ScaleTypeName = string | PcChroma | PcNum;
+
+export type ScaleName = string;
+export type ScaleNameTokens = [string, string]; // [TONIC, SCALE TYPE]
+
+export interface ScaleType extends PcProps {
+  name: string;
+  intervals: IntervalName[];
+  aliases: string[];
+}
+
+export interface Scale extends ScaleType {
+  tonic: string | null;
+  type: string;
+  notes: NoteName[];
+}
+
+export interface Scale extends ScaleType {
+  tonic: string | null;
+  type: string;
+  notes: NoteName[];
+}
+
+export interface ScalePcset extends PcProps {
+  name: string;
+  quality: ChordQuality;
+  intervals: IntervalName[];
+  aliases: string[];
+}
+
+/**
+ * Properties for a scale in the scale dictionary. It's a pitch class set
+ * properties with the following additional information:
+ * - name: the scale name
+ * - aliases: alternative list of names
+ * - intervals: an array of interval names
+ */
+
+export const NoScaleType: ScaleType = {
+  ...EmptySet,
+  name: '',
+  intervals: [],
+  aliases: [],
+};
+
+const scales: ScaleType[] = data.map(dataToScaleType);
+const index: Record<ScaleTypeName, ScaleType> = scales.reduce((index: Record<ScaleTypeName, ScaleType>, scale) => {
+  index[scale.name] = scale;
+  index[scale.num] = scale;
+  index[scale.chroma] = scale;
+  scale.aliases.forEach(alias => {
+    index[alias] = scale;
+  });
+  return index;
+}, {});
+const ks = Object.keys(index);
+
+/**
+ * Given a scale name or chroma, return the scale properties
+ * @param {string} type - scale name or pitch class set chroma
+ * @example
+ * import { scale } from 'tonaljs/scale-dictionary'
+ * scale('major')
+ */
+export function scaleType(type: ScaleTypeName): ScaleType {
+  return index[type] || NoScaleType;
+}
+
+/**
+ * Return a list of all scale types
+ */
+export function entries() {
+  return scales.slice();
+}
+
+export function keys() {
+  return ks.slice();
+}
+
+function dataToScaleType([ivls, name, ...aliases]: string[]): ScaleType {
+  const intervals = ivls.split(' ');
+  return { ...(pcset && pcset(intervals)), name, intervals, aliases };
+}
 
 const NoScale: Scale = {
   empty: true,
@@ -99,7 +186,7 @@ export function scaleChords(name: string): string[] {
 export function extended(name: string): string[] {
   const s = Scale(name);
   const isSuperset = isSupersetOf(s.chroma);
-  return scaleTypes()
+  return entries()
     .filter(scale => isSuperset(scale.chroma))
     .map(scale => scale.name);
 }
@@ -117,7 +204,7 @@ export function extended(name: string): string[] {
  */
 export function reduced(name: string): string[] {
   const isSubset = isSubsetOf(Scale(name).chroma);
-  return scaleTypes()
+  return entries()
     .filter(scale => isSubset(scale.chroma))
     .map(scale => scale.name);
 }
@@ -140,7 +227,7 @@ export function scaleNotes(notes: NoteName[]) {
   return rotate(scale.indexOf(tonic), scale);
 }
 
-type ScaleMode = [string, string];
+export type ScaleMode = [string, string];
 /**
  * Find mode names of a scale
  *
@@ -208,7 +295,7 @@ export function sortedUniqNoteNames(arr: string[]): string[] {
 
 export const scaleFormula = (src: ScaleName) => {
   const props = Scale(src);
-  return props.intervals.map(ivl => Interval({ name: ivl }).semitones);
+  return props.intervals.map(ivl => Interval(ivl).semitones);
 };
 
 const semitonesToStep = (semitones: number): string => {
@@ -233,7 +320,7 @@ export const scaleToSteps = (src: ScaleName | ScaleNameTokens) => {
   const _scale = Scale(src);
   const intervals = _scale.intervals;
 
-  const semitones = intervals.map(ivl => Interval({ name: ivl }).semitones);
+  const semitones = intervals.map(ivl => Interval(ivl).semitones);
   let steps = [];
   for (let i = 1; i < semitones.length; i++) {
     const diff = semitones[i] - semitones[i - 1];

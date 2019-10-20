@@ -1,33 +1,62 @@
+import { compact, range, rotate, toBinary } from '@packages/base/arrays';
 import { both, either } from '@packages/base/boolean';
 import { CustomError } from '@packages/base/error';
 import { curry } from '@packages/base/functional';
 import { inSegment } from '@packages/base/relations';
 import { isArray, isNumber } from '@packages/base/typings';
-import { Interval, INTERVAL, IvlProps } from '@packages/interval';
-import { Note, NoteStatic } from '@packages/note';
-
-import { compact, range, rotate, toBinary } from '../base/arrays';
-import * as Theory from './theory';
-
-export * from './theory';
+import { Interval, INTERVAL, IntervalName, IntervalProps } from '@packages/interval';
+import { NoNote, Note, NOTE, NoteMidi, NoteName, NoteProps } from '@packages/note';
 
 const PcError = CustomError('PC');
 
-const ITheory = INTERVAL && INTERVAL.Theory;
-const IVLS = ITheory && ITheory.INTERVAL_NAMES;
+const { NAMES: INTERVALS, INTERVAL_REGEX } = INTERVAL;
 
 const cache: { [key in string]: PcProps } = {};
 
-export const PcValidator = {
-  isPcsetNum: (set: any): set is PcNum => isNumber(set) && inSegment(0, 4095, set),
-  isChroma: (set: any): set is PcChroma => Theory.PC_SET_REGEX.test(set),
-  isPcset: (set: any): set is PcProps => set && this.isChroma(set.chroma),
+export type PcChroma = string;
+export type PcNum = number;
+
+/**
+ * The properties of a pitch class set
+ *
+ * @member {number} num - a number between 1 and 4095 (both included) that
+ * uniquely identifies the set. It's the decimal number of the chroma.
+ *
+ * @member {string} chroma - a string representation of the set: a 12-char binary string
+ *
+ * @member {number} length - the number of notes of the pitch class set
+ *
+ * @member {string} normalized - @chroma rotated so that it starts with '1'
+ * *starting from C*
+ */
+export interface PcProps {
+  readonly num: PcNum;
+  readonly chroma: PcChroma;
+  readonly length?: number;
+  readonly normalized: PcChroma;
+  readonly empty: boolean;
+}
+
+export type PcSet = PcProps | PcChroma | PcNum | NoteName[] | IntervalName[];
+
+export const EmptySet: PcProps = {
+  num: 0,
+  chroma: '000000000000',
+  length: 0,
+  normalized: '000000000000',
+  empty: true,
 };
+
+const PC_SET_REGEX = /^[01]{12}$/;
+
+const isPcsetNum = (set: any): set is PcNum => isNumber(set) && inSegment(0, 4095, set);
+const isChroma = (set: any): set is PcChroma => PC_SET_REGEX.test(set);
+const isPcset = (set: any): set is PcProps => set && this.isChroma(set.chroma);
 
 /**
  * Rotates chroma string so that it starts with 1
  * @param {PcChroma} chroma
- * @returns {PcChroma}
+ * @return {PcChroma}
  */
 function normalize(chroma: PcChroma): PcChroma {
   const first = chroma.indexOf('1');
@@ -37,7 +66,7 @@ function normalize(chroma: PcChroma): PcChroma {
 /**
  * Calculate PcChroma set from given PcChroma string
  * @param {PcChroma} chroma
- * @returns {PcProps}
+ * @return {PcProps}
  */
 function properties(chroma: PcChroma): PcProps {
   const num = parseInt(chroma, 2);
@@ -56,18 +85,18 @@ function properties(chroma: PcChroma): PcProps {
 
 /**
  * Converts Note/Inverval array to PcChroma string
- * @param {Array<NoteName>|Array<IvlName>} set
- * @returns {PcChroma}
+ * @param {Array<NoteName>|Array<IntervalName>} set
+ * @return {PcChroma}
  */
-export function toChroma(set: NoteName[] | IvlName[]): PcChroma {
+export function toChroma(set: NoteName[] | IntervalName[]): PcChroma {
   if (set.length === 0) {
-    return Theory.EmptySet.chroma;
+    return EmptySet.chroma;
   }
 
-  const isNote = NoteStatic.Validators.isName;
-  const isIvl = (name: string) => INTERVAL.Theory.INTERVAL_REGEX.test(name);
+  const isNote = NOTE.Validators.isName;
+  const isIvl = (name: string) => INTERVAL_REGEX.test(name);
 
-  let pitch: NoNote | NoteProps | IvlProps | null;
+  let pitch: NoNote | NoteProps | IntervalProps | null;
 
   const binary = Array(12).fill(0);
 
@@ -79,12 +108,12 @@ export function toChroma(set: NoteName[] | IvlName[]): PcChroma {
 
     // Is it Interval?
     if (isIvl(set[i])) {
-      pitch = Interval({ name: set[i] }) as IvlProps;
+      pitch = Interval(set[i]) as IntervalProps;
     }
 
     // Is it neither Note or Interval?
     if (!pitch) {
-      return Theory.EmptySet.chroma;
+      return EmptySet.chroma;
     }
 
     // Is it Note or Interval?
@@ -98,20 +127,20 @@ export function toChroma(set: NoteName[] | IvlName[]): PcChroma {
 /**
  * Calculate PcProps from given PcSet
  * @param {PcSet} src
- * @returns {PcProps}
+ * @return {PcProps}
  */
 export function pcset(src: PcSet): PcProps {
-  const chroma: PcChroma = PcValidator.isChroma(src)
+  const chroma: PcChroma = isChroma(src)
     ? src
-    : PcValidator.isPcsetNum(src)
+    : isPcsetNum(src)
     ? Number(src)
         .toString(2)
         .padStart(12, '0')
     : isArray(src)
     ? toChroma(src)
-    : PcValidator.isPcset(src)
+    : isPcset(src)
     ? src.chroma
-    : Theory.EmptySet.chroma;
+    : EmptySet.chroma;
 
   return (cache[chroma] = cache[chroma] || properties(chroma));
 }
@@ -119,7 +148,7 @@ export function pcset(src: PcSet): PcProps {
 /**
  * Get PcProps value for given key
  * @param {string} key. keyof PcProps => {num, chroma, normalized, length}
- * @returns {string|number}
+ * @return {string|number}
  */
 export function pcsetProp(key: keyof PcProps) {
   return (src: PcSet) => {
@@ -135,7 +164,7 @@ export function pcsetProp(key: keyof PcProps) {
  *
  * @see http://allthescales.org/
  * @param {number} len
- * @returns {Array<PcChroma>} an array of possible chromas from '10000000000' to '11111111111'
+ * @return {Array<PcChroma>} an array of possible chromas from '10000000000' to '11111111111'
  */
 export function chromaList(len?: number): PcChroma[] {
   let all: PcChroma[] = range(2048, 4095).map(toBinary);
@@ -151,7 +180,7 @@ export function chromaList(len?: number): PcChroma[] {
  * @param {PcSet} set - the list of notes or pitchChr of the set
  * @param {boolean} normalize - (Optional, true by default) remove all
  * the rotations that starts with "0"
- * @returns {Array<string>} an array with all the modes of the chroma
+ * @return {Array<string>} an array with all the modes of the chroma
  */
 export function modes(set: PcSet, normalize?: boolean): PcChroma[] {
   const pcs = pcset(set);
@@ -281,16 +310,16 @@ export const semitones = (...args: NoteName[]) => {
 /**
  * Get the intervals of a pcset *starting from C*
  * @param {PcSet} src - the pitch class set
- * @returns {IntervalName[]} an array of interval names or an empty array if not a valid pitch class set
+ * @return {IntervalName[]} an array of interval names or an empty array if not a valid pitch class set
  */
-export function intervals(src: PcSet): IvlName[] {
-  const intervals: IvlName[] = [];
+export function intervals(src: PcSet): IntervalName[] {
+  const intervals: IntervalName[] = [];
   const set = pcset(src);
 
   // PcChroma to array
   const chroma = set.chroma.split('');
   // Map every c == '1' to Interval at position i, then filter existing values
-  return compact(chroma.map((c, i) => (c == '1' ? IVLS[i] : null)));
+  return compact(chroma.map((c, i) => (c == '1' ? INTERVALS[i] : null)));
 }
 
 /**
@@ -299,7 +328,7 @@ export function intervals(src: PcSet): IvlName[] {
  * This function can be partially applied.
  *
  * @param {NoteName} note
- * @param {IvlName} interval
+ * @param {IntervalName} interval
  * @return {NoteName} the transposed note
  * @example
  * import { tranpose } from "tonal-distance"
@@ -315,7 +344,7 @@ export const transpose = (...args: string[]): any => {
   }
   const [n, i] = args;
   const note = Note && Note(n);
-  const interval = Interval({ name: i });
+  const interval = Interval(i);
 
   if (!both(note.valid, interval.valid)) return undefined;
 
