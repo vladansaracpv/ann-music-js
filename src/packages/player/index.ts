@@ -1,34 +1,34 @@
 import Tone from 'tone';
 
-interface Tempo {
+export interface Tempo {
   value: number;
   unit: 'bpm';
 }
 
-interface TimeSignature {
+export interface TimeSignature {
   numerator: number;
   denominator: number;
 }
 
-type NotesType = 'r' | 'n' | 't';
+export type NotesType = 'r' | 'n' | 't';
 
-interface PlayerNote {
+export interface PlayerNote {
   type: NotesType;
   name: string;
   duration: string;
 }
 
-interface Measure {
+export interface Measure {
   notes: PlayerNote[];
 }
 
-interface Sequence {
+export interface Sequence {
   measure: Measure;
   newTempo: Tempo;
   newTimeSignature: TimeSignature;
 }
 
-function makeSynth() {
+export function makeSynth() {
   let envelope = {
     attack: 0.1,
     release: 4,

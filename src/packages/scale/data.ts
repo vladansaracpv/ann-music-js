@@ -1,5 +1,3 @@
-// SCALES
-// Format: ["intervals", "name", "alias1", "alias2", ...]
 const SCALE_LIST: string[][] = [
   // 5-note scales
   ['1P 2M 3M 5P 6M', 'major pentatonic', 'pentatonic'],

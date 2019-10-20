@@ -1,11 +1,8 @@
 import { rotate } from '@packages/base/arrays';
-import { Note, NoteName, NoteLetter } from '@packages/note';
+import { Note, NoteName } from '@packages/note';
 import { Interval, IntervalName } from '@packages/interval';
-import { isSubsetOf, isSupersetOf, modes, transpose, PcChroma, PcNum, PcProps } from '@packages/pc';
-import { CHORD } from '@packages/chord';
-import { ChordQuality } from '@packages/chord';
-import { EmptySet, pcset } from '@packages/pc';
-import { ScaleType, ScaleTypeName } from '.';
+import { isSubsetOf, isSupersetOf, modes, transpose, PcChroma, PcNum, PcProps, EmptySet, pcset } from '@packages/pc';
+import { CHORD, ChordQuality } from '@packages/chord';
 import SCALE_LIST from './data';
 
 export type ScaleTypeName = string | PcChroma | PcNum;

@@ -1,7 +1,8 @@
 import { either } from '@packages/base/boolean';
 import { tokenize as tokenizeNote } from '@packages/base/strings';
+import { isArray, isString } from '@packages/base/typings';
 import { Interval, IntervalName } from '@packages/interval';
-import { Note, NoteName, NOTE } from '@packages/note';
+import { Note, NoteName } from '@packages/note';
 import {
   EmptySet,
   isSubsetOf,
@@ -12,9 +13,7 @@ import {
   pcset,
   transpose as transposeNote,
 } from '@packages/pc';
-import { SCALE } from '@packages/scale';
 
-import { isArray, isString } from '@packages/base/typings';
 import CHORD_LIST from './data';
 
 export type ChordQuality = 'Major' | 'Minor' | 'Augmented' | 'Diminished' | 'Unknown' | 'Other';
@@ -274,13 +273,13 @@ namespace SetMethods {
 }
 
 namespace Static {
-  export function chordScales(name: string): string[] {
-    const s = Chord(name);
-    const isChordIncluded = isSupersetOf(s.chroma);
-    return SCALE.entries()
-      .filter(scale => isChordIncluded(scale.chroma))
-      .map(scale => scale.name);
-  }
+  // export function chordScales(name: string): string[] {
+  //   const s = Chord(name);
+  //   const isChordIncluded = isSupersetOf(s.chroma);
+  //   return SCALE.entries()
+  //     .filter(scale => isChordIncluded(scale.chroma))
+  //     .map(scale => scale.name);
+  // }
 
   export function chordFormula(chord: ChordName) {
     const props = Chord(chord);

@@ -1,15 +1,12 @@
 import { compact, range, rotate, toBinary } from '@packages/base/arrays';
-import { both, either } from '@packages/base/boolean';
-import { CustomError } from '@packages/base/error';
+import { both } from '@packages/base/boolean';
 import { curry } from '@packages/base/functional';
 import { inSegment } from '@packages/base/relations';
 import { isArray, isNumber, isObject } from '@packages/base/typings';
 import { Interval, INTERVAL, IntervalName, IntervalProps } from '@packages/interval';
 import { NoNote, Note, NOTE, NoteMidi, NoteName, NoteProps } from '@packages/note';
 
-const PcError = CustomError('PC');
-
-const { NAMES: INTERVALS, INTERVAL_REGEX } = INTERVAL;
+const INTERVALS = INTERVAL.NAMES;
 
 const cache: { [key in string]: PcProps } = {};
 

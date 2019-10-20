@@ -10,4 +10,4 @@ const s = Scale('A minor');
 
 // console.log(a);
 // console.log(i);
-console.log(SCALE.scaleNotes(['D4', 'c#5', 'A5', 'F#6']));
+console.log(Note('Ab2'));
