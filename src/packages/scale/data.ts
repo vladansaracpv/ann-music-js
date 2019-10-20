@@ -1,6 +1,6 @@
 // SCALES
 // Format: ["intervals", "name", "alias1", "alias2", ...]
-const SCALES: string[][] = [
+const SCALE_LIST: string[][] = [
   // 5-note scales
   ['1P 2M 3M 5P 6M', 'major pentatonic', 'pentatonic'],
   ['1P 3M 4P 5P 7M', 'ionian pentatonic'],
@@ -99,4 +99,4 @@ const SCALES: string[][] = [
   // 12-note scales
   ['1P 2m 2M 3m 3M 4P 4A 5P 6m 6M 7m 7M', 'chromatic'],
 ];
-export default SCALES;
+export default SCALE_LIST;

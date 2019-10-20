@@ -12,10 +12,10 @@ import {
   pcset,
   transpose as transposeNote,
 } from '@packages/pc';
-import { entries as scaleTypes } from '@packages/scale';
+import { SCALE } from '@packages/scale';
 
-import CHORD_LIST from './data';
 import { isArray, isString } from '@packages/base/typings';
+import CHORD_LIST from './data';
 
 export type ChordQuality = 'Major' | 'Minor' | 'Augmented' | 'Diminished' | 'Unknown' | 'Other';
 
@@ -277,7 +277,7 @@ namespace Static {
   export function chordScales(name: string): string[] {
     const s = Chord(name);
     const isChordIncluded = isSupersetOf(s.chroma);
-    return scaleTypes()
+    return SCALE.entries()
       .filter(scale => isChordIncluded(scale.chroma))
       .map(scale => scale.name);
   }
@@ -393,7 +393,7 @@ export function Chord(src: ChordName | ChordNameTokens): Chord {
     }
 
     const type = st.name;
-    const notes: string[] = tonic.valid ? st.intervals.map(i => transposeNote(tonic.name, i).letter) : [];
+    const notes: string[] = tonic.valid ? st.intervals.map(i => transposeNote(tonic.name, i).pc) : [];
 
     const name = tonic.valid ? tonic.letter + ' ' + type : type;
 
