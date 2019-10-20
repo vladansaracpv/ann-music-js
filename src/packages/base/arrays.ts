@@ -33,7 +33,7 @@ export const unique = (array: any[]) => sort(array).filter(uniqueLocal);
 export const rangeUp = (start: number, l: number): number[] => {
   return Array(l)
     .fill(start)
-    .map(add2);
+    .map(add);
 };
 export const rangeDown = (start: number, l: number): number[] => {
   return Array(l)

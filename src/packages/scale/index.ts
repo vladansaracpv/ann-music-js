@@ -2,7 +2,7 @@ import { rotate } from '@packages/base/arrays';
 import { Note, NoteName, NoteProps } from '@packages/note';
 import { Interval, IntervalName } from '@packages/interval';
 import { isSubsetOf, isSupersetOf, modes, transpose, PcChroma, PcNum, PcProps } from '@packages/pc';
-import { entries as chordTypes } from '@packages/chord';
+import { CHORD } from '@packages/chord';
 import { ChordQuality } from '@packages/chord';
 import { EmptySet, pcset } from '@packages/pc';
 import { ScaleType, ScaleTypeName } from '.';
@@ -169,7 +169,7 @@ export function Scale(src: ScaleName | ScaleNameTokens): Scale {
 export function scaleChords(name: string): string[] {
   const s = Scale(name);
   const inScale = isSubsetOf(s.chroma);
-  return chordTypes()
+  return CHORD.entries()
     .filter(chord => inScale(chord.chroma))
     .map(chord => chord.aliases[0]);
 }

@@ -1,5 +1,5 @@
 import { Note, NoteName, NoteMidi } from '@packages/note';
-import { chordFormula, Chord } from '@packages/chord';
+import { Chord, CHORD } from '@packages/chord';
 import { Scale, ScaleName, ScaleNameTokens } from '@packages/scale';
 import { intervals as chromaToIntervals, EmptySet, PcProps, modes as chromaModes } from '@packages/pc';
 import { IntervalName } from '@packages/interval';
@@ -147,7 +147,7 @@ export function chordNotes(root: NoteName, chord: string, octaves: number = 1) {
   const note = Note(root);
 
   // Create chord formula for @root@type
-  const formula = chordFormula(chord);
+  const formula = CHORD.chordFormula(chord);
 
   // Create array of octaves to map formula onto
   let octs = Array(octaves)

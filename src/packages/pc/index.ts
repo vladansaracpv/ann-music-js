@@ -3,7 +3,7 @@ import { both, either } from '@packages/base/boolean';
 import { CustomError } from '@packages/base/error';
 import { curry } from '@packages/base/functional';
 import { inSegment } from '@packages/base/relations';
-import { isArray, isNumber } from '@packages/base/typings';
+import { isArray, isNumber, isObject } from '@packages/base/typings';
 import { Interval, INTERVAL, IntervalName, IntervalProps } from '@packages/interval';
 import { NoNote, Note, NOTE, NoteMidi, NoteName, NoteProps } from '@packages/note';
 
@@ -51,7 +51,7 @@ const PC_SET_REGEX = /^[01]{12}$/;
 
 const isPcsetNum = (set: any): set is PcNum => isNumber(set) && inSegment(0, 4095, set);
 const isChroma = (set: any): set is PcChroma => PC_SET_REGEX.test(set);
-const isPcset = (set: any): set is PcProps => set && this.isChroma(set.chroma);
+const isPcset = (set: any): set is PcProps => isObject(set) && isChroma(set.chroma);
 
 /**
  * Rotates chroma string so that it starts with 1
@@ -80,7 +80,7 @@ function properties(chroma: PcChroma): PcProps {
 
   const empty = length == 0;
 
-  return { empty, num, chroma, normalized, length };
+  return { num, chroma, normalized, length, empty };
 }
 
 /**
@@ -94,8 +94,7 @@ export function toChroma(set: NoteName[] | IntervalName[]): PcChroma {
   }
 
   const isNote = NOTE.Validators.isName;
-  const isIvl = (name: string) => INTERVAL_REGEX.test(name);
-
+  const isIvl = INTERVAL.Validators.isIntervalName;
   let pitch: NoNote | NoteProps | IntervalProps | null;
 
   const binary = Array(12).fill(0);
@@ -103,7 +102,7 @@ export function toChroma(set: NoteName[] | IntervalName[]): PcChroma {
   for (let i = 0; i < set.length; i++) {
     // Is it Note?
     if (isNote(set[i])) {
-      pitch = Note && (Note(set[i]) as NoteProps);
+      pitch = Note(set[i]) as NoteProps;
     }
 
     // Is it Interval?
@@ -182,11 +181,9 @@ export function chromaList(len?: number): PcChroma[] {
  * the rotations that starts with "0"
  * @return {Array<string>} an array with all the modes of the chroma
  */
-export function modes(set: PcSet, normalize?: boolean): PcChroma[] {
+export function modes(set: PcSet, normalize = true): PcChroma[] {
   const pcs = pcset(set);
   const binary = pcs.chroma.split('');
-
-  normalize = normalize !== false;
 
   return compact(
     binary.map((b, i) => {
@@ -286,22 +283,6 @@ export const filterNotes = curry((set: PcSet, notes: NoteName[]) => {
 });
 
 /**
- * Get the distance between two notes in semitones
- *
- * @param {NoteName} from - first note
- * @param {NoteName} to - last note
- * @return {number} the distance in semitones or null if not valid notes
- */
-export const semitones = (...args: NoteName[]) => {
-  if (args.length === 1) return (t: NoteName) => semitones(args[0], t);
-
-  const f = Note && Note(args[0] as NoteName);
-  const t = Note && Note(args[1] as NoteName);
-
-  return either(t.midi - f.midi, null, both(f.valid, t.valid));
-};
-
-/**
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                 INTERVAL - PC methods                   *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -313,7 +294,6 @@ export const semitones = (...args: NoteName[]) => {
  * @return {IntervalName[]} an array of interval names or an empty array if not a valid pitch class set
  */
 export function intervals(src: PcSet): IntervalName[] {
-  const intervals: IntervalName[] = [];
   const set = pcset(src);
 
   // PcChroma to array
@@ -350,5 +330,5 @@ export const transpose = (...args: string[]): any => {
 
   const amount: NoteMidi = note.midi + interval.semitones;
 
-  return Note && Note(amount).name;
+  return Note(amount);
 };

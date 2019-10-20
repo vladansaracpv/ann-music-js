@@ -1,4 +1,4 @@
-const CHORDS: string[][] = [
+const CHORD_LIST: string[][] = [
   // ==Major==
   ['1P 3M 5P', 'major', 'M '],
   ['1P 3M 5P 7M', 'major seventh', 'maj7 Δ ma7 M7 Maj7'],
@@ -121,4 +121,4 @@ const CHORDS: string[][] = [
   ['1P 5P 7m 9m 11P', '', '11b9'],
 ];
 
-export default CHORDS;
+export default CHORD_LIST;
