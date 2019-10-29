@@ -85,11 +85,6 @@ export type NoteFreq = number;
 export type NoteColor = string;
 
 /**
- * Note duration value. Can be: 1, 2, 4, 8, 16, 32, 64
- */
-export type NoteDuration = number;
-
-/**
  * Note object. Collection of note properties.
  * It extends @NoteMethods (optionals) export interface in case you want them
  */

@@ -1,147 +1,90 @@
-// // import { Duration } from './duration';
-// // import { Euclid } from './euclid';
+/**
+ *  2/8 - simple duple
+ *  3/8 - simple triple
+ *  4/8 - simple quadruple
+ *  5/8 - odd
+ *  6/8 - compound duple
+ *  7/8 - odd
+ *  8/8 - odd
+ *  9/8 - compound triple
+ * 10/8 - odd
+ * 11/8 - odd
+ * 12/8 - compound quadruple
+ *
+ * simple  : 2, 3, 4
+ * compound: 6, 9, 12
+ * odd     : 5, 7, 8, 10, 11
+ */
 
-// // export enum MeterType {
-// //   Simple = 'simple',
-// //   Compound = 'compound',
-// //   Odd = 'odd',
-// // }
+interface TimeSignature {
+  top: number;
+  bottom: number;
+}
 
-// // export class Meter {
-// //   top: number;
-// //   bottom: number;
-// //   type: MeterType;
-// //   numOfBeats: number;
-// //   beat: string[];
+type DurationValue = 1 | 2 | 4 | 8 | 16 | 32 | 64 | 0;
+type DurationType = 'n' | 'r' | 't' | 'd' | 'dd';
+type DurationChar = 'w' | 'h' | 'q' | 'e' | 's' | 't' | 'ss';
 
-// //   getBeatValue = () =>
-// //     this.type == MeterType.Compound ? Duration.valueToName(this.bottom).repeat(3) : this.beat.join(' ');
-// //   getNumOfBeats = () => this.numOfBeats;
-// //   getType = () => this.type;
+interface Beat {
+  duration: string;
+  division: string;
+}
 
-// //   constructor(top: number, bottom: number) {
-// //     this.top = top;
-// //     this.bottom = bottom;
-// //     this.setType();
-// //   }
+interface MeterType {
+  type: string;
+  num: string;
+  name: string;
+}
 
-// //   properties = () => ({
-// //     top: this.top,
-// //     bottom: this.bottom,
-// //     type: this.type,
-// //     numOfBeats: this.numOfBeats,
-// //     beat: this.beat,
-// //   });
+const MeterTypes = {
+  simple: ['duple', 'triple', 'quadruple'],
+  compound: ['duple', 'triple', 'quadruple'],
+  odd: ['5', '7', '8', '10', '11'],
+};
 
-// //   setType = () => {
-// //     if (Meter.isCompound(this.top, this.bottom)) return this.createCompound();
-// //     if (Meter.isSimple(this.top, this.bottom)) return this.createSimple();
-// //     return this.createOdd();
-// //   };
+const Meters = {
+  simple: [2, 3, 4],
+  compound: [6, 9, 12],
+  odd: [5, 7, 8, 10, 11],
+  duple: [2, 6],
+  triple: [3, 9],
+  quadruple: [4, 12],
+};
 
-// //   static isCompound = (top: number, bottom: number): boolean => {
-// //     return top % 3 === 0 && top > 3;
-// //   };
+const Validators = {
+  isSimple: (ts: TimeSignature) => Meters.simple.includes(ts.top),
+  isCompound: (ts: TimeSignature) => Meters.compound.includes(ts.top),
+  isOdd: (ts: TimeSignature) => Meters.odd.includes(ts.top),
+  isDuple: (ts: TimeSignature) => Meters.duple.includes(ts.top),
+  isTriple: (ts: TimeSignature) => Meters.triple.includes(ts.top),
+  isQuadruple: (ts: TimeSignature) => Meters.quadruple.includes(ts.top),
+};
 
-// //   static isSimple = (top: number, bottom: number): boolean => {
-// //     return top < 5;
-// //   };
+const meterType = (ts: TimeSignature) => {
+  const { isSimple, isCompound } = Validators;
+  return isSimple(ts) ? 'simple' : isCompound(ts) ? 'compound' : 'odd';
+};
 
-// //   createSimple = () => {
-// //     this.type = MeterType.Simple;
-// //     this.numOfBeats = this.top;
-// //     this.beat = [Duration.valueToName(this.bottom)];
-// //   };
+const meterNumber = (ts: TimeSignature) => {
+  const { isDuple, isTriple, isQuadruple } = Validators;
+  return isDuple(ts) ? 'duple' : isTriple(ts) ? 'triple' : isQuadruple(ts) ? 'quadruple' : '';
+};
 
-// //   createCompound = () => {
-// //     this.type = MeterType.Compound;
-// //     this.numOfBeats = this.top / 3;
-// //     this.beat = [Duration.valueToName(Duration.doubleValue(this.bottom)) + '.'];
-// //   };
+const meterName = (ts: TimeSignature) => {
+  return meterType(ts) + ' ' + meterNumber(ts);
+};
 
-// //   createOdd = () => {
-// //     this.type = MeterType.Odd;
-// //     this.numOfBeats = Math.ceil(this.top / 3);
-// //     const name = Duration.valueToName(Duration.doubleValue(this.bottom));
-// //     var arr: string = Euclid(this.numOfBeats, this.top, false).join('');
-// //     arr = arr.replace(/100/g, name + '.').replace(/10/g, name + ' ');
+const Meter = (ts: TimeSignature): MeterType => {
+  const type = meterType(ts);
+  const num = meterNumber(ts);
+  const name = meterName(ts);
+  return { type, num, name };
+};
 
-// //     const groups = arr.split(' ').map(group => ((group[1] || ' ') === '.' ? [group[0], '.'] : [group, '']));
+const m = Meter({ top: 6, bottom: 8 });
 
-// //     this.beat = [arr];
-// //   };
-// // }
+const numToBeats = (ts: TimeSignature) => {};
 
-// const numbers = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
-// const subdivisions = {
-//   1: (n: number) => `${n} `,
-//   2: (n: number) => `${n} & `,
-//   3: (n: number) => `${n} & a `,
-//   4: (n: number) => `${n} e & a `,
-// };
+console.log(m);
 
-// const s = subdivisions[4](2);
-// console.log(s.split(' '));
-
-// const sayNumber = (n: number) => numbers[n];
-
-// const fillStr = (s: string, n: number): string => Array(Math.abs(n) + 1).join(s);
-
-// const add2 = (a: number, b: number): number => a + b;
-
-// const rangeUp = (start: number, l: number): number[] => {
-//   return Array(l)
-//     .fill(start)
-//     .map(add2);
-// };
-
-// const afterBeat = (beat: number, sheetSymbol: string, subdivision: number) => {
-//   const bar = subdivisions[subdivision](beat)
-//     .split(' ')
-//     .join(sheetSymbol);
-//   return bar;
-// };
-
-// const count = (ts: TimeSignature, subdivision = 4, sheetSymbol = '-') => {
-//   const { numerator: beats, denominator: beatUnit } = ts;
-
-//   const notes = rangeUp(1, beats);
-//   // const subdivisionUnit = countUnit / beatUnit;
-//   const sheet = '|' + notes.reduce((acc, cur) => acc + afterBeat(cur, sheetSymbol, subdivision), '') + '|';
-
-//   console.log(sheet);
-// };
-
-// const ts = { numerator: 4, denominator: 4 };
-// // count(ts, 4);
-
-// const duple = `
-// |       |
-// |   |   |
-// | 1 | 2 |
-// |   |   |
-// |       |
-// `;
-// const triple = `
-// |           |
-// |   |   |   |
-// | 1 | 2 | 3 |
-// |   |   |   |
-// |           |`;
-// const quadruple = `
-// |               |
-// |       |       |
-// | 1 | 2 | 3 | 4 |
-// |       |       |
-// |               |
-// `;
-
-// const say = (arr: number[], interval: number) => {
-//   if (arr.length == 0) return;
-//   console.log(arr[0]);
-//   setTimeout(() => {
-//     say(arr.slice(1), 2000);
-//   }, interval);
-// };
-
-// say([1, 2, 3, 4], 2000);
+const Tempo = (bpm: number, value: string) => {};
