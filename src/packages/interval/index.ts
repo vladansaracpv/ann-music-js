@@ -1,13 +1,25 @@
-import { fillStr } from '@packages/base/arrays';
-import { either } from '@packages/base/boolean';
-import { CustomError } from '@packages/base/error';
-import { compose } from '@packages/base/functional';
-import { and as both } from '@packages/base/logical';
-import { dec, divC, inc, modC } from '@packages/base/math';
-import { eq, gt, isNegative, lt } from '@packages/base/relations';
-import { tokenize } from '@packages/base/strings';
-import { isArray, isInteger, isNumber, isObject } from '@packages/base/typings';
-import { InitProp, NOTE, NoteName } from '@packages/note';
+import {
+  BaseArray,
+  BaseBoolean,
+  BaseErrors,
+  BaseFunctional,
+  BaseLogical,
+  BaseMaths,
+  BaseRelations,
+  BaseStrings,
+  BaseTypings,
+} from 'ann-music-base';
+import { InitProp, NOTE, NoteName } from 'ann-music-note';
+
+const { fillStr } = BaseArray;
+const { either } = BaseBoolean;
+const { CustomError } = BaseErrors;
+const { compose } = BaseFunctional;
+const { and: both } = BaseLogical;
+const { dec, divC, inc, modC } = BaseMaths;
+const { eq, gt, isNegative, lt } = BaseRelations;
+const { tokenize } = BaseStrings;
+const { isArray, isInteger, isNumber, isObject } = BaseTypings;
 
 const IntervalError = CustomError('Interval');
 

@@ -1,10 +1,20 @@
-import { both, either } from '@packages/base/boolean';
-import { CustomError } from '@packages/base/error';
-import { partial } from '@packages/base/functional';
-import { dec, inc } from '@packages/base/math';
-import { cmp, eq, geq, gt, inSegment, isNegative, isPositive, leq, lt, neq } from '@packages/base/relations';
-import { capitalize, substitute, tokenize } from '@packages/base/strings';
-import { isInteger, isNumber, isObject } from '@packages/base/typings';
+import {
+  BaseBoolean,
+  BaseErrors,
+  BaseFunctional,
+  BaseMaths,
+  BaseRelations,
+  BaseStrings,
+  BaseTypings,
+} from 'ann-music-base';
+
+const { both, either } = BaseBoolean;
+const { CustomError } = BaseErrors;
+const { partial } = BaseFunctional;
+const { dec, inc } = BaseMaths;
+const { cmp, eq, geq, gt, inSegment, isNegative, isPositive, leq, lt, neq } = BaseRelations;
+const { capitalize, substitute, tokenize } = BaseStrings;
+const { isInteger, isNumber, isObject } = BaseTypings;
 
 const NoteError = CustomError('Note');
 
@@ -381,7 +391,7 @@ namespace Static {
 
 namespace Transpose {
   export function transpose(b: InitProp | NoteProps, n: number, key: NoteTransposableProp = 'midi'): Note {
-    const note = isObject(b) ? b : Note(b as InitProp);
+    const note = (isObject(b) ? b : Note(b as InitProp)) as NoteProps;
     return key == 'midi'
       ? Note(note.midi + n)
       : key == 'frequency'
@@ -592,7 +602,7 @@ export function Note(prop: InitProp, midiOrFreq = 'midi'): NoteProps {
  */
 export function NoteBuilder(prop: InitProp | NoteProps, methods: InitMethods) {
   const { EmptyNote } = Theory;
-  const note = (isObject(prop) ? prop : Note(prop)) as NoteProps;
+  const note = (isObject(prop) ? prop : Note(prop as InitProp)) as NoteProps;
 
   if (!note.valid) return EmptyNote;
 

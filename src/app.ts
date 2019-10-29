@@ -1,13 +1,8 @@
-import { Chord, CHORD } from '@packages/chord';
-import { Interval, INTERVAL, IntervalBuilder } from '@packages/interval';
-import { Note, NOTE, NoteBuilder } from '@packages/note';
-import { Scale, SCALE } from '@packages/scale';
-import { pcset, pcsetProp, modes } from '@packages/pc';
+import { INTERVAL, Interval } from './packages/interval/index';
+import { CHORD, Chord } from './packages/chord/index';
+import { Scale } from '@packages/scale';
 
-// const a = Note('A4');
-// const i = Interval({ name: 'P4' });
-const s = Scale('A minor');
-
-// console.log(a);
-// console.log(i);
-console.log(Note('Ab2'));
+console.log(Chord('C'));
+console.log(Chord('Am'));
+console.log(Interval(3));
+console.log(Scale('major'));

@@ -1,8 +1,5 @@
 export const Euclid = (onNotes, totalNotes, grouped = false) => {
-  function compareArrays(a: any[], b: any[]) {
-    // TODO: optimize
-    return JSON.stringify(a) === JSON.stringify(b);
-  }
+  const compareArrays = (a: any[], b: any[]) => JSON.stringify(a) === JSON.stringify(b);
 
   let groups = [];
   for (let i = 0; i < totalNotes; i++) groups.push([Number(i < onNotes)]);

@@ -24,12 +24,6 @@ export interface Scale extends ScaleType {
   notes: NoteName[];
 }
 
-export interface Scale extends ScaleType {
-  tonic: string | null;
-  type: string;
-  notes: NoteName[];
-}
-
 export interface ScalePcset extends PcProps {
   name: string;
   quality: ChordQuality;

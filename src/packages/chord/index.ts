@@ -1,8 +1,10 @@
-import { either } from '@packages/base/boolean';
-import { tokenize as tokenizeNote } from '@packages/base/strings';
-import { isArray, isString } from '@packages/base/typings';
-import { Interval, IntervalName } from '@packages/interval';
-import { Note, NoteName } from '@packages/note';
+import { BaseBoolean, BaseStrings, BaseTypings } from 'ann-music-base';
+import { NoteName, Note } from 'ann-music-note';
+import { Interval, IntervalName } from 'ann-music-interval';
+
+const { either } = BaseBoolean;
+const { tokenize: tokenizeNote } = BaseStrings;
+const { isArray, isString } = BaseTypings;
 import {
   EmptySet,
   isSubsetOf,
@@ -12,7 +14,7 @@ import {
   PcProps,
   pcset,
   transpose as transposeNote,
-} from '@packages/pc';
+} from 'ann-music-pc';
 
 import CHORD_LIST from './data';
 
