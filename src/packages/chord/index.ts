@@ -1,10 +1,11 @@
-import { BaseBoolean, BaseStrings, BaseTypings } from 'ann-music-base';
+import { BaseBoolean, BaseStrings, BaseTypings, BaseArray } from 'ann-music-base';
 import { NoteName, Note } from 'ann-music-note';
 import { Interval, IntervalName } from 'ann-music-interval';
 
 const { either } = BaseBoolean;
 const { tokenize: tokenizeNote } = BaseStrings;
 const { isArray, isString } = BaseTypings;
+const { rotate } = BaseArray;
 import {
   EmptySet,
   isSubsetOf,
@@ -320,7 +321,7 @@ namespace Dictionary {
       : has('3m')
       ? 'Minor'
       : 'Other';
-    const set = pcset && pcset(intervals);
+    const set = pcset(intervals);
     return { ...set, name, quality, intervals, aliases };
   }
 
@@ -388,6 +389,8 @@ export function Chord(src: ChordName | ChordNameTokens): Chord {
     const tonic = Note(tokens[0] as NoteName);
 
     const st = CHORD.chords[tokens[1]] || Theory.NoChordType;
+    const chroma = rotate(-tonic.chroma, st.chroma.split('')).join('');
+    const chType = { ...st, chroma };
 
     if (st.empty) {
       return Theory.NoChord;
@@ -400,7 +403,7 @@ export function Chord(src: ChordName | ChordNameTokens): Chord {
 
     const valid = true;
 
-    return { ...st, name, type, tonic: either(tonic.letter, '', tonic.valid), notes, valid };
+    return { ...chType, name, type, tonic: either(tonic.letter, '', tonic.valid), notes, valid };
   }
 
   function fromName(src: ChordName) {

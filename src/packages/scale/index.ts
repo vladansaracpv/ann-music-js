@@ -2,7 +2,7 @@ import { rotate } from '@packages/base/arrays';
 import { Note, NoteName } from '@packages/note';
 import { Interval, IntervalName } from '@packages/interval';
 import { isSubsetOf, isSupersetOf, modes, transpose, PcChroma, PcNum, PcProps, EmptySet, pcset } from '@packages/pc';
-import { CHORD, ChordQuality } from '@packages/chord';
+import { CHORD, ChordQuality, Chord, ChordName, ChordNameTokens } from '@packages/chord';
 import SCALE_LIST from './data';
 
 export type ScaleTypeName = string | PcChroma | PcNum;
@@ -180,6 +180,12 @@ namespace Static {
     return CHORD.entries()
       .filter(chord => inScale(chord.chroma))
       .map(chord => chord.aliases[0]);
+  }
+
+  export function containsChord(scale: ScaleName, src: ChordName | ChordNameTokens) {
+    const c = parseInt(Chord(src).chroma, 2);
+    const s = parseInt(Scale(scale).chroma, 2);
+    return (s & c) === c;
   }
 
   /**
