@@ -1,34 +1,45 @@
-import { rotate } from '@packages/base/arrays';
-import { Note, NoteName } from '@packages/note';
-import { Interval, IntervalName } from '@packages/interval';
-import { isSubsetOf, isSupersetOf, modes, transpose, PcChroma, PcNum, PcProps, EmptySet, pcset } from '@packages/pc';
-import { CHORD, ChordQuality, Chord, ChordName, ChordNameTokens } from '@packages/chord';
+import { CHORD, Chord, ChordTypeName, ChordNameTokens } from 'ann-music-chord';
+import {
+  isSubsetOf,
+  isSupersetOf,
+  modes,
+  transpose,
+  PcsetChroma,
+  PcsetNum,
+  PcsetProps,
+  EmptySet,
+  pcset,
+} from 'ann-music-pc';
+import { Interval } from 'ann-music-interval';
+import { Note, NoteName } from 'ann-music-note';
+import { BaseArray } from 'ann-music-base';
+
 import SCALE_LIST from './data';
 
-export type ScaleTypeName = string | PcChroma | PcNum;
+const { rotate } = BaseArray;
 
-export type ScaleName = string;
+export type ScaleTypeName = string;
+export type ScaleTypeChroma = PcsetChroma;
+export type ScaleTypeSetNum = PcsetNum;
+
+export type ScaleTypeProp = ScaleTypeName | ScaleTypeChroma | ScaleTypeSetNum;
+
 export type ScaleNameTokens = [string, string]; // [TONIC, SCALE TYPE]
 
-export interface ScaleType extends PcProps {
+export type ScaleInit = ScaleTypeName | ScaleNameTokens;
+
+export interface ScaleType extends PcsetProps {
   name: string;
-  intervals: IntervalName[];
   aliases: string[];
 }
 
-export type ScaleTypes = Record<ScaleTypeName, ScaleType>;
+export type ScaleTypes = Record<ScaleTypeProp, ScaleType>;
 
 export interface Scale extends ScaleType {
-  tonic: string | null;
+  tonic: string;
   type: string;
   notes: NoteName[];
-}
-
-export interface ScalePcset extends PcProps {
-  name: string;
-  quality: ChordQuality;
-  intervals: IntervalName[];
-  aliases: string[];
+  valid: boolean;
 }
 
 export type ScaleMode = [string, string];
@@ -55,27 +66,36 @@ namespace Theory {
     type: '',
     tonic: null,
     length: 0,
-    num: NaN,
+    setNum: NaN,
     chroma: '',
     normalized: '',
     aliases: [],
     notes: [],
     intervals: [],
+    valid: false,
   };
 }
 
 namespace Dictionary {
-  export const TYPES: ScaleType[] = SCALE_LIST.map(dataToScaleType);
-  export const SCALES: ScaleTypes = TYPES.reduce((index: Record<ScaleTypeName, ScaleType>, scale) => {
-    index[scale.name] = scale;
-    index[scale.num] = scale;
-    index[scale.chroma] = scale;
-    scale.aliases.forEach(alias => {
-      index[alias] = scale;
-    });
-    return index;
-  }, {});
-  export const KEYS = Object.keys(SCALES);
+  export const TYPES: ScaleType[] = SCALE_LIST.map(toScaleType);
+  export const SCALES: ScaleTypes = toScales(TYPES);
+
+  export function toScales(types: ScaleType[]) {
+    return types.reduce((index: Record<ScaleTypeName, ScaleType>, scale) => {
+      index[scale.name] = scale;
+      index[scale.setNum] = scale;
+      index[scale.chroma] = scale;
+      scale.aliases.forEach(alias => {
+        index[alias] = scale;
+      });
+      return index;
+    }, {});
+  }
+
+  export function toScaleType([ivls, name, ...aliases]: string[]): ScaleType {
+    const intervals = ivls.split(' ');
+    return { ...(pcset && pcset(intervals)), name, intervals, aliases };
+  }
 
   /**
    * Given a string with a scale name and (optionally) a tonic, split
@@ -93,7 +113,7 @@ namespace Dictionary {
    * tokenize("anything is valid") // => ["", "anything is valid"]
    * tokenize() // => ["", ""]
    */
-  export function tokenize(name: ScaleName): ScaleNameTokens {
+  export function tokenize(name: string): ScaleNameTokens {
     if (typeof name !== 'string') {
       return ['', ''];
     }
@@ -106,22 +126,6 @@ namespace Dictionary {
 
     const type = name.substring(tonic.name.length);
     return [tonic.name, type.length ? type : ''];
-  }
-
-  /**
-   * Return a list of all scale types
-   */
-  export function entries() {
-    return Dictionary.TYPES.slice();
-  }
-
-  export function keys() {
-    return Dictionary.KEYS.slice();
-  }
-
-  export function dataToScaleType([ivls, name, ...aliases]: string[]): ScaleType {
-    const intervals = ivls.split(' ');
-    return { ...(pcset && pcset(intervals)), name, intervals, aliases };
   }
 }
 
@@ -139,9 +143,7 @@ namespace SetMethods {
   export function extended(name: string): string[] {
     const s = Scale(name);
     const isSuperset = isSupersetOf(s.chroma);
-    return Dictionary.entries()
-      .filter(scale => isSuperset(scale.chroma))
-      .map(scale => scale.name);
+    return Dictionary.TYPES.filter(scale => isSuperset(scale.chroma)).map(scale => scale.name);
   }
 
   /**
@@ -157,9 +159,7 @@ namespace SetMethods {
    */
   export function reduced(name: string): string[] {
     const isSubset = isSubsetOf(Scale(name).chroma);
-    return Dictionary.entries()
-      .filter(scale => isSubset(scale.chroma))
-      .map(scale => scale.name);
+    return Dictionary.TYPES.filter(scale => isSubset(scale.chroma)).map(scale => scale.name);
   }
 }
 
@@ -177,12 +177,10 @@ namespace Static {
   export function scaleChords(name: string): string[] {
     const s = Scale(name);
     const inScale = isSubsetOf(s.chroma);
-    return CHORD.entries()
-      .filter(chord => inScale(chord.chroma))
-      .map(chord => chord.aliases[0]);
+    return CHORD.types.filter(chord => inScale(chord.chroma)).map(chord => chord.aliases[0]);
   }
 
-  export function containsChord(scale: ScaleName, src: ChordName | ChordNameTokens) {
+  export function containsChord(scale: ScaleInit, src: ChordTypeName | ChordNameTokens) {
     const c = parseInt(Chord(src).chroma, 2);
     const s = parseInt(Scale(scale).chroma, 2);
     return (s & c) === c;
@@ -200,13 +198,13 @@ namespace Static {
    * scaleNotes(['D4', 'c#5', 'A5', 'F#6']) // => ["D", "F#", "A", "C#"]
    */
   export function scaleNotes(notes: NoteName[]) {
-    const pcset: string[] = notes.map(n => Note(n).pc).filter(x => x);
+    const pcSet: string[] = notes.map(n => Note(n).pc).filter(x => x);
     const tonic = pcset[0];
-    const scale = sortedUniqNoteNames(pcset);
+    const scale = sortedUniqNoteNames(pcSet);
     return rotate(scale.indexOf(tonic), scale);
   }
 
-  export function scaleFormula(src: ScaleName) {
+  export function scaleFormula(src: ScaleInit) {
     const props = Scale(src);
     return props.intervals.map(ivl => Interval(ivl).semitones);
   }
@@ -294,12 +292,12 @@ namespace Static {
     return char;
   }
 
-  export function scaleToSteps(src: ScaleName | ScaleNameTokens) {
-    const _scale = Scale(src);
-    const intervals = _scale.intervals;
+  export function scaleToSteps(src: ScaleInit) {
+    const scale = Scale(src);
+    const intervals = scale.intervals;
 
     const semitones = intervals.map(ivl => Interval(ivl).semitones);
-    let steps = [];
+    const steps = [];
     for (let i = 1; i < semitones.length; i++) {
       const diff = semitones[i] - semitones[i - 1];
       const step = semitonesToStep(diff);
@@ -313,7 +311,6 @@ namespace Static {
 export const SCALE = {
   types: Dictionary.TYPES,
   scales: Dictionary.SCALES,
-  entries: Dictionary.entries,
   ...Static,
   ...SetMethods,
 };
@@ -321,7 +318,7 @@ export const SCALE = {
 /**
  * Get a Scale from a scale name.
  */
-export function Scale(src: ScaleName | ScaleNameTokens): Scale {
+export function Scale(src: ScaleInit): Scale {
   const tokens = Array.isArray(src) ? src : Dictionary.tokenize(src);
   const tonic = Note(tokens[0]).pc;
   const st = Dictionary.SCALES[tokens[1]] || Theory.NoScaleType;
@@ -334,5 +331,7 @@ export function Scale(src: ScaleName | ScaleNameTokens): Scale {
 
   const name = tonic ? tonic + ' ' + type : type;
 
-  return { ...st, name, type, tonic, notes };
+  const valid = true;
+
+  return { ...st, name, type, tonic, notes, valid };
 }

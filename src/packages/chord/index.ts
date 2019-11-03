@@ -1,109 +1,104 @@
 import { BaseBoolean, BaseStrings, BaseTypings, BaseArray } from 'ann-music-base';
 import { NoteName, Note } from 'ann-music-note';
 import { Interval, IntervalName } from 'ann-music-interval';
+import {
+  EmptySet,
+  isSubsetOf,
+  isSupersetOf,
+  PcsetChroma,
+  PcsetNum,
+  PcsetProps,
+  pcset,
+  transpose as transposeNote,
+} from 'ann-music-pc';
 
 const { either } = BaseBoolean;
 const { tokenize: tokenizeNote } = BaseStrings;
 const { isArray, isString } = BaseTypings;
 const { rotate } = BaseArray;
-import {
-  EmptySet,
-  isSubsetOf,
-  isSupersetOf,
-  PcChroma,
-  PcNum,
-  PcProps,
-  pcset,
-  transpose as transposeNote,
-} from 'ann-music-pc';
 
 import CHORD_LIST from './data';
 
 export type ChordQuality = 'Major' | 'Minor' | 'Augmented' | 'Diminished' | 'Unknown' | 'Other';
 
 /**
- * ChordTypeName Ex: 'minor' can be given either as:
- * @property {string} - alias for 'minor'
- * @property {PcChroma} - String decoded intervals [P1, m3, P5]
- * @property {PcNum} - Number value of PcChroma
- * @example 'm' || '100100010000' || 2386
- */
-export type ChordTypeName = string | PcChroma | PcNum;
-
-/**
- * Chord name may include tonic
+ * Chord name (may include tonic note)
+ *
  * @example
- *  const cminor: ChordName = 'Cm'
- *  const minor: ChordName = 'm'
+ *
+ * const cminor: ChordTypeName = 'Cm'
+ * const minor: ChordTypeName = 'm'
  */
-export type ChordName = string;
+export type ChordTypeName = string;
+export type ChordTypeChroma = PcsetChroma;
+export type ChordTypeSetNum = PcsetNum;
 
 /**
- * ChordNameTokens represent tuple of [NoteName, ChordTypeName]
+ * ChordTypeProp Can be given either as ChordTypeName | PcsetChroma | PcsetNum
+ *
+ * @example
+ * const chord: ChordTypeProp = 'C major'
+ * const chordChroma: ChordTypeProp = '100100010000'
+ * const chordSetNum: ChordTypeProp = 2386
  */
-export type ChordNameTokens = [NoteName, ChordTypeName];
+export type ChordTypeProp = ChordTypeName | ChordTypeChroma | ChordTypeSetNum;
 
 /**
- * @interface {ChordType}
- * @field empty
- * @field num
- * @field chroma
- * @field normalized
- * @field length
- * @field name
- * @field quality
- * @field intervals
- * @field aliases
+ * ChordNameTokens represent tuple of [NoteName, ChordTypeProp]
+ *
+ * @example
+ * const tokens: ChordNameTokens = ['C', 'minor']
  */
-export interface ChordType extends PcProps {
+export type ChordNameTokens = [NoteName, ChordTypeProp];
+
+export type ChordInit = ChordTypeName | ChordNameTokens;
+/**
+ * aliases
+ * chroma,
+ * empty,
+ * intervals,
+ * length,
+ * name,
+ * normalized,
+ * quality,
+ * setNum,
+ */
+export interface ChordType extends PcsetProps {
   name: string;
   quality: ChordQuality;
-  intervals: IntervalName[];
   aliases: string[];
 }
 
 /**
- * @interface {Chord}
- * @field empty
- * @field num
- * @field chroma
- * @field normalized
- * @field length
- * @field name
- * @field quality
- * @field intervals
- * @field aliases
- * @field tonic
- * @field type
- * @field notes
- * @field valid
+ * aliases
+ * chroma,
+ * empty,
+ * intervals,
+ * length,
+ * name,
+ * normalized,
+ * notes,
+ * quality,
+ * setNum,
+ * tonic,
+ * type,
+ * valid
  */
 export interface Chord extends ChordType {
-  tonic: string | null;
+  tonic: string;
   type: string;
   notes: NoteName[];
   valid: boolean;
 }
 
-export type ChordTypes = Record<ChordTypeName, ChordType>;
+export type ChordTypes = Record<ChordTypeProp, ChordType>;
 
 namespace Theory {
-  /**
-   * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-   *                        TRIADS                           *
-   * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-   */
-
-  export const NoChordType: Chord = {
+  export const NoChordType: ChordType = {
     ...EmptySet,
     name: '',
     quality: 'Unknown',
-    intervals: [],
     aliases: [],
-    tonic: '',
-    type: '',
-    notes: [],
-    valid: false,
   };
 
   export const NoChord: Chord = {
@@ -111,7 +106,7 @@ namespace Theory {
     name: '',
     type: '',
     tonic: null,
-    num: NaN,
+    setNum: NaN,
     length: 0,
     quality: 'Unknown',
     chroma: '',
@@ -121,125 +116,10 @@ namespace Theory {
     intervals: [],
     valid: false,
   };
-
-  export const TRIAD_TYPES = ['Major', 'minor', 'Augmented', 'diminished', 'suspended'];
-
-  export const MAJOR = {
-    name: 'Major',
-    formula: '1P 3M 5P'.split(' '),
-    notation: 'M maj  '.split(' '),
-  };
-
-  export const MINOR = {
-    name: 'minor',
-    formula: '1P 3m 5P'.split(' '),
-    notation: 'm min'.split(' '),
-  };
-
-  export const AUGMENTED = {
-    name: 'Augmented',
-    formula: '1P 3M 5A'.split(' '),
-    notation: 'aug +'.split(' '),
-  };
-
-  export const DIMINISHED = {
-    name: 'diminished',
-    formula: '1P 3m 5d'.split(' '),
-    notation: 'dim °'.split(' '),
-  };
-
-  export const TRIADS = {
-    MAJOR,
-    MINOR,
-    AUGMENTED,
-    DIMINISHED,
-  };
-
-  /**
-   * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-   *                      SEVEN CHORDS                       *
-   * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-   */
-  export const SEVENTHS_TYPES = [
-    'diminished',
-    'half-diminished',
-    'minor',
-    'minor-major',
-    'dominant',
-    'major',
-    'augmented',
-  ];
-
-  export const DIMINISHED7 = {
-    name: 'diminished seventh',
-    formula: '1P 3m 5d 7d'.split(' '),
-    notation: 'dim7 °7 o7'.split(' '),
-  };
-
-  export const HALF_DIMINISHED7 = {
-    name: 'half-diminished',
-    formula: '1P 3m 5d 7m'.split(' '),
-    notation: 'm7b5 ø'.split(' '),
-  };
-
-  export const MINOR7 = {
-    name: 'minor seventh',
-    formula: '1P 3m 5P 7m'.split(' '),
-    notation: 'm7 min7 mi7 -7'.split(' '),
-  };
-
-  export const MINOR_MAJOR7 = {
-    name: 'minor/major seventh',
-    formula: '1P 3m 5P 7M'.split(' '),
-    notation: 'm/ma7 m/maj7 mM7 m/M7 -Δ7 mΔ'.split(' '),
-  };
-
-  export const DOMINANT7 = {
-    name: 'dominant seventh',
-    formula: '1P 3M 5P 7m'.split(' '),
-    notation: '7 dom'.split(' '),
-  };
-
-  export const MAJOR7 = {
-    name: 'major seventh',
-    formula: '1P 3M 5P 7M'.split(' '),
-    notation: 'maj7 Δ ma7 M7 Maj7'.split(' '),
-  };
-
-  export const AUGMENTED7 = {
-    name: 'augmented seventh',
-    formula: '1P 3M 5A 7M'.split(' '),
-    notation: 'maj7#5 maj7+5'.split(' '),
-  };
-
-  export const SEVENTHS = {
-    DIMINISHED7,
-    HALF_DIMINISHED7,
-    MINOR7,
-    MINOR_MAJOR7,
-    DOMINANT7,
-    MAJOR7,
-    AUGMENTED7,
-  };
 }
 
 namespace Transpose {
-  /**
-   * Transpose a chord name
-   *
-   * @param {string} chordName - the chord name
-   * @return {string} the transposed chord
-   *
-   * @example
-   * transposeByIvl('Dm7', 'P4') // => 'Gm7
-   */
-  export function transposeByIvl(chordName: ChordName, interval: string): string {
-    const [tonic, type] = Dictionary.tokenize(chordName);
-    if (!tonic) {
-      return name;
-    }
-    return transposeNote(tonic, interval)[0] + type;
-  }
+  const transpose = b => b;
 }
 
 namespace SetMethods {
@@ -249,12 +129,10 @@ namespace SetMethods {
    *
    * @example
    */
-  export function chordSubset(chordName: ChordName): string[] {
+  export function chordSubset(chordName: ChordTypeName): string[] {
     const s = Chord(chordName);
     const isSubset = isSubsetOf(s.chroma);
-    return CHORD.entries()
-      .filter(chord => isSubset(chord.chroma))
-      .map(chord => s.tonic + chord.aliases[0]);
+    return CHORD.types.filter(chord => isSubset(chord.chroma)).map(chord => s.tonic + chord.aliases[0]);
   }
 
   /**
@@ -266,51 +144,42 @@ namespace SetMethods {
    * extended("CMaj7")
    * // => [ 'Cmaj#4', 'Cmaj7#9#11', 'Cmaj9', 'CM7add13', 'Cmaj13', 'Cmaj9#11', 'CM13#11', 'CM7b9' ]
    */
-  export function chordSuperset(chordName: ChordName): string[] {
+  export function chordSuperset(chordName: ChordTypeName): string[] {
     const s = Chord(chordName);
     const isSuperset = isSupersetOf(s.chroma);
-    return CHORD.entries()
-      .filter(chord => isSuperset(chord.chroma))
-      .map(chord => s.tonic + chord.aliases[0]);
+    return CHORD.types.filter(chord => isSuperset(chord.chroma)).map(chord => s.tonic + chord.aliases[0]);
   }
 }
 
 namespace Static {
-  // export function chordScales(name: string): string[] {
-  //   const s = Chord(name);
-  //   const isChordIncluded = isSupersetOf(s.chroma);
-  //   return SCALE.entries()
-  //     .filter(scale => isChordIncluded(scale.chroma))
-  //     .map(scale => scale.name);
-  // }
-
-  export function chordFormula(chord: ChordName) {
+  export function formula(chord: ChordTypeName) {
     const props = Chord(chord);
     return props.intervals.map(ivl => Interval(ivl).semitones);
   }
 }
 
 namespace Dictionary {
-  export const TYPES = CHORD_LIST.map(dataToChordType).sort((a, b) => a.num - b.num) as ChordType[];
-  export const CHORDS = getChordTypes(TYPES);
+  export const TYPES: ChordType[] = CHORD_LIST.map(toChordType).sort(
+    (a: ChordType, b: ChordType) => a.setNum - b.setNum,
+  ) as ChordType[];
+  export const CHORDS: ChordTypes = toChords(TYPES);
 
-  export function getChordTypes(types: ChordType[]) {
-    return types.reduce((index: ChordTypes, chord) => {
-      if (chord.name) {
-        index[chord.name] = chord;
-      }
-      index[chord.num] = chord;
-      index[chord.chroma] = chord;
+  export function toChords(types: ChordType[]) {
+    return types.reduce((chords: ChordTypes, chord: ChordType) => {
+      chords[chord.name] = chord;
+      chords[chord.setNum] = chord;
+      chords[chord.chroma] = chord;
       chord.aliases.forEach(alias => {
-        index[alias] = chord;
+        chords[alias] = chord;
       });
-      return index;
+      return chords;
     }, {}) as ChordTypes;
   }
 
-  export function dataToChordType([ivls, name, abbrvs]: string[]) {
+  export function toChordType([ivls, name, abbrvs]: string[]): ChordType {
     const has = (interval: IntervalName) => ivls.includes(interval);
     const intervals = ivls.split(' ');
+    const set = pcset(intervals);
     const aliases = abbrvs.split(' ');
     const quality = has('5A')
       ? 'Augmented'
@@ -321,7 +190,6 @@ namespace Dictionary {
       : has('3m')
       ? 'Minor'
       : 'Other';
-    const set = pcset(intervals);
     return { ...set, name, quality, intervals, aliases };
   }
 
@@ -365,16 +233,11 @@ namespace Dictionary {
       return [lt + acc + oct, type];
     }
   }
-
-  export function entries() {
-    return TYPES.slice();
-  }
 }
 
 export const CHORD = {
   types: Dictionary.TYPES,
   chords: Dictionary.CHORDS,
-  entries: Dictionary.entries,
   ...Static,
   ...Transpose,
   ...SetMethods,
@@ -383,18 +246,18 @@ export const CHORD = {
 /**
  * Get a Chord from a chord name.
  */
-export function Chord(src: ChordName | ChordNameTokens): Chord {
-  function fromTokens(src: ChordNameTokens) {
-    const tokens = src;
-    const tonic = Note(tokens[0] as NoteName);
+export function Chord(src: ChordInit): Chord {
+  function fromTokens(ctokens: ChordNameTokens) {
+    const [cname, ctype] = ctokens;
+    const tonic = Note(cname as NoteName);
 
-    const st = CHORD.chords[tokens[1]] || Theory.NoChordType;
-    const chroma = rotate(-tonic.chroma, st.chroma.split('')).join('');
-    const chType = { ...st, chroma };
-
+    const st = CHORD.chords[ctype] || Theory.NoChordType;
     if (st.empty) {
       return Theory.NoChord;
     }
+
+    const chroma = rotate(-tonic.chroma, st.chroma.split('')).join('');
+    const chType = { ...st, chroma };
 
     const type = st.name;
     const notes: string[] = tonic.valid ? st.intervals.map(i => transposeNote(tonic.name, i).pc) : [];
@@ -406,12 +269,13 @@ export function Chord(src: ChordName | ChordNameTokens): Chord {
     return { ...chType, name, type, tonic: either(tonic.letter, '', tonic.valid), notes, valid };
   }
 
-  function fromName(src: ChordName) {
-    const tokens = Dictionary.tokenize(src) as ChordNameTokens;
+  function fromName(name: ChordTypeName) {
+    const tokenizeName = Dictionary.tokenize;
+    const tokens = tokenizeName(name) as ChordNameTokens;
     return fromTokens(tokens);
   }
 
   if (isString(src)) return fromName(src);
   if (isArray(src)) return fromTokens(src);
-  return Theory.NoChordType;
+  return Theory.NoChord;
 }

@@ -1,7 +1,7 @@
 import { Note, NoteName, NoteMidi } from '@packages/note';
 import { Chord, CHORD } from '@packages/chord';
 import { Scale, ScaleName, ScaleNameTokens } from '@packages/scale';
-import { intervals as chromaToIntervals, EmptySet, PcProps, modes as chromaModes } from '@packages/pc';
+import { chromaToIntervals, EmptySet, PcsetProps, modes as chromaModes } from '@packages/pc';
 import { IntervalName } from '@packages/interval';
 
 export type ModeNumber = number;
@@ -11,7 +11,8 @@ export type ModeFifths = number;
 export type ModeTriad = string;
 export type ModeSeventh = string;
 export type ModeAlias = string;
-export interface Mode extends PcProps {
+
+export interface Mode extends PcsetProps {
   readonly intervals: IntervalName[];
   readonly modeNum: number;
   readonly name: string;
@@ -92,9 +93,9 @@ function toMode(mode: ModeDefinition): Mode {
   // type ModeDefinition = [ModePcSet, ModeFifths, ModeName, ModeTriad, ModeSeventh, ModeAlias?];
   // [2906, 3, 'aeolian', 'm', 'm7', 'minor'],
 
-  const [modeNum, num, alt, name, triad, seventh, alias] = mode;
+  const [modeNum, setNum, alt, name, triad, seventh, alias] = mode;
   const aliases = alias ? [alias] : [];
-  const chroma = Number(num).toString(2);
+  const chroma = Number(setNum).toString(2);
   const intervals = chromaToIntervals(chroma);
   return {
     empty: false,
@@ -103,7 +104,7 @@ function toMode(mode: ModeDefinition): Mode {
     chroma,
     normalized: chroma,
     name,
-    num,
+    setNum,
     alt,
     triad,
     seventh,
@@ -147,7 +148,7 @@ export function chordNotes(root: NoteName, chord: string, octaves: number = 1) {
   const note = Note(root);
 
   // Create chord formula for @root@type
-  const formula = CHORD.chordFormula(chord);
+  const formula = CHORD.formula(chord);
 
   // Create array of octaves to map formula onto
   let octs = Array(octaves)
