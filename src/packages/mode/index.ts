@@ -1,8 +1,12 @@
-import { Note, NoteName, NoteMidi } from '@packages/note';
-import { Chord, CHORD } from '@packages/chord';
-import { Scale, ScaleName, ScaleNameTokens } from '@packages/scale';
-import { chromaToIntervals, EmptySet, PcsetProps, modes as chromaModes } from '@packages/pc';
-import { IntervalName } from '@packages/interval';
+import { Note, NoteName, NoteMidi } from 'ann-music-note';
+import { Chord, CHORD } from 'ann-music-chord';
+import { Scale, ScaleTypeName, ScaleNameTokens } from 'ann-music-scale';
+import { PcProperties, PitchClass } from 'ann-music-pc';
+import { IntervalName } from 'ann-music-interval';
+
+const { modes: chromaModes } = PitchClass.Methods;
+const chromaToIntervals = PitchClass.Chroma.toIntervals;
+const EmptySet = PitchClass.Empty;
 
 export type ModeNumber = number;
 export type ModeName = string;
@@ -12,7 +16,7 @@ export type ModeTriad = string;
 export type ModeSeventh = string;
 export type ModeAlias = string;
 
-export interface Mode extends PcsetProps {
+export interface Mode extends PcProperties {
   readonly intervals: IntervalName[];
   readonly modeNum: number;
   readonly name: string;
@@ -168,7 +172,7 @@ export function modeToChords(name: string, root: NoteName) {
   return mode.map((ch, i) => Chord([scaleMode[i], ch]).notes);
 }
 
-export function scaleModes(src: ScaleName | ScaleNameTokens) {
-  const chroma = Scale(src).chroma;
+export function scaleModes(src: ScaleTypeName | ScaleNameTokens) {
+  const chroma = Scale(src)['chroma'];
   return chromaModes(chroma).map(mode => Scale(mode));
 }

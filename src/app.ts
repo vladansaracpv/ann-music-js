@@ -1,10 +1,14 @@
-import { NOTE, Note, NoteTransposableProp } from '@packages/note';
-import { CHORD, Chord } from './packages/chord/index';
+import { NOTE, Note, NoteTransposableProp } from 'ann-music-note';
+import { CHORD, Chord } from 'ann-music-chord';
+import { Scale, SCALE } from 'ann-music-scale';
 
-// const major = Chord('major');
-// const cmajor = Chord('C major seventh');
+import { PC, PcProperties, PitchClass } from 'ann-music-pc';
 
-// console.log(major);
-// console.log(cmajor);
+const c = Chord('C major');
+const d = Chord('D dominant seventh');
+console.log(c);
+console.log(d);
 
-console.log(Chord('A minor'));
+console.log(PitchClass.Methods.transpose('D3', '3M'));
+
+// {"setNum":2192,"chroma":"100010010000","normalized":"100010010000","intervals":["1P","3M","5P"],"length":3,"empty":false,"type":"major","quality":"Major","aliases":["M",""],"tonic":"C","name":"C major","notes":["C","E","G"],"formula":"0-4-7","valid":true}

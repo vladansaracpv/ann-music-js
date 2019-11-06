@@ -1,6 +1,8 @@
-import { compose2, compose } from '@packages/base/functional';
-import { tokenize } from '@packages/base/strings';
-import { gsum } from '@packages/base/math';
+import { BaseFunctional, BaseStrings, BaseMaths } from 'ann-music-base';
+
+const { compose, compose2 } = BaseFunctional;
+const { gsum } = BaseMaths;
+const { tokenize } = BaseStrings;
 
 type DurationValue = 1 | 2 | 4 | 8 | 16 | 32 | 0;
 type DurationType = 'n' | 'r' | 't' | '';

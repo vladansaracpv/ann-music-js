@@ -1,197 +1,81 @@
-import { BaseBoolean, BaseStrings, BaseTypings, BaseArray } from 'ann-music-base';
-import { NoteName, Note } from 'ann-music-note';
+import { BaseBoolean, BaseStrings, BaseTypings, BaseArray, BaseRelations } from 'ann-music-base';
+import { NoteName, Note, NoteProps } from 'ann-music-note';
 import { Interval, IntervalName } from 'ann-music-interval';
-import {
-  EmptySet,
-  isSubsetOf,
-  isSupersetOf,
-  PcsetChroma,
-  PcsetNum,
-  PcsetProps,
-  pcset,
-  transpose as transposeNote,
-} from 'ann-music-pc';
+import { PcChroma, PcNum, PcProperties, PC, PitchClass } from 'ann-music-pc';
+import CHORD_LIST from './data';
 
 const { either } = BaseBoolean;
 const { tokenize: tokenizeNote } = BaseStrings;
 const { isArray, isString } = BaseTypings;
 const { rotate } = BaseArray;
-
-import CHORD_LIST from './data';
+const { eq } = BaseRelations;
+const { isSubsetOf, isSupersetOf, transpose: transposeNote } = PitchClass.Methods;
+const EmptySet = PitchClass.Empty;
 
 export type ChordQuality = 'Major' | 'Minor' | 'Augmented' | 'Diminished' | 'Unknown' | 'Other';
 
-/**
- * Chord name (may include tonic note)
- *
- * @example
- *
- * const cminor: ChordTypeName = 'Cm'
- * const minor: ChordTypeName = 'm'
- */
 export type ChordTypeName = string;
-export type ChordTypeChroma = PcsetChroma;
-export type ChordTypeSetNum = PcsetNum;
 
-/**
- * ChordTypeProp Can be given either as ChordTypeName | PcsetChroma | PcsetNum
- *
- * @example
- * const chord: ChordTypeProp = 'C major'
- * const chordChroma: ChordTypeProp = '100100010000'
- * const chordSetNum: ChordTypeProp = 2386
- */
-export type ChordTypeProp = ChordTypeName | ChordTypeChroma | ChordTypeSetNum;
+export type ChordTypeProp = ChordTypeName | PcChroma | PcNum;
 
-/**
- * ChordNameTokens represent tuple of [NoteName, ChordTypeProp]
- *
- * @example
- * const tokens: ChordNameTokens = ['C', 'minor']
- */
 export type ChordNameTokens = [NoteName, ChordTypeProp];
 
 export type ChordInit = ChordTypeName | ChordNameTokens;
-/**
- * aliases
- * chroma,
- * empty,
- * intervals,
- * length,
- * name,
- * normalized,
- * quality,
- * setNum,
- */
-export interface ChordType extends PcsetProps {
-  name: string;
+
+export interface ChordType extends PcProperties {
+  /**
+   * * Added by PcProperties * *
+   * setNum,
+   * chroma,
+   * normalized,
+   * intervals,
+   * length,
+   *
+   * * Added by ChordType * *
+   * aliases
+   * type,
+   * quality,
+   */
+  type: string;
   quality: ChordQuality;
   aliases: string[];
 }
 
-/**
- * aliases
- * chroma,
- * empty,
- * intervals,
- * length,
- * name,
- * normalized,
- * notes,
- * quality,
- * setNum,
- * tonic,
- * type,
- * valid
- */
 export interface Chord extends ChordType {
+  /**
+   * * Added by PcProperties * *
+   * setNum,
+   * chroma,
+   * normalized,
+   * intervals,
+   * length,
+   *
+   * * Added by ChordType * *
+   * name,
+   * quality,
+   * aliases
+   *
+   * * Added by Chord * *
+   * tonic,
+   * type,
+   * notes,
+   * valid
+   */
   tonic: string;
-  type: string;
+  name: string;
   notes: NoteName[];
+  formula: string;
   valid: boolean;
 }
 
 export type ChordTypes = Record<ChordTypeProp, ChordType>;
 
-namespace Theory {
-  export const NoChordType: ChordType = {
-    ...EmptySet,
-    name: '',
-    quality: 'Unknown',
-    aliases: [],
-  };
-
-  export const NoChord: Chord = {
-    empty: true,
-    name: '',
-    type: '',
-    tonic: null,
-    setNum: NaN,
-    length: 0,
-    quality: 'Unknown',
-    chroma: '',
-    normalized: '',
-    aliases: [],
-    notes: [],
-    intervals: [],
-    valid: false,
-  };
-}
-
-namespace Transpose {
-  const transpose = b => b;
-}
-
-namespace SetMethods {
-  /**
-   * Find all chords names that are a subset of the given one
-   * (has less notes but all from the given chord)
-   *
-   * @example
-   */
-  export function chordSubset(chordName: ChordTypeName): string[] {
-    const s = Chord(chordName);
-    const isSubset = isSubsetOf(s.chroma);
-    return CHORD.types.filter(chord => isSubset(chord.chroma)).map(chord => s.tonic + chord.aliases[0]);
-  }
-
-  /**
-   * Get all chords names that are a superset of the given one
-   * (has the same notes and at least one more)
-   *
-   * @function
-   * @example
-   * extended("CMaj7")
-   * // => [ 'Cmaj#4', 'Cmaj7#9#11', 'Cmaj9', 'CM7add13', 'Cmaj13', 'Cmaj9#11', 'CM13#11', 'CM7b9' ]
-   */
-  export function chordSuperset(chordName: ChordTypeName): string[] {
-    const s = Chord(chordName);
-    const isSuperset = isSupersetOf(s.chroma);
-    return CHORD.types.filter(chord => isSuperset(chord.chroma)).map(chord => s.tonic + chord.aliases[0]);
-  }
-}
-
-namespace Static {
-  export function formula(chord: ChordTypeName) {
-    const props = Chord(chord);
-    return props.intervals.map(ivl => Interval(ivl).semitones);
-  }
-}
-
 namespace Dictionary {
   export const TYPES: ChordType[] = CHORD_LIST.map(toChordType).sort(
-    (a: ChordType, b: ChordType) => a.setNum - b.setNum,
+    (a: ChordType, b: ChordType) => a.length - b.length,
   ) as ChordType[];
+
   export const CHORDS: ChordTypes = toChords(TYPES);
-
-  export function toChords(types: ChordType[]) {
-    return types.reduce((chords: ChordTypes, chord: ChordType) => {
-      chords[chord.name] = chord;
-      chords[chord.setNum] = chord;
-      chords[chord.chroma] = chord;
-      chord.aliases.forEach(alias => {
-        chords[alias] = chord;
-      });
-      return chords;
-    }, {}) as ChordTypes;
-  }
-
-  export function toChordType([ivls, name, abbrvs]: string[]): ChordType {
-    const has = (interval: IntervalName) => ivls.includes(interval);
-    const intervals = ivls.split(' ');
-    const set = pcset(intervals);
-    const aliases = abbrvs.split(' ');
-    const quality = has('5A')
-      ? 'Augmented'
-      : has('3M')
-      ? 'Major'
-      : has('5d')
-      ? 'Diminished'
-      : has('3m')
-      ? 'Minor'
-      : 'Other';
-    return { ...set, name, quality, intervals, aliases };
-  }
 
   /**
    * Tokenize a chord name. It returns an array with the tonic and chord type
@@ -233,49 +117,153 @@ namespace Dictionary {
       return [lt + acc + oct, type];
     }
   }
+
+  function toChords(types: ChordType[]) {
+    return types.reduce((chords: ChordTypes, chord: ChordType) => {
+      chords[chord.type] = chord;
+      chords[chord.setNum] = chord;
+      chords[chord.chroma] = chord;
+      chord.aliases.forEach(alias => {
+        chords[alias] = chord;
+      });
+      return chords;
+    }, {}) as ChordTypes;
+  }
+
+  function toChordType([ivls, type, abbrvs]: string[]): ChordType {
+    const has = (interval: IntervalName) => ivls.includes(interval);
+    const aliases = abbrvs.split(' ');
+    const intervals = ivls.split(' ');
+    const set = PC(intervals) as PcProperties;
+    const quality = has('5A')
+      ? 'Augmented'
+      : has('3M')
+      ? 'Major'
+      : has('5d')
+      ? 'Diminished'
+      : has('3m')
+      ? 'Minor'
+      : 'Other';
+    return { ...set, type, quality, intervals, aliases };
+  }
 }
 
 export const CHORD = {
   types: Dictionary.TYPES,
+
   chords: Dictionary.CHORDS,
-  ...Static,
-  ...Transpose,
-  ...SetMethods,
+
+  EmptyChordType: {
+    ...EmptySet,
+    type: '',
+    quality: 'Unknown',
+    aliases: [],
+  },
+
+  EmptyChord: {
+    name: '',
+    type: '',
+    tonic: '',
+    setNum: NaN,
+    length: 0,
+    quality: 'Unknown',
+    chroma: '',
+    normalized: '',
+    aliases: [],
+    notes: [],
+    intervals: [],
+    valid: false,
+  },
+
+  formula(chord: ChordTypeName) {
+    const props = Chord(chord);
+    return props.intervals.map(ivl => Interval(ivl).semitones);
+  },
+
+  /**
+   * Find all chords names that are a subset of the given one
+   * (has less notes but all from the given chord)
+   *
+   * @example
+   */
+  subChords(chordName: ChordTypeName): string[] {
+    const s = Chord(chordName);
+    const isSubset = isSubsetOf(s.chroma);
+    return CHORD.types.filter(chord => isSubset(chord.chroma)).map(chord => s.tonic + chord.aliases[0]);
+  },
+
+  /**
+   * Get all chords names that are a superset of the given one
+   * (has the same notes and at least one more)
+   *
+   * @function
+   * @example
+   * extended("CMaj7")
+   * // => [ 'Cmaj#4', 'Cmaj7#9#11', 'Cmaj9', 'CM7add13', 'Cmaj13', 'Cmaj9#11', 'CM13#11', 'CM7b9' ]
+   */
+  superChords(chordName: ChordTypeName): string[] {
+    const s = Chord(chordName);
+    const isSuperset = isSupersetOf(s.chroma);
+    return CHORD.types.filter(chord => isSuperset(chord.chroma)).map(chord => s.tonic + chord.aliases[0]);
+  },
 };
 
-/**
- * Get a Chord from a chord name.
- */
 export function Chord(src: ChordInit): Chord {
   function fromTokens(ctokens: ChordNameTokens) {
-    const [cname, ctype] = ctokens;
-    const tonic = Note(cname as NoteName);
+    const [chordLetter, ctype] = ctokens;
 
-    const st = CHORD.chords[ctype] || Theory.NoChordType;
-    if (st.empty) {
-      return Theory.NoChord;
+    const rootNote = Note(chordLetter as NoteName);
+
+    const chordType = (CHORD.chords[ctype] || CHORD.EmptyChordType) as ChordType;
+
+    const { setNum, normalized, intervals, length, type, quality, aliases, chroma: chordChroma } = chordType;
+
+    if (eq(length, 0)) {
+      return CHORD.EmptyChord as Chord;
     }
 
-    const chroma = rotate(-tonic.chroma, st.chroma.split('')).join('');
-    const chType = { ...st, chroma };
+    const chroma = either(rotate(-rootNote.chroma, chordChroma.split('')).join(''), chordChroma, rootNote.valid);
 
-    const type = st.name;
-    const notes: string[] = tonic.valid ? st.intervals.map(i => transposeNote(tonic.name, i).pc) : [];
+    const tonic = rootNote.letter || '';
 
-    const name = tonic.valid ? tonic.letter + ' ' + type : type;
+    const name = `${tonic} ${type}`.trimLeft();
+
+    const notes: string[] = rootNote.valid ? intervals.map(i => (transposeNote(rootNote.name, i) as NoteProps).pc) : [];
+
+    const formula = intervals.map(ivl => Interval(ivl).semitones).join('-');
 
     const valid = true;
 
-    return { ...chType, name, type, tonic: either(tonic.letter, '', tonic.valid), notes, valid };
+    return Object.freeze({
+      // PcProperties
+      setNum,
+      chroma,
+      normalized,
+      intervals,
+      length,
+      // ToDo: Remove
+      empty: eq(length, 0),
+      // ChordType
+      type,
+      quality,
+      aliases,
+      // Chord
+      tonic,
+      name,
+      notes,
+      formula,
+      valid,
+    });
   }
 
   function fromName(name: ChordTypeName) {
-    const tokenizeName = Dictionary.tokenize;
-    const tokens = tokenizeName(name) as ChordNameTokens;
+    const tokens = Dictionary.tokenize(name) as ChordNameTokens;
     return fromTokens(tokens);
   }
 
   if (isString(src)) return fromName(src);
+
   if (isArray(src)) return fromTokens(src);
-  return Theory.NoChord;
+
+  return CHORD.EmptyChord as Chord;
 }

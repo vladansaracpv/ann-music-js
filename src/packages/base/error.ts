@@ -1,4 +1,6 @@
-import { Logger } from '@packages/base/logger';
+import { BaseLogger } from 'ann-music-base';
+
+const { Logger } = BaseLogger;
 
 /** Error handling */
 export enum ErrorCode {
