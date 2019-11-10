@@ -290,7 +290,7 @@ export function PC(src: PcSet) {
     return PitchClass.Methods.isSupersetOf(other, this.chroma);
   }
 
-  return Object.freeze({
+  return {
     setNum,
     chroma,
     normalized,
@@ -300,5 +300,5 @@ export function PC(src: PcSet) {
     isEqualTo,
     isIn,
     contains,
-  });
+  };
 }
