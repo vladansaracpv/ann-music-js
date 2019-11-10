@@ -10,9 +10,9 @@ import {
 
 const { both, either } = BaseBoolean;
 const { CustomError } = BaseErrors;
-const { partial } = BaseFunctional;
+const { curry } = BaseFunctional;
 const { dec, inc } = BaseMaths;
-const { cmp, eq, geq, gt, inSegment, isNegative, isPositive, leq, lt, neq } = BaseRelations;
+const { eq, geq, gt, inSegment, isNegative, isPositive, leq, lt, neq } = BaseRelations;
 const { capitalize, substitute, tokenize } = BaseStrings;
 const { isInteger, isNumber, isObject } = BaseTypings;
 
@@ -142,7 +142,7 @@ export interface NoNote extends Partial<NoteProps> {
  * Note comparison types
  */
 export type NoteComparableProp = 'midi' | 'frequency' | 'chroma' | 'step' | 'octave';
-export type NoteComparableFns = 'ltn' | 'leqn' | 'eqn' | 'neqn' | 'gtn' | 'geqn' | 'cmpn';
+export type NoteComparableFns = 'lt' | 'leq' | 'eq' | 'neq' | 'gt' | 'geq';
 
 export type NoteCompareFn = (note: InitProps, other: InitProps, compare?: NoteComparableProp) => boolean | number;
 export type NoteCompareTo = (other: InitProps, compare?: NoteComparableProp) => boolean | number;
@@ -180,6 +180,27 @@ export interface InitMethods {
   compare?: boolean;
 }
 
+export interface Transposable {
+  value: number;
+  prop?: NoteTransposableProp;
+}
+
+interface CurriedNoteTransposable {
+  (by: Transposable, note: InitProp): number;
+  (by: Transposable, note?: InitProp): (note: InitProp) => number;
+}
+interface CurriedNoteDistance {
+  (note: InitProps, other: InitProps, compare: NoteComparableProp): number;
+  (note: InitProps, other: InitProps): (compare: NoteComparableProp) => number;
+  (note: InitProps): (other: InitProps, compare: NoteComparableProp) => number;
+}
+interface CurriedNoteCompare {
+  (fn: NoteComparableFns, note: InitProps, other: InitProps, compare: NoteComparableProp): boolean;
+  (fn: NoteComparableFns, note: InitProps, other: InitProps): (compare: NoteComparableProp) => boolean;
+  (fn: NoteComparableFns, note: InitProps): (other: InitProps, compare: NoteComparableProp) => boolean;
+  (fn: NoteComparableFns): (note: InitProps, other: InitProps, compare: NoteComparableProp) => boolean;
+}
+
 /**
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                 NOTE - THEORY CONSTANTS                 *
@@ -214,11 +235,6 @@ namespace Theory {
   export const A4_KEY = 69;
 
   /**
-   * Number of tones in octave
-   */
-  export const OCT_RANGE = 12;
-
-  /**
    * Default octave value used if no octave given
    */
   export const OCTAVE = 4;
@@ -240,32 +256,37 @@ namespace Theory {
 
   /**
    * Function to extract note types from @NOTES
-   * @param {NoteAccidental} acc
+   * @param {NoteAccidental} accidental
    */
-  export const notes = (acc: NoteAccidental) => NOTES.filter(note => acc.indexOf(note[1] || ' ') >= 0);
+  export const notes = (accidental: NoteAccidental) => NOTES.filter(note => accidental.includes(note[1] || ' '));
 
   /**
    * 12 standard pitch classes with # used for black keys
+   * => [C, C#, D, D#, E, F#, G, G#, A, A#, B]
    */
   export const SHARPS = notes('# ');
 
   /**
    * 12 standard pitch classes with b used for black keys
+   * => [C, Db, D, Eb, E, Gb, G, Ab, A, Bb, B]
    */
   export const FLATS = notes('b ');
 
   /**
    * Only the white keys (natural notes)
+   * => [C, D, E, F, G, A, B]
    */
   export const NATURAL = notes(' ');
 
   /**
    * Only black keys (sharps)
+   * => [C#, D#, F#, G#, A#]
    */
   export const SHARP = notes('#');
 
   /**
    * Only black keys (flats)
+   * => [Db, Eb, Gb, Ab, Bb]
    */
   export const FLAT = notes('b');
 
@@ -305,76 +326,6 @@ namespace Theory {
     name: '',
     valid: false,
   };
-}
-
-namespace Transpose {
-  export function transpose(note: InitProps, by: number, compare: NoteTransposableProp = 'midi'): NoteProps {
-    const props = Note(note);
-    return compare === 'midi'
-      ? Note(props.midi + by)
-      : compare === 'frequency'
-      ? Note(props.frequency + by)
-      : Note(props.pc + (props.octave + by));
-  }
-
-  export const transposeBy = (note: InitProps): NoteTransposeBy => partial(transpose, note);
-}
-
-namespace Distance {
-  export function distance(note: InitProps, other: InitProps, compare: NoteComparableProp = 'midi'): number {
-    const n = Note(note);
-    const o = Note(other);
-    return o[compare] - n[compare];
-  }
-
-  export const distanceTo = (note: InitProps): NoteDistanceTo => partial(distance, note);
-}
-
-namespace Compare {
-  // tslint:disable-next-line: no-shadowed-variable
-  const NoteRelation = (fn: Function): NoteCompareFn => (note, other, compare = 'midi') => {
-    const first = Note(note);
-    const second = Note(other);
-    return fn(first[compare], second[compare]);
-  };
-
-  export const ltn = NoteRelation(lt);
-  export const leqn = NoteRelation(leq);
-  export const eqn = NoteRelation(eq);
-  export const neqn = NoteRelation(neq);
-  export const gtn = NoteRelation(gt);
-  export const geqn = NoteRelation(geq);
-  export const cmpn = NoteRelation(cmp);
-
-  export const compare = {
-    ltn,
-    leqn,
-    eqn,
-    neqn,
-    gtn,
-    geqn,
-    cmpn,
-  };
-
-  export const compareBy = (note: InitProps) => ({
-    ltn: partial(ltn, note) as NoteCompareTo,
-    leqn: partial(leqn, note) as NoteCompareTo,
-    eqn: partial(eqn, note) as NoteCompareTo,
-    neqn: partial(neqn, note) as NoteCompareTo,
-    gtn: partial(gtn, note) as NoteCompareTo,
-    geqn: partial(geqn, note) as NoteCompareTo,
-    cmpn: partial(cmpn, note) as NoteCompareTo,
-  });
-
-  // return {
-  //   ltn: either(partial(ltn, note), ltn, isPartialFn),
-  //   leqn: either(partial(leqn, note), leqn, isPartialFn),
-  //   eqn: either(partial(eqn, note), eqn, isPartialFn),
-  //   neqn: either(partial(neqn, note), neqn, isPartialFn),
-  //   gtn: either(partial(gtn, note), gtn, isPartialFn),
-  //   geqn: either(partial(geqn, note), geqn, isPartialFn),
-  //   cmpn: either(partial(cmpn, note), cmpn, isPartialFn),
-  // };
 }
 
 /**
@@ -458,25 +409,53 @@ namespace Static {
 
     const { transpose, distance, compare } = methods;
 
-    const transposeBy = transpose && Transpose.transposeBy(note);
-    const distanceTo = distance && Distance.distanceTo(note);
-    const compareBy = compare && Compare.compareBy(note);
+    // const transposeBy = transpose && Transpose.transposeBy(note);
+    // const distanceTo = distance && Distance.distanceTo(note);
+    // const compareBy = compare && Compare.compareBy(note);
 
     return {
       ...note,
-      distanceTo,
-      transposeBy,
-      ...compareBy,
+      // distanceTo,
+      // transposeBy,
+      // ...compareBy,
     };
+  }
+
+  export const Transpose: CurriedNoteTransposable = curry(NoteTranspose);
+
+  export const Distance: CurriedNoteDistance = curry(NoteDistance);
+
+  export const Compare: CurriedNoteCompare = curry(NoteCompare);
+
+  function NoteTranspose(by: Transposable = { value: 1, prop: 'midi' }, note?: InitProp) {
+    const { value, prop } = by;
+    const { midi, frequency, pc, octave } = Note(note);
+
+    if (eq(prop, 'frequency')) return Note(frequency + value, 'freq');
+
+    if (eq(prop, 'octave')) return Note(pc + (octave + value));
+
+    return Note(midi + value, 'midi');
+  }
+
+  function NoteDistance(note: InitProps, other?: InitProps, compare?: NoteComparableProp) {
+    const n = Note(note);
+    const o = Note(other);
+    return (o[compare] - n[compare]) as number;
+  }
+
+  function NoteCompare(f: NoteComparableFns, note: InitProps, other: InitProps, compare: NoteComparableProp) {
+    const CompareFn = { lt, leq, eq, neq, gt, geq };
+    const fn = CompareFn[f];
+    const first = Note(note);
+    const second = Note(other);
+    return fn(first[compare], second[compare]);
   }
 }
 
 export const NOTE = {
   ...Theory,
   ...Static,
-  ...Compare.compare,
-  transpose: Transpose.transpose,
-  distance: Distance.distance,
 };
 
 /**
@@ -485,7 +464,8 @@ export const NOTE = {
  * @param {'midi'|'freq'} midiOrFreq
  * @return {NoteProps}
  */
-export function Note(src: InitProps, midiOrFreq: 'midi' | 'freq' = 'midi'): NoteProps {
+export type midiOrFreq = 'midi' | 'freq';
+export function Note(src: InitProps, midiOrFreq: midiOrFreq = 'midi', sharps = true): NoteProps {
   const { isName, isMidi, isFrequency } = NOTE.Validators;
 
   if (isObject(src) && isName(src.name)) return src;
@@ -508,23 +488,23 @@ export function Note(src: InitProps, midiOrFreq: 'midi' | 'freq' = 'midi'): Note
 
     if (Trest) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
 
-    const letter = capitalize(Tletter) as NoteLetter; // A
-    const step = toStep(letter) as NoteStep; // 5
+    const letter = capitalize(Tletter) as NoteLetter;
+    const step = toStep(letter) as NoteStep;
 
-    const accidental = substitute(Taccidental, /x/g, '##') as NoteAccidental; // #
-    const alteration = toAlteration(accidental) as NoteAlteration; // +1
+    const accidental = substitute(Taccidental, /x/g, '##') as NoteAccidental;
+    const alteration = toAlteration(accidental) as NoteAlteration;
 
     // Offset (number of keys) from first letter - C
-    const offset = toIndex(letter); // 10
+    const offset = toIndex(letter);
 
     // Note position is calculated as: letter offset from the start + in place alteration
-    const semitonesAltered = offset + alteration; // 11
+    const semitonesAltered = offset + alteration;
 
     // Because of the alteration, note can slip into the previous/next octave
-    const octavesAltered = Math.floor(semitonesAltered / 12); // 0
-    const octave = parse(Toct) as NoteOctave; // 4
+    const octavesAltered = Math.floor(semitonesAltered / 12);
+    const octave = (parse(Toct) + octavesAltered) as NoteOctave;
 
-    const pc: NotePC = letter + accidental; // A#
+    const pc: NotePC = letter + accidental;
 
     /**
      *  @example
@@ -538,7 +518,8 @@ export function Note(src: InitProps, midiOrFreq: 'midi' | 'freq' = 'midi'): Note
       isNegative(octavesAltered),
     ) as NoteChroma; // 10
 
-    const midi = (toSemitones(octave + octavesAltered) + chroma) as NoteMidi; // 70
+    const midi = (toSemitones(octave) + chroma) as NoteMidi;
+
     const frequency = toFrequency(midi) as NoteFreq; // 466.164
 
     const name = (pc + octave) as NoteName; // A#4
@@ -548,14 +529,14 @@ export function Note(src: InitProps, midiOrFreq: 'midi' | 'freq' = 'midi'): Note
     const valid = true;
 
     return {
-      name,
       letter,
       step,
       accidental,
       alteration,
-      octave,
       pc,
       chroma,
+      name,
+      octave,
       midi,
       frequency,
       color,
@@ -563,11 +544,11 @@ export function Note(src: InitProps, midiOrFreq: 'midi' | 'freq' = 'midi'): Note
     };
   }
 
-  function fromMidi(midi: NoteMidi, useSharps = true): NoteProps {
+  function fromMidi(midi: NoteMidi, useSharps = sharps): NoteProps {
     const frequency = toFrequency(midi) as NoteFreq;
     const octave = dec(toOctaves(midi)) as NoteOctave;
 
-    const chroma = (midi - toSemitones(octave)) as NoteChroma;
+    const chroma = (midi % 12) as NoteChroma;
     const pc = either(Theory.SHARPS[chroma], Theory.FLATS[chroma], useSharps) as NotePC;
 
     const name = (pc + octave) as NoteName;

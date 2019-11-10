@@ -94,7 +94,7 @@ export interface NoInterval extends Partial<IntervalProps> {
 
 export type IvlInitProp = IntervalName | IntervalSemitones | NoteName[];
 
-interface IntervalBuild {
+export interface IntervalBuild {
   step?: IntervalStep;
   alteration?: IntervalAlteration;
   octave?: IntervalOctave;
@@ -141,70 +141,20 @@ namespace Theory {
 
   /** Names of the intervals in chromatic octave */
   export const NAMES = '1P 2m 2M 3m 3M 4P A4 5P 6m 6M 7m 7M 8P'.split(' ');
+  export const NAMES_ALTERNATE = '1P 1A 2M 2A 3M 4P 4A 5P 5A 6M 6A 7M 8P'.split(' ');
 
   /** Scale degrees to which interval at index:i is assigned */
   export const NUMBERS = [1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7];
 
   /** Qualities of intervals at index:i */
-  export const QUALITIES = 'P m M m M P d P m M m M'.split(' ');
+  export const QUALITIES = 'P m M m M P d P m M m M P'.split(' ');
+  export const QUALITIES_ALTERNAT = 'P A M A M P A P A M A M P'.split(' ');
 
   export const EmptyInterval = {
     name: '',
     valid: false,
   };
 }
-
-namespace Operations {
-  function fn1() {}
-  function fn2() {}
-}
-// namespace Operations {
-//   /**
-//    *
-//    * @param {IntervalName} i1
-//    * @param {IntervalName} i2
-//    * @param {boolean} addition - to add or subtract
-//    * @return sum or difference of 2 intervals
-//    */
-//   export function addIntervals(i1: IntervalName, i2: IntervalName, addition = true): IntervalName {
-//     const ivl1 = Interval(i1);
-//     const ivl2 = Interval(i2);
-
-//     const semitones = ivl1.semitones + ivl2.semitones * either(1, -1, addition);
-
-//     const interval = Interval(semitones);
-
-//     return interval.valid ? interval.name : undefined;
-//   }
-
-//   /**
-//    * Add two intervals
-//    *
-//    * Can be partially applied.
-//    *
-//    * @param {IntervalName} interval1
-//    * @param {IntervalName} interval2
-//    * @return {IntervalName} the resulting interval
-//    */
-//   export function add(...args: IntervalName[]) {
-//     if (args.length === 1) return (i2: IntervalName) => addIntervals(args[0], i2);
-//     return addIntervals(args[0], args[1]);
-//   }
-
-//   /**
-//    * Subtract two intervals
-//    *
-//    * Can be partially applied
-//    *
-//    * @param {IntervalName} minuend
-//    * @param {IntervalName} subtrahend
-//    * @return {IntervalName} interval diference
-//    */
-//   export function sub(...args: IntervalName[]) {
-//     if (args.length === 1) return (i2: IntervalName) => addIntervals(args[0], i2);
-//     return addIntervals(args[0], args[1], false);
-//   }
-// }
 
 namespace Static {
   export const Validators = {
@@ -321,7 +271,8 @@ export function Interval(prop: IvlInitProp): IntervalProps {
   const { isName: isNoteName } = NOTE.Validators;
   const { EmptyInterval } = Theory;
   const { toAlteration } = INTERVAL.Quality;
-  const { intervalTable, INTERVAL_REGEX, BASE_QUALITIES, BASE_SIZES, CLASSES, NAMES } = INTERVAL;
+  const { INTERVAL_REGEX, BASE_QUALITIES, BASE_SIZES, CLASSES, NAMES } = Theory;
+  const { intervalTable } = Static;
 
   const intervalTypeFrom = (harmonic: number, generic: number) => intervalTable(harmonic, generic);
 
@@ -330,23 +281,26 @@ export function Interval(prop: IvlInitProp): IntervalProps {
       return IntervalError('InvalidIntervalConstructor', interval, EmptyInterval) as IntervalProps;
 
     const tokens = tokenize(interval, INTERVAL_REGEX);
+
     if (!tokens) return EmptyInterval as IntervalProps;
 
-    const { tn, qn, tq, qq } = tokens;
+    const { tn: tonalShapeNumber, qn: qualityShapeNumber, tq: tonalShapeQuality, qq: qualityShapeQuality } = tokens;
 
-    const num = +(tn || qn) as IntervalNumber;
-    const quality = (tq || qq) as IntervalQuality;
+    const num = +(tonalShapeNumber || qualityShapeNumber) as IntervalNumber;
+    const quality = (tonalShapeQuality || qualityShapeQuality) as IntervalQuality;
 
     /**
      *  Similar to NOTE.letter.
      *  Number of steps from first note C to given letter.
      *  Normalized to 1 octave
      */
-    const step = compose(
+    const numToStep = compose(
       modC(7),
       dec,
       Math.abs,
-    )(num);
+    );
+
+    const step = numToStep(num) as IntervalStep;
 
     /**
      *  We use it to store information of interval before being altered: d | A.
@@ -466,23 +420,4 @@ export function Interval(prop: IvlInitProp): IntervalProps {
   if (isArray(prop) && both(isNoteName(prop[0]), isNoteName(prop[1]))) return fromNotes(prop[0], prop[1]);
 
   return EmptyInterval as IntervalProps;
-}
-
-/**
- * Note object builder. Used to assign methods beside note properties
- * @param {IvlInitProp} prop
- * @param {IvlInitMethods} methods
- */
-export function IntervalBuilder(prop: IvlInitProp, withMethods: boolean) {
-  const { EmptyInterval } = INTERVAL;
-  const interval = Interval(prop);
-
-  if (!interval.valid) return EmptyInterval;
-
-  const methods = withMethods && Operations;
-
-  return {
-    ...interval,
-    ...methods,
-  };
 }

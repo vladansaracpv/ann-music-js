@@ -70,13 +70,70 @@ export interface Chord extends ChordType {
 
 export type ChordTypes = Record<ChordTypeProp, ChordType>;
 
+namespace Theory {
+  export const EmptyChordType: ChordType = {
+    ...EmptySet,
+    type: '',
+    quality: 'Unknown',
+    aliases: [],
+  };
+
+  export const EmptyChord: Chord = {
+    name: '',
+    type: '',
+    tonic: '',
+    setNum: NaN,
+    length: 0,
+    quality: 'Unknown',
+    chroma: '',
+    normalized: '',
+    aliases: [],
+    notes: [],
+    formula: '',
+    empty: true,
+    intervals: [],
+    valid: false,
+  };
+}
+
 namespace Dictionary {
-  export const TYPES: ChordType[] = CHORD_LIST.map(toChordType).sort(
+  export const types: ChordType[] = CHORD_LIST.map(toChordType).sort(
     (a: ChordType, b: ChordType) => a.length - b.length,
   ) as ChordType[];
 
-  export const CHORDS: ChordTypes = toChords(TYPES);
+  export const all: ChordTypes = toChords(types);
 
+  function toChords(types: ChordType[]) {
+    return types.reduce((chords: ChordTypes, chord: ChordType) => {
+      chords[chord.type] = chord;
+      chords[chord.setNum] = chord;
+      chords[chord.chroma] = chord;
+      chord.aliases.forEach(alias => {
+        chords[alias] = chord;
+      });
+      return chords;
+    }, {}) as ChordTypes;
+  }
+
+  function toChordType([ivls, type, abbrvs]: string[]): ChordType {
+    const has = (interval: IntervalName) => ivls.includes(interval);
+    const aliases = abbrvs.split(' ');
+    const intervals = ivls.split(' ');
+    const set = PC(intervals) as PcProperties;
+    const quality = has('5A')
+      ? 'Augmented'
+      : has('3M')
+      ? 'Major'
+      : has('5d')
+      ? 'Diminished'
+      : has('3m')
+      ? 'Minor'
+      : 'Other';
+    return { ...set, type, quality, intervals, aliases };
+  }
+}
+
+namespace Static {
   /**
    * Tokenize a chord name. It returns an array with the tonic and chord type
    * If not tonic is found, all the name is considered the chord name.
@@ -118,67 +175,10 @@ namespace Dictionary {
     }
   }
 
-  function toChords(types: ChordType[]) {
-    return types.reduce((chords: ChordTypes, chord: ChordType) => {
-      chords[chord.type] = chord;
-      chords[chord.setNum] = chord;
-      chords[chord.chroma] = chord;
-      chord.aliases.forEach(alias => {
-        chords[alias] = chord;
-      });
-      return chords;
-    }, {}) as ChordTypes;
-  }
-
-  function toChordType([ivls, type, abbrvs]: string[]): ChordType {
-    const has = (interval: IntervalName) => ivls.includes(interval);
-    const aliases = abbrvs.split(' ');
-    const intervals = ivls.split(' ');
-    const set = PC(intervals) as PcProperties;
-    const quality = has('5A')
-      ? 'Augmented'
-      : has('3M')
-      ? 'Major'
-      : has('5d')
-      ? 'Diminished'
-      : has('3m')
-      ? 'Minor'
-      : 'Other';
-    return { ...set, type, quality, intervals, aliases };
-  }
-}
-
-export const CHORD = {
-  types: Dictionary.TYPES,
-
-  chords: Dictionary.CHORDS,
-
-  EmptyChordType: {
-    ...EmptySet,
-    type: '',
-    quality: 'Unknown',
-    aliases: [],
-  },
-
-  EmptyChord: {
-    name: '',
-    type: '',
-    tonic: '',
-    setNum: NaN,
-    length: 0,
-    quality: 'Unknown',
-    chroma: '',
-    normalized: '',
-    aliases: [],
-    notes: [],
-    intervals: [],
-    valid: false,
-  },
-
-  formula(chord: ChordTypeName) {
+  export function formula(chord: ChordTypeName) {
     const props = Chord(chord);
     return props.intervals.map(ivl => Interval(ivl).semitones);
-  },
+  }
 
   /**
    * Find all chords names that are a subset of the given one
@@ -186,11 +186,11 @@ export const CHORD = {
    *
    * @example
    */
-  subChords(chordName: ChordTypeName): string[] {
+  export function subChords(chordName: ChordTypeName): string[] {
     const s = Chord(chordName);
     const isSubset = isSubsetOf(s.chroma);
     return CHORD.types.filter(chord => isSubset(chord.chroma)).map(chord => s.tonic + chord.aliases[0]);
-  },
+  }
 
   /**
    * Get all chords names that are a superset of the given one
@@ -201,11 +201,17 @@ export const CHORD = {
    * extended("CMaj7")
    * // => [ 'Cmaj#4', 'Cmaj7#9#11', 'Cmaj9', 'CM7add13', 'Cmaj13', 'Cmaj9#11', 'CM13#11', 'CM7b9' ]
    */
-  superChords(chordName: ChordTypeName): string[] {
+  export function superChords(chordName: ChordTypeName): string[] {
     const s = Chord(chordName);
     const isSuperset = isSupersetOf(s.chroma);
     return CHORD.types.filter(chord => isSuperset(chord.chroma)).map(chord => s.tonic + chord.aliases[0]);
-  },
+  }
+}
+
+export const CHORD = {
+  ...Theory,
+  ...Dictionary,
+  ...Static,
 };
 
 export function Chord(src: ChordInit): Chord {
@@ -214,7 +220,7 @@ export function Chord(src: ChordInit): Chord {
 
     const rootNote = Note(chordLetter as NoteName);
 
-    const chordType = (CHORD.chords[ctype] || CHORD.EmptyChordType) as ChordType;
+    const chordType = (CHORD.all[ctype] || CHORD.EmptyChordType) as ChordType;
 
     const { setNum, normalized, intervals, length, type, quality, aliases, chroma: chordChroma } = chordType;
 
@@ -257,7 +263,7 @@ export function Chord(src: ChordInit): Chord {
   }
 
   function fromName(name: ChordTypeName) {
-    const tokens = Dictionary.tokenize(name) as ChordNameTokens;
+    const tokens = CHORD.tokenize(name) as ChordNameTokens;
     return fromTokens(tokens);
   }
 

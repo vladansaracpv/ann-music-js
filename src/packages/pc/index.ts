@@ -1,5 +1,5 @@
 import { Interval, INTERVAL, IntervalName, IntervalProps } from 'ann-music-interval';
-import { NoNote, Note, NOTE, NoteMidi, NoteName, NoteProps } from 'ann-music-note';
+import { NoNote, Note, NOTE, NoteMidi, NoteName, NoteProps } from '@packages/note';
 import { BaseArray, BaseBoolean, BaseFunctional, BaseRelations, BaseTypings } from 'ann-music-base';
 
 const { compact, range, rotate, toBinary } = BaseArray;
@@ -154,6 +154,7 @@ export const PitchClass = {
      *
      * @param {NoteName} note
      * @param {IntervalName} interval
+     * @param {boolean} useSharps
      * @return {NoteName} the transposed note
      * @example
      * import { tranpose } from "tonal-distance"
@@ -167,7 +168,8 @@ export const PitchClass = {
       if (args.length === 1) {
         return (name: NoteName) => PitchClass.Methods.transpose(name, args[0]);
       }
-      const [n, i] = args;
+      const [n, i, useSharps] = args;
+      const sharps = useSharps === 'true' ? true : false;
       const note = Note && Note(n);
       const interval = Interval(i);
 
@@ -175,7 +177,7 @@ export const PitchClass = {
 
       const amount: NoteMidi = note.midi + interval.semitones;
 
-      return Note(amount);
+      return Note(amount, 'midi', sharps);
     },
   },
 
