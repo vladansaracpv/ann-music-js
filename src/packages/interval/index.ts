@@ -88,17 +88,17 @@ export type IntervalClass = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 export type IntervalProps = Readonly<{
   name: IntervalName;
-  num: IntervalNumber;
+  inumber: IntervalNumber;
   quality: IntervalQuality;
   alteration: IntervalAlteration;
   step: IntervalStep;
   direction: IntervalDirection;
-  type: IntervalType;
+  itype: IntervalType;
   simple: IntervalSimpleNumber;
-  semitones: IntervalSemitones;
+  width: IntervalSemitones;
   chroma: IntervalChroma;
   octave: IntervalOctave;
-  ic: IntervalClass;
+  iclass: IntervalClass;
   valid: boolean;
 }>;
 
@@ -114,7 +114,7 @@ export interface IntervalBuild {
   alteration?: IntervalAlteration;
   octave?: IntervalOctave;
   direction?: IntervalDirection;
-  num?: IntervalNumber;
+  inumber?: IntervalNumber;
 }
 
 namespace Theory {
@@ -150,10 +150,10 @@ namespace Theory {
 
   /**
    * Shortest distance in pitch class space between two unordered pitch classes.
-   * ic(a,b) = min((a-b) % 12, (b-a) % 12)
+   * iclass(a,b) = min((a-b) % 12, (b-a) % 12)
    *
    * @example
-   * The ic between pitch classes 4 and 9 is 5 because 9 − 4 = 5, which is less than: 4 − 9 = −5 ≡ 7 (mod 12)
+   * The iclass between pitch classes 4 and 9 is 5 because 9 − 4 = 5, which is less than: 4 − 9 = −5 ≡ 7 (mod 12)
    */
   export const CLASSES = [0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1];
 
@@ -185,7 +185,7 @@ namespace Static {
   };
 
   export const Quality = {
-    toAlteration(type: string, quality: string) {
+    toAlteration(itype: string, quality: string) {
       const len = quality.length;
       const { isAugmented, isDiminished } = Validators;
 
@@ -195,33 +195,40 @@ namespace Static {
 
       if (isAugmented(quality)) return len;
 
-      if (isDiminished(quality)) return -1 * either(len, inc(len), eq(type, 'P'));
+      if (isDiminished(quality)) return -1 * either(len, inc(len), eq(itype, 'P'));
 
       return undefined;
     },
   };
 
   export const Alteration = {
-    toQuality(type: string, alteration: number) {
-      if (eq(0, alteration)) return either('M', 'P', eq(type, 'M'));
+    toQuality(itype: string, alteration: number) {
+      if (eq(0, alteration)) return either('M', 'P', eq(itype, 'M'));
 
-      if (both(eq(-1, alteration), eq(type, 'M'))) return 'm';
+      if (both(eq(-1, alteration), eq(itype, 'M'))) return 'm';
 
       if (gt(alteration, 0)) return fillStr('A', alteration);
 
-      if (lt(alteration, 0)) return fillStr('d', either(alteration, inc(alteration), eq(type, 'P')));
+      if (lt(alteration, 0)) return fillStr('d', either(alteration, inc(alteration), eq(itype, 'P')));
 
       return undefined;
     },
   };
 
   export const Num = {
-    toStep(num: IntervalNumber) {
+    toStep(inumber: IntervalNumber) {
       return compose(
         modC(7),
         dec,
         Math.abs,
-      )(num);
+      )(inumber);
+    },
+    toOctave(inumber: IntervalNumber) {
+      return compose(
+        Math.ceil,
+        divC(7),
+        Math.abs,
+      )(inumber);
     },
   };
 
@@ -240,11 +247,11 @@ namespace Static {
 
     if (!interval.valid) return undefined;
 
-    const { step, type, alteration, direction, octave } = interval;
+    const { step, itype, alteration, direction, octave } = interval;
 
     const invStep = ((7 - step) % 7) as IntervalStep;
 
-    const invAlt = -1 * either(alteration, inc(alteration), eq(type, 'P'));
+    const invAlt = -1 * either(alteration, inc(alteration), eq(itype, 'P'));
 
     return build({ step: invStep, alteration: invAlt, octave, direction });
   }
@@ -255,13 +262,13 @@ namespace Static {
   };
 
   export function build(params: IntervalBuild = { octave: 1, direction: 1 }): IntervalName {
-    let { step, alteration, octave, direction, num } = params;
-    if (step !== undefined) num = inc(step) + 7 * dec(octave);
-    if (eq(num, undefined)) return undefined;
+    let { step, alteration, octave, direction, inumber } = params;
+    if (step !== undefined) inumber = inc(step) + 7 * dec(octave);
+    if (eq(inumber, undefined)) return undefined;
     if (!isNumber(alteration)) return undefined;
     let d = lt(direction, 0) ? '-' : '';
-    const type = Theory.BASE_QUALITIES[dec(Math.abs(num)) % 7];
-    return d + num + Alteration.toQuality(type, alteration);
+    const itype = Theory.BASE_QUALITIES[dec(Math.abs(inumber)) % 7];
+    return d + inumber + Alteration.toQuality(itype, alteration);
   }
 
   export function intervalTable(harmonic: number, generic: number) {
@@ -299,7 +306,7 @@ export function Interval(prop: IvlInitProp): IntervalProps {
   const { isName: isNoteName } = NOTE.Validators;
   const { EmptyInterval } = Theory;
   const { toAlteration } = INTERVAL.Quality;
-  const { toStep } = INTERVAL.Num;
+  const { toStep, toOctave } = INTERVAL.Num;
   const { INTERVAL_REGEX, BASE_QUALITIES, BASE_SIZES, CLASSES, NAMES } = Theory;
   const { intervalTable } = Static;
 
@@ -316,9 +323,9 @@ export function Interval(prop: IvlInitProp): IntervalProps {
 
     const { tn: tshapeNum, qn: qshapeNum, tq: tshapeQuality, qq: qshapeQuality } = tokens;
 
-    const num = +(tshapeNum || qshapeNum) as IntervalNumber;
+    const inumber = +(tshapeNum || qshapeNum) as IntervalNumber;
 
-    if (!num) {
+    if (!inumber) {
       return IntervalError('InvalidIvlConstructor', src, EmptyInterval) as IntervalProps;
     }
 
@@ -333,38 +340,34 @@ export function Interval(prop: IvlInitProp): IntervalProps {
      *  Number of steps from first note C to given letter.
      *  Normalized to 1 octave
      */
-    const step = toStep(num) as IntervalStep;
+    const step = toStep(inumber) as IntervalStep;
 
     /**
      *  We use it to store information of interval before being altered: d | A.
      *  Diminished ivl can be from minor or Perfect
      */
-    const type = BASE_QUALITIES[step] as IntervalType;
+    const itype = BASE_QUALITIES[step] as IntervalType;
 
     // 1: (low, high) and -1: (high, low)
-    const direction = either(-1, 1, isNegative(num)) as IntervalDirection;
+    const direction = either(-1, 1, isNegative(inumber)) as IntervalDirection;
 
     // Simple interval number. Used in compound intervals to know which ivl is added to P8
-    const simple = either(num, direction * inc(step), eq(num, 8)) as IntervalSimpleNumber;
+    const simple = either(inumber, direction * inc(step), eq(inumber, 8)) as IntervalSimpleNumber;
 
     // Number of octaves Interval spans. For simple it is 1, compound > 1
-    const octave = compose(
-      Math.ceil,
-      divC(7),
-      Math.abs,
-    )(num) as IntervalOctave;
+    const octave = toOctave(inumber) as IntervalOctave;
 
     // How much is the Interval altered from the base position.
     // Ex: 1) diminished can be -2 (when created from minor) or -1 (from Perfect)
     // Ex: 2) Augmented is altered by +1
     // Ex: 3) Perfect/Major intervals are not altered
-    const alteration = toAlteration(type, quality) as IntervalAlteration;
+    const alteration = toAlteration(itype, quality) as IntervalAlteration;
 
     // We calculate width in semitones by adding alteration value to base interval.
     // If is compound we include those octaves
-    const width = BASE_SIZES[step] + alteration + 12 * dec(octave);
+    const semitones = BASE_SIZES[step] + alteration + 12 * dec(octave);
 
-    const semitones = (direction * width) as IntervalSemitones;
+    const width = (direction * semitones) as IntervalSemitones;
 
     // Chroma is position of interval among 12 possible in octave
     const offset = (direction * (BASE_SIZES[step] + alteration)) % 12;
@@ -372,35 +375,35 @@ export function Interval(prop: IvlInitProp): IntervalProps {
     const chroma = ((offset + 120) % 12) as IntervalChroma;
 
     // Interval class. It is between [0,6]
-    const ic = CLASSES[chroma] as IntervalClass;
+    const iclass = CLASSES[chroma] as IntervalClass;
 
-    const name = ('' + num + quality) as IntervalName;
+    const name = ('' + inumber + quality) as IntervalName;
 
     const valid = true;
 
     return {
       name,
-      num,
+      inumber,
       quality,
       alteration,
       step,
-      type,
+      itype,
       simple,
-      semitones,
+      width,
       direction,
       octave,
       chroma,
-      ic,
+      iclass,
       valid,
     };
   }
 
-  function fromDistance(semitones: IntervalSemitones): IntervalProps {
-    if (!isInteger(semitones))
-      return IntervalError('InvalidIvlConstructor', { semitones }, EmptyInterval) as IntervalProps;
+  function fromDistance(distance: IntervalSemitones): IntervalProps {
+    if (!isInteger(distance))
+      return IntervalError('InvalidIvlConstructor', { distance }, EmptyInterval) as IntervalProps;
 
-    const direction = either(-1, 1, isNegative(semitones));
-    const width = Math.abs(semitones);
+    const direction = either(-1, 1, isNegative(distance));
+    const width = Math.abs(distance);
     const harmonic = Math.abs(width) % 12;
     const octave = compose(
       inc,
