@@ -350,7 +350,7 @@ namespace Static {
   };
 
   export const Letter = {
-    toIndex: (letter: NoteLetter) => Theory.SHARPS.indexOf(letter),
+    toIndex: (letter: NoteLetter) => SHARPS.indexOf(letter),
     toStep: (letter: NoteLetter) => (letter.charCodeAt(0) + 3) % 7,
   };
 
@@ -367,6 +367,15 @@ namespace Static {
     isMidi: (midi: InitProps): midi is NoteMidi => both(isInteger(midi), inSegment(0, 135, +midi)),
     isName: (name: InitProps): name is NoteName => REGEX.test(name as string) === true,
     isNote: (note: any): boolean => Note(note).valid,
+  };
+
+  export const Chroma = {
+    isWhite(chroma: NoteChroma) {
+      return Theory.WHITE_KEYS.includes(chroma);
+    },
+    isBlack(chroma: NoteChroma) {
+      return Theory.BLACK_KEYS.includes(chroma);
+    },
   };
 
   export const property = (prop: NoteProp) => (note: InitProps) => Note(note)[prop];
@@ -475,7 +484,8 @@ export function Note(src: InitProps, midiOrFreq: midiOrFreq = 'midi', sharps = t
   const { toSemitones, parse } = NOTE.Octave;
   const { toFrequency, toOctaves } = NOTE.Midi;
   const { toMidi } = NOTE.Frequency;
-  const { EmptyNote, WHITE_KEYS, REGEX } = Theory;
+  const { isWhite } = NOTE.Chroma;
+  const { EmptyNote, SHARPS, FLATS, REGEX } = Theory;
 
   function fromName(note: NoteName): NoteProps {
     const { Tletter, Taccidental, Toct, Trest } = {
@@ -486,9 +496,7 @@ export function Note(src: InitProps, midiOrFreq: midiOrFreq = 'midi', sharps = t
       ...tokenize(note, REGEX),
     };
 
-    console.log(Trest);
-
-    if (Trest) {
+    if (Trest || !Tletter) {
       return NoteError('InvalidConstructor', note, EmptyNote);
     }
 
@@ -506,9 +514,10 @@ export function Note(src: InitProps, midiOrFreq: midiOrFreq = 'midi', sharps = t
 
     // Because of the alteration, note can slip into the previous/next octave
     const octavesAltered = Math.floor(semitonesAltered / 12);
+
     const octave = (parse(Toct) + octavesAltered) as NoteOctave;
 
-    const pc: NotePC = letter + accidental;
+    const pc: NotePC = `${letter}${accidental}`;
 
     /**
      *  @example
@@ -520,15 +529,15 @@ export function Note(src: InitProps, midiOrFreq: midiOrFreq = 'midi', sharps = t
       (semitonesAltered - toSemitones(octavesAltered) + 12) % 12,
       semitonesAltered % 12,
       isNegative(octavesAltered),
-    ) as NoteChroma; // 10
+    ) as NoteChroma;
 
     const midi = (toSemitones(octave) + chroma) as NoteMidi;
 
-    const frequency = toFrequency(midi) as NoteFreq; // 466.164
+    const frequency = toFrequency(midi) as NoteFreq;
 
-    const name = (pc + octave) as NoteName; // A#4
+    const name = `${pc}${octave}` as NoteName;
 
-    const color = either('white', 'black', WHITE_KEYS.includes(chroma)) as NoteColor; // 'black'
+    const color: NoteColor = isWhite(chroma) ? 'white' : 'black';
 
     const valid = true;
 
@@ -549,40 +558,14 @@ export function Note(src: InitProps, midiOrFreq: midiOrFreq = 'midi', sharps = t
   }
 
   function fromMidi(midi: NoteMidi, useSharps = sharps): NoteProps {
-    const frequency = toFrequency(midi) as NoteFreq;
     const octave = dec(toOctaves(midi)) as NoteOctave;
 
     const chroma = (midi % 12) as NoteChroma;
-    const pc = either(Theory.SHARPS[chroma], Theory.FLATS[chroma], useSharps) as NotePC;
+    const pc = either(SHARPS[chroma], FLATS[chroma], useSharps) as NotePC;
 
-    const name = (pc + octave) as NoteName;
+    const name = `${pc}${octave}` as NoteName;
 
-    const { Tletter, Taccidental } = { Taccidental: '', Tletter: '', ...tokenize(name, REGEX) };
-
-    const letter = capitalize(Tletter) as NoteLetter;
-    const step = toStep(letter) as NoteStep;
-
-    const accidental = substitute(Taccidental, /x/g, '##') as NoteAccidental;
-    const alteration = toAlteration(accidental) as NoteAlteration;
-
-    const color = either('white', 'black', WHITE_KEYS.includes(chroma)) as NoteColor;
-
-    const valid = true;
-
-    return {
-      accidental,
-      alteration,
-      chroma,
-      color,
-      frequency,
-      letter,
-      midi,
-      name,
-      octave,
-      pc,
-      step,
-      valid,
-    };
+    return fromName(name);
   }
 
   function fromFrequency(frequency: NoteFreq, tuning = Theory.A_440): NoteProps {

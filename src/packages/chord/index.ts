@@ -51,14 +51,15 @@ export interface Chord extends ChordType {
    * length,
    *
    * * Added by ChordType * *
-   * name,
+   * type,
    * quality,
    * aliases
    *
    * * Added by Chord * *
    * tonic,
-   * type,
+   * name,
    * notes,
+   * formula
    * valid
    */
   tonic: string;
@@ -101,7 +102,7 @@ namespace Dictionary {
     (a: ChordType, b: ChordType) => a.length - b.length,
   ) as ChordType[];
 
-  export const all: ChordTypes = toChords(types);
+  export const allChords: ChordTypes = toChords(types);
 
   function toChords(types: ChordType[]) {
     return types.reduce((chords: ChordTypes, chord: ChordType) => {
@@ -186,7 +187,7 @@ namespace Static {
    *
    * @example
    */
-  export function subChords(chordName: ChordTypeName): string[] {
+  export function subset(chordName: ChordTypeName): string[] {
     const s = Chord(chordName);
     const isSubset = isSubsetOf(s.chroma);
     return CHORD.types.filter(chord => isSubset(chord.chroma)).map(chord => s.tonic + chord.aliases[0]);
@@ -201,7 +202,7 @@ namespace Static {
    * extended("CMaj7")
    * // => [ 'Cmaj#4', 'Cmaj7#9#11', 'Cmaj9', 'CM7add13', 'Cmaj13', 'Cmaj9#11', 'CM13#11', 'CM7b9' ]
    */
-  export function superChords(chordName: ChordTypeName): string[] {
+  export function superset(chordName: ChordTypeName): string[] {
     const s = Chord(chordName);
     const isSuperset = isSupersetOf(s.chroma);
     return CHORD.types.filter(chord => isSuperset(chord.chroma)).map(chord => s.tonic + chord.aliases[0]);
@@ -218,19 +219,19 @@ export function Chord(src: ChordInit): Chord {
   function fromName(chord: ChordTypeName) {
     const tokens = CHORD.tokenize(chord) as ChordNameTokens;
 
-    const [chordLetter, ctype] = tokens;
+    const [Cletter, Ctype] = tokens;
 
-    const rootNote = Note(chordLetter as NoteName);
+    const rootNote = Note(Cletter as NoteName);
 
-    const chordType = (CHORD.all[ctype] || CHORD.EmptyChordType) as ChordType;
+    const chordType = CHORD.allChords[Ctype] as ChordType;
+
+    if (!chordType || chordType.length) {
+      return CHORD.EmptyChordType as Chord;
+    }
 
     const { setNum, normalized, intervals, length, type, quality, aliases, chroma: chordChroma } = chordType;
 
-    if (eq(length, 0)) {
-      return CHORD.EmptyChord as Chord;
-    }
-
-    const chroma = either(rotate(-rootNote.chroma, chordChroma.split('')).join(''), chordChroma, rootNote.valid);
+    const chroma = rootNote.valid ? rotate(-rootNote.chroma, chordChroma.split('')).join('') : chordChroma;
 
     const tonic = rootNote.letter || '';
 
@@ -239,6 +240,8 @@ export function Chord(src: ChordInit): Chord {
     const notes: string[] = rootNote.valid ? intervals.map(i => (transposeNote(rootNote.name, i) as NoteProps).pc) : [];
 
     const formula = intervals.map(ivl => Interval(ivl).semitones).join('-');
+
+    const empty = eq(length, 0);
 
     const valid = true;
 
@@ -249,8 +252,7 @@ export function Chord(src: ChordInit): Chord {
       normalized,
       intervals,
       length,
-      // ToDo: Remove
-      empty: eq(length, 0),
+      empty,
       // ChordType
       type,
       quality,
