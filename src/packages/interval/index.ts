@@ -9,7 +9,7 @@ import {
   BaseStrings,
   BaseTypings,
 } from 'ann-music-base';
-import { InitProp, InitProps, NOTE, NoteName } from 'ann-music-note';
+import { InitProps, NOTE, NoteName } from 'ann-music-note';
 
 const { fillStr } = BaseArray;
 const { either } = BaseBoolean;

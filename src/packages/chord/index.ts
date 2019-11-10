@@ -215,8 +215,10 @@ export const CHORD = {
 };
 
 export function Chord(src: ChordInit): Chord {
-  function fromTokens(ctokens: ChordNameTokens) {
-    const [chordLetter, ctype] = ctokens;
+  function fromName(chord: ChordTypeName) {
+    const tokens = CHORD.tokenize(chord) as ChordNameTokens;
+
+    const [chordLetter, ctype] = tokens;
 
     const rootNote = Note(chordLetter as NoteName);
 
@@ -262,14 +264,7 @@ export function Chord(src: ChordInit): Chord {
     });
   }
 
-  function fromName(name: ChordTypeName) {
-    const tokens = CHORD.tokenize(name) as ChordNameTokens;
-    return fromTokens(tokens);
-  }
-
   if (isString(src)) return fromName(src);
-
-  if (isArray(src)) return fromTokens(src);
 
   return CHORD.EmptyChord as Chord;
 }
