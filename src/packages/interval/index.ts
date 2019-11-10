@@ -36,9 +36,12 @@ export type IntervalName = string;
 export type IntervalNumber = number;
 
 /** Possible interval qualities */
-export type IntervalQuality = 'd' | 'm' | 'M' | 'P' | 'A';
+export type IntervalQuality = 'dd' | 'd' | 'm' | 'M' | 'P' | 'A' | 'AA';
 
-/** In natural scale, there are just M and P intervals. All other qualities are alterations by some amount */
+/**
+ * In natural scale, there are just M and P intervals.
+ * All other qualities are alterations by some amount
+ */
 export type IntervalAlteration = number;
 
 /** Similar to NoteStep. Number of letters from first to second note */
@@ -47,19 +50,31 @@ export type IntervalStep = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 /** Direction of I(N1, N2) is positive if N1 < N2. Negative otherwise */
 export type IntervalDirection = -1 | 1;
 
-/** Basic interval (qualities). All others are derived from it. M => d, m, A; P => d, A */
+/**
+ * Basic interval (qualities).
+ * All others are derived from it. M => d, m, A; P => d, A
+ */
 export type IntervalType = 'M' | 'P';
 
-/** Simple number is normalized IntervalNumber to single octave. M9 => P8 + M2 */
+/**
+ * Simple number is normalized IntervalNumber to single octave.
+ * M9 => P8 + M2
+ */
 export type IntervalSimpleNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 /** Width of the interval in semitones */
 export type IntervalSemitones = number;
 
-/** Similar to Note.chroma it is an index of interval in list of 12 basic intervals */
+/**
+ * Similar to Note.chroma.
+ * It is an index of interval in list of 12 basic intervals
+ */
 export type IntervalChroma = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
 
-/** How many octaves does the interval encompass. For simple it is = 1, compound: > 1 */
+/**
+ * How many octaves does the interval encompass.
+ * For simple it is = 1, compound: > 1
+ */
 export type IntervalOctave = number;
 
 /** Interval class is the minimum distance in steps of I(N1,N2), I(N2, N1) */
@@ -71,7 +86,7 @@ export type IntervalClass = 0 | 1 | 2 | 3 | 4 | 5 | 6;
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
-export interface IntervalProps {
+export type IntervalProps = Readonly<{
   name: IntervalName;
   num: IntervalNumber;
   quality: IntervalQuality;
@@ -85,7 +100,7 @@ export interface IntervalProps {
   octave: IntervalOctave;
   ic: IntervalClass;
   valid: boolean;
-}
+}>;
 
 export interface NoInterval extends Partial<IntervalProps> {
   readonly valid: false;
@@ -109,17 +124,20 @@ namespace Theory {
    * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
    */
 
-  /** C-major scale interval qualities. Every other interval is made from these */
+  /**
+   * C-major scale interval qualities.
+   * Every other interval is made from these
+   */
   export const BASE_QUALITIES = 'PMMPPMM';
 
   /** Chroma indexes (places) of base interval types in chromatic scale */
   export const BASE_SIZES = [0, 2, 4, 5, 7, 9, 11];
 
   /** Regular expression used to parse Augmented intervals **/
-  export const AUG_REGEX = /^A+$/;
+  export const AUG_REGEX = /^A{1,2}$/;
 
   /** Regular expression used to parse Diminished intervals **/
-  export const DIM_REGEX = /^d+$/;
+  export const DIM_REGEX = /^d{1,2}$/;
 
   /** Regular expression used to tokenize Interval of shape <number><quality> **/
   export const TONAL_REGEX = '(?<tn>[-+]?\\d+)(?<tq>d{1,2}|m|M|P|A{1,2})';
@@ -162,8 +180,8 @@ namespace Static {
     isPerfect: (quality: string) => eq(quality, 'P'),
     isMajor: (quality: string) => eq(quality, 'M'),
     isMinor: (quality: string) => eq(quality, 'm'),
-    isDiminished: (quality: string) => /^d{1,2}$/.test(quality),
-    isAugmented: (quality: string) => /^A{1,2}$/.test(quality),
+    isDiminished: (quality: string) => Theory.DIM_REGEX.test(quality),
+    isAugmented: (quality: string) => Theory.AUG_REGEX.test(quality),
   };
 
   export const Quality = {
@@ -194,6 +212,16 @@ namespace Static {
       if (lt(alteration, 0)) return fillStr('d', either(alteration, inc(alteration), eq(type, 'P')));
 
       return undefined;
+    },
+  };
+
+  export const Num = {
+    toStep(num: IntervalNumber) {
+      return compose(
+        modC(7),
+        dec,
+        Math.abs,
+      )(num);
     },
   };
 
@@ -271,36 +299,41 @@ export function Interval(prop: IvlInitProp): IntervalProps {
   const { isName: isNoteName } = NOTE.Validators;
   const { EmptyInterval } = Theory;
   const { toAlteration } = INTERVAL.Quality;
+  const { toStep } = INTERVAL.Num;
   const { INTERVAL_REGEX, BASE_QUALITIES, BASE_SIZES, CLASSES, NAMES } = Theory;
   const { intervalTable } = Static;
 
   const intervalTypeFrom = (harmonic: number, generic: number) => intervalTable(harmonic, generic);
 
-  function fromName(interval: IntervalName): IntervalProps {
-    if (!isIntervalName(interval))
-      return IntervalError('InvalidIntervalConstructor', interval, EmptyInterval) as IntervalProps;
+  function fromName(src: IntervalName): IntervalProps {
+    if (!isIntervalName(src)) {
+      return IntervalError('InvalidIvlConstructor', src, EmptyInterval) as IntervalProps;
+    }
 
-    const tokens = tokenize(interval, INTERVAL_REGEX);
+    const tokens = tokenize(src, INTERVAL_REGEX);
 
     if (!tokens) return EmptyInterval as IntervalProps;
 
-    const { tn: tonalShapeNumber, qn: qualityShapeNumber, tq: tonalShapeQuality, qq: qualityShapeQuality } = tokens;
+    const { tn: tshapeNum, qn: qshapeNum, tq: tshapeQuality, qq: qshapeQuality } = tokens;
 
-    const num = +(tonalShapeNumber || qualityShapeNumber) as IntervalNumber;
-    const quality = (tonalShapeQuality || qualityShapeQuality) as IntervalQuality;
+    const num = +(tshapeNum || qshapeNum) as IntervalNumber;
+
+    if (!num) {
+      return IntervalError('InvalidIvlConstructor', src, EmptyInterval) as IntervalProps;
+    }
+
+    const quality = (tshapeQuality || qshapeQuality) as IntervalQuality;
+
+    if (quality.length > 2) {
+      return IntervalError('InvalidIvlConstructor', src, EmptyInterval) as IntervalProps;
+    }
 
     /**
      *  Similar to NOTE.letter.
      *  Number of steps from first note C to given letter.
      *  Normalized to 1 octave
      */
-    const numToStep = compose(
-      modC(7),
-      dec,
-      Math.abs,
-    );
-
-    const step = numToStep(num) as IntervalStep;
+    const step = toStep(num) as IntervalStep;
 
     /**
      *  We use it to store information of interval before being altered: d | A.
@@ -327,8 +360,10 @@ export function Interval(prop: IvlInitProp): IntervalProps {
     // Ex: 3) Perfect/Major intervals are not altered
     const alteration = toAlteration(type, quality) as IntervalAlteration;
 
-    // We calculate width in semitones by adding alteration value to base interval. If is compound we include those octaves
+    // We calculate width in semitones by adding alteration value to base interval.
+    // If is compound we include those octaves
     const width = BASE_SIZES[step] + alteration + 12 * dec(octave);
+
     const semitones = (direction * width) as IntervalSemitones;
 
     // Chroma is position of interval among 12 possible in octave
@@ -343,7 +378,7 @@ export function Interval(prop: IvlInitProp): IntervalProps {
 
     const valid = true;
 
-    return Object.freeze({
+    return {
       name,
       num,
       quality,
@@ -357,12 +392,12 @@ export function Interval(prop: IvlInitProp): IntervalProps {
       chroma,
       ic,
       valid,
-    });
+    };
   }
 
   function fromDistance(semitones: IntervalSemitones): IntervalProps {
     if (!isInteger(semitones))
-      return IntervalError('InvalidIntervalConstructor', { semitones }, EmptyInterval) as IntervalProps;
+      return IntervalError('InvalidIvlConstructor', { semitones }, EmptyInterval) as IntervalProps;
 
     const direction = either(-1, 1, isNegative(semitones));
     const width = Math.abs(semitones);
@@ -393,7 +428,7 @@ export function Interval(prop: IvlInitProp): IntervalProps {
     const second = (isObject(secondNote) ? secondNote['name'] : secondNote) as NoteName;
 
     if (!isNoteName(first) || !isNoteName(second))
-      return IntervalError('InvalidIntervalConstructor', { first, second }, EmptyInterval) as IntervalProps;
+      return IntervalError('InvalidIvlConstructor', { first, second }, EmptyInterval) as IntervalProps;
     const _harmonic = midi(second) - midi(first);
     const harmonic = _harmonic % 12;
     const [l1, l2] = [letter(first), letter(second)];
@@ -419,5 +454,5 @@ export function Interval(prop: IvlInitProp): IntervalProps {
 
   if (isArray(prop) && both(isNoteName(prop[0]), isNoteName(prop[1]))) return fromNotes(prop[0], prop[1]);
 
-  return EmptyInterval as IntervalProps;
+  return IntervalError('InvalidIvlConstructor', prop, EmptyInterval) as IntervalProps;
 }

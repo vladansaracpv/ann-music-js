@@ -486,7 +486,11 @@ export function Note(src: InitProps, midiOrFreq: midiOrFreq = 'midi', sharps = t
       ...tokenize(note, REGEX),
     };
 
-    if (Trest) return NoteError('InvalidConstructor', { name: note }, EmptyNote);
+    console.log(Trest);
+
+    if (Trest) {
+      return NoteError('InvalidConstructor', note, EmptyNote);
+    }
 
     const letter = capitalize(Tletter) as NoteLetter;
     const step = toStep(letter) as NoteStep;
@@ -590,5 +594,6 @@ export function Note(src: InitProps, midiOrFreq: midiOrFreq = 'midi', sharps = t
   if (isMidi(src) && midiOrFreq === 'midi') return fromMidi(src) as NoteProps;
   if (isFrequency(src)) return fromFrequency(src) as NoteProps;
 
-  return EmptyNote as NoteProps;
+  // return EmptyNote as NoteProps;
+  return NoteError('InvalidConstructor', src, EmptyNote);
 }
