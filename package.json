@@ -83,6 +83,7 @@
   "dependencies": {
     "@types/express": "^4.17.2",
     "@types/mocha": "^5.2.7",
+    "ann-music-chord": "^1.0.5",
     "ann-music-pc": "^1.0.6",
     "ann-music-scale": "^1.0.3",
     "nexusui": "^2.0.10",

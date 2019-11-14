@@ -35,7 +35,7 @@ export interface ScaleType extends PcProperties {
 
 export type ScaleTypes = Record<ScaleTypeProp, ScaleType>;
 
-export interface Scale extends ScaleType {
+export interface ScaleProps extends ScaleType {
   tonic: string;
   type: string;
   notes: NoteName[];
@@ -53,7 +53,7 @@ namespace Theory {
     aliases: [],
   };
 
-  export const NoScale: Scale = {
+  export const NoScale: ScaleProps = {
     empty: true,
     name: '',
     type: '',
@@ -136,7 +136,7 @@ namespace Static {
   export function chords(scale: ScaleInit): ChordTypeName[] {
     const s = Scale(scale);
     const inScale = isSubsetOf(s.normalized);
-    return CHORD.types.filter(chord => inScale(chord.normalized)).map(chord => chord.aliases[0]);
+    return CHORD.chordTypes.filter(chord => inScale(chord.normalized)).map(chord => chord.aliases[0]);
   }
 
   /**
@@ -293,7 +293,7 @@ export const scaleNotes = (tonic: NoteName, intervals: IntervalName[]) => {
   return notes;
 };
 
-export function Scale(src: ScaleInit): Scale {
+export function Scale(src: ScaleInit): ScaleProps {
   const [sname, stype, octave] = Array.isArray(src) ? src : SCALE.tokenize(src);
   const tonic = Note((sname + octave) as NoteName);
   const scales = Dictionary.all;
