@@ -1,9 +1,8 @@
-import { NOTE, Note } from '@packages/note';
+import { Note, NOTE } from '@packages/note';
 import { CHORD, Chord } from 'ann-music-chord';
 import { Interval } from '@packages/interval';
 import { Scale, SCALE, scaleNotes } from '@packages/scale';
 
-import { PC, PcProperties, PitchClass } from 'ann-music-pc';
+import { PC, PcProperties, PitchClass } from '@packages/pc';
 
-const note = Note({ name: 'A#4' });
-console.log(note);
+console.log(Note({ name: 'Bb3' }));

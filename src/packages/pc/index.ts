@@ -16,7 +16,7 @@ export interface PcProperties {
   /**
    * The properties of a pitch class set
    *
-   * @member {number} setNum - a number between 1 and 4095 (both included) that
+   * @member {number} pcnum - a number between 1 and 4095 (both included) that
    * uniquely identifies the set. It's the decimal number of the chroma.
    *
    * @member {string} chroma - a string representation of the set: a 12-char binary string
@@ -27,7 +27,7 @@ export interface PcProperties {
    *
    * @member {boolean} empty
    */
-  readonly setNum: PcNum;
+  readonly pcnum: PcNum;
   readonly chroma: PcChroma;
   readonly normalized: PcChroma;
   readonly intervals: IntervalName[];
@@ -102,7 +102,7 @@ export const PitchClass = {
      * Pcset.isEqual(["c2", "d3"], ["c5", "d2"]) // => true
      */
     isEqual(one: PcSet, other: PcSet) {
-      return eq(PC(one).setNum, PC(other).setNum);
+      return eq(PC(one).pcnum, PC(other).pcnum);
     },
 
     /**
@@ -121,8 +121,8 @@ export const PitchClass = {
      * inCMajor(["A#"]) // => false
      */
     isSubsetOf: curry((set: PcSet, notes: PcSet) => {
-      const s = PC(set).setNum;
-      const o = PC(notes).setNum;
+      const s = PC(set).pcnum;
+      const o = PC(notes).pcnum;
 
       return s !== o && (o & s) === o;
     }),
@@ -141,8 +141,8 @@ export const PitchClass = {
      * extendsCMajor(["c6", "e4", "g3"]) // => false
      */
     isSupersetOf: curry((set: PcSet, notes: PcSet) => {
-      const s = PC(set).setNum;
-      const o = PC(notes).setNum;
+      const s = PC(set).pcnum;
+      const o = PC(notes).pcnum;
 
       return s !== o && (o | s) === o;
     }),
@@ -192,7 +192,7 @@ export const PitchClass = {
         .filter(notNull);
     },
     toSet: (chroma: PcChroma): PcProperties => {
-      const setNum = PitchClass.Chroma.toNum(chroma);
+      const pcnum = PitchClass.Chroma.toNum(chroma);
       const normalized = PitchClass.Methods.normalize(chroma);
       const intervals = PitchClass.Chroma.toIntervals(chroma);
 
@@ -204,7 +204,7 @@ export const PitchClass = {
 
       const empty = eq(0, length);
 
-      return { setNum, chroma, normalized, intervals, length, empty };
+      return { pcnum, chroma, normalized, intervals, length, empty };
     },
 
     fromNum: (num: PcNum): PcChroma =>
@@ -248,7 +248,7 @@ export const PitchClass = {
   },
 
   Empty: {
-    setNum: 0,
+    pcnum: 0,
     chroma: '000000000000',
     normalized: '000000000000',
     intervals: [],
@@ -272,7 +272,7 @@ export function PC(src: PcSet) {
     ? src.chroma
     : PitchClass.Empty.chroma;
 
-  const setNum: PcNum = toNum(chroma);
+  const pcnum: PcNum = toNum(chroma);
   const normalized = normalize(chroma);
   const intervals = toIntervals(normalized);
   const length = chroma.split('').filter(c => c === '1').length;
@@ -291,14 +291,14 @@ export function PC(src: PcSet) {
   }
 
   return {
-    setNum,
+    pcnum,
     chroma,
     normalized,
     intervals,
     length,
     empty,
-    isEqualTo,
-    isIn,
-    contains,
+    // isEqualTo,
+    // isIn,
+    // contains,
   };
 }

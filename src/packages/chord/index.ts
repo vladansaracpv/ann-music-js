@@ -1,12 +1,11 @@
-import { BaseBoolean, BaseStrings, BaseTypings, BaseArray, BaseRelations } from 'ann-music-base';
+import { BaseStrings, BaseTypings, BaseArray, BaseRelations } from 'ann-music-base';
 import { NoteName, Note, NoteProps } from 'ann-music-note';
 import { Interval, IntervalName } from 'ann-music-interval';
-import { PcChroma, PcNum, PcProperties, PC, PitchClass } from 'ann-music-pc';
+import { PcChroma, PcNum, PcProperties, PC, PitchClass } from '@packages/pc';
 import CHORD_LIST from './data';
 
-const { either } = BaseBoolean;
 const { tokenize: tokenizeNote } = BaseStrings;
-const { isArray, isString } = BaseTypings;
+const { isString } = BaseTypings;
 const { rotate } = BaseArray;
 const { eq } = BaseRelations;
 const { isSubsetOf, isSupersetOf, transpose: transposeNote } = PitchClass.Methods;
@@ -25,7 +24,7 @@ export type ChordInit = ChordTypeName | ChordNameTokens;
 export interface ChordType extends PcProperties {
   /**
    * * Added by PcProperties * *
-   * setNum,
+   * pcnum,
    * chroma,
    * normalized,
    * intervals,
@@ -44,7 +43,7 @@ export interface ChordType extends PcProperties {
 export interface ChordProps extends ChordType {
   /**
    * * Added by PcProperties * *
-   * setNum,
+   * pcnum,
    * chroma,
    * normalized,
    * intervals,
@@ -83,7 +82,7 @@ namespace Theory {
     name: '',
     type: '',
     tonic: '',
-    setNum: NaN,
+    pcnum: NaN,
     length: 0,
     quality: 'Unknown',
     chroma: '',
@@ -107,7 +106,7 @@ namespace Dictionary {
   function toChords(types: ChordType[]) {
     return types.reduce((chords: ChordTypes, chord: ChordType) => {
       chords[chord.type] = chord;
-      chords[chord.setNum] = chord;
+      chords[chord.pcnum] = chord;
       chords[chord.chroma] = chord;
       chord.aliases.forEach(alias => {
         chords[alias] = chord;
@@ -182,19 +181,19 @@ namespace Static {
   }
 
   /**
-   * Find all chords names that are a subset of the given one
+   * Find all chords names that are a narrow of the given one
    * (has less notes but all from the given chord)
    *
    * @example
    */
-  export function subset(chordName: ChordTypeName): string[] {
+  export function narrow(chordName: ChordTypeName): string[] {
     const s = Chord(chordName);
     const isSubset = isSubsetOf(s.chroma);
     return CHORD.chordTypes.filter(chord => isSubset(chord.chroma)).map(chord => s.tonic + chord.aliases[0]);
   }
 
   /**
-   * Get all chords names that are a superset of the given one
+   * Get all chords names that are a extended of the given one
    * (has the same notes and at least one more)
    *
    * @function
@@ -202,7 +201,7 @@ namespace Static {
    * extended("CMaj7")
    * // => [ 'Cmaj#4', 'Cmaj7#9#11', 'Cmaj9', 'CM7add13', 'Cmaj13', 'Cmaj9#11', 'CM13#11', 'CM7b9' ]
    */
-  export function superset(chordName: ChordTypeName): string[] {
+  export function extended(chordName: ChordTypeName): string[] {
     const s = Chord(chordName);
     const isSuperset = isSupersetOf(s.chroma);
     return CHORD.chordTypes.filter(chord => isSuperset(chord.chroma)).map(chord => s.tonic + chord.aliases[0]);
@@ -228,7 +227,7 @@ export function Chord(src: ChordInit): ChordProps {
       return CHORD.EmptyChordType as ChordProps;
     }
 
-    const { setNum, normalized, intervals, length, type, quality, aliases, chroma: chordChroma } = chordType;
+    const { pcnum, normalized, intervals, length, type, quality, aliases, chroma: chordChroma } = chordType;
 
     const chroma = rootNote.valid ? rotate(-rootNote.chroma, chordChroma.split('')).join('') : chordChroma;
 
@@ -246,7 +245,7 @@ export function Chord(src: ChordInit): ChordProps {
 
     return Object.freeze({
       // PcProperties
-      setNum,
+      pcnum,
       chroma,
       normalized,
       intervals,

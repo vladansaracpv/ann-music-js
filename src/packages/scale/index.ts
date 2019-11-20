@@ -39,7 +39,7 @@ export interface ScaleProps extends ScaleType {
   tonic: string;
   type: string;
   notes: NoteName[];
-  scaleFormula: string;
+  formula: string;
   valid: boolean;
 }
 
@@ -59,13 +59,13 @@ namespace Theory {
     type: '',
     tonic: '',
     length: 0,
-    setNum: NaN,
+    pcnum: NaN,
     chroma: '',
     normalized: '',
     aliases: [],
     notes: [],
     intervals: [],
-    scaleFormula: '',
+    formula: '',
     valid: false,
   };
 }
@@ -77,7 +77,7 @@ namespace Dictionary {
   function toScales(chordTypes: ScaleType[]) {
     return chordTypes.reduce((index: Record<ScaleTypeName, ScaleType>, scale) => {
       index[scale.name] = scale;
-      index[scale.setNum] = scale;
+      index[scale.pcnum] = scale;
       index[scale.chroma] = scale;
       scale.aliases.forEach(alias => {
         index[alias] = scale;
@@ -313,9 +313,9 @@ export function Scale(src: ScaleInit): ScaleProps {
   }
   const name = tonic.valid ? `${tonic.pc} ${type}` : type;
 
-  const scaleFormula = scType.intervals.map(ivl => Interval(ivl).semitones).join('-');
+  const formula = scType.intervals.map(ivl => Interval(ivl).semitones).join('-');
 
   const valid = true;
 
-  return { ...scType, name, type, tonic: tonic.pc || '', notes, scaleFormula, valid };
+  return { ...scType, name, type, tonic: tonic.pc || '', notes, formula, valid };
 }
