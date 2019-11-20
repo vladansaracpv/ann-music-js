@@ -117,16 +117,16 @@ export interface IntervalBuild {
   inumber?: IntervalNumber;
 }
 
+/**
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *              INTERVAL - THEORY CONSTANTS                *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ */
+
 namespace Theory {
   /**
-   * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-   *              INTERVAL - THEORY CONSTANTS                *
-   * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-   */
-
-  /**
    * C-major scale interval qualities.
-   * Every other interval is made from these
+   * Every other interval is made from these by some alteration
    */
   export const BASE_QUALITIES = 'PMMPPMM';
 
@@ -163,6 +163,7 @@ namespace Theory {
 
   /** Scale degrees to which interval at index:i is assigned */
   export const NUMBERS = [1, 2, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7];
+  export const NUMBERS_ALTERNATE = [1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6, 7];
 
   /** Qualities of intervals at index:i */
   export const QUALITIES = 'P m M m M P d P m M m M P'.split(' ');
@@ -328,14 +329,14 @@ export const INTERVAL = {
  * @param {IntervalInitProps} props
  * @return {IntervalProps}
  */
-export function Interval(prop: IvlInitProp): IntervalProps {
+export function Interval(prop: IvlInitProp, alternate = false): IntervalProps {
   const { isIntervalName } = INTERVAL.Validators;
   const { isName: isNoteName } = NOTE.Validators;
   const { EmptyInterval } = Theory;
   const { toAlteration, fromQualityTokens } = INTERVAL.Quality;
   const { toStep, toOctave, toDirection, toSimpleNum, fromTokens } = INTERVAL.Num;
   const { toType, toSemitones, toChroma } = INTERVAL.Step;
-  const { INTERVAL_REGEX, CLASSES, NAMES } = Theory;
+  const { INTERVAL_REGEX, CLASSES, NAMES, NAMES_ALTERNATE } = Theory;
 
   function fromName(src: IntervalName): IntervalProps {
     if (!isIntervalName(src)) {
@@ -399,7 +400,7 @@ export function Interval(prop: IvlInitProp): IntervalProps {
     };
   }
 
-  function fromDistance(distance: IntervalSemitones): IntervalProps {
+  function fromDistance(distance: IntervalSemitones, alternate = false): IntervalProps {
     if (!isInteger(distance)) {
       return IntervalError('InvalidIvlConstructor', distance, EmptyInterval) as IntervalProps;
     }
@@ -413,7 +414,8 @@ export function Interval(prop: IvlInitProp): IntervalProps {
       divC(12),
     )(width);
 
-    const tokens = tokenize(NAMES[harmonic], INTERVAL_REGEX);
+    const names = either(NAMES_ALTERNATE, NAMES, alternate);
+    const tokens = tokenize(names[harmonic], INTERVAL_REGEX);
 
     if (!tokens) {
       return IntervalError('InvalidIvlConstructor', distance, EmptyInterval) as IntervalProps;
@@ -428,7 +430,7 @@ export function Interval(prop: IvlInitProp): IntervalProps {
     return fromName(name);
   }
 
-  function fromNotes(firstNote: InitProps, secondNote: InitProps): IntervalProps {
+  function fromNotes(firstNote: InitProps, secondNote: InitProps, alternate = false): IntervalProps {
     const midi = NOTE.property('midi');
     const first = (isObject(firstNote) ? firstNote.name : firstNote) as NoteName;
     const second = (isObject(secondNote) ? secondNote.name : secondNote) as NoteName;
@@ -439,14 +441,14 @@ export function Interval(prop: IvlInitProp): IntervalProps {
 
     const distance = midi(second) - midi(first);
 
-    return fromDistance(distance);
+    return fromDistance(distance, alternate);
   }
 
   if (isIntervalName(prop)) return fromName(prop);
 
-  if (isInteger(prop)) return fromDistance(prop);
+  if (isInteger(prop)) return fromDistance(prop, alternate);
 
-  if (isArray(prop) && both(isNoteName(prop[0]), isNoteName(prop[1]))) return fromNotes(prop[0], prop[1]);
+  if (isArray(prop) && both(isNoteName(prop[0]), isNoteName(prop[1]))) return fromNotes(prop[0], prop[1], alternate);
 
   return IntervalError('InvalidIvlConstructor', prop, EmptyInterval) as IntervalProps;
 }

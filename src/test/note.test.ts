@@ -1,4 +1,4 @@
-import { Note } from '../packages/note';
+import { Note } from 'ann-music-note';
 import { expect } from 'chai';
 import 'mocha';
 

@@ -5,4 +5,5 @@ import { Scale, SCALE, scaleNotes } from '@packages/scale';
 
 import { PC, PcProperties, PitchClass } from 'ann-music-pc';
 
-console.log(Chord('C m'));
+const note = Note({ name: 'A#4' });
+console.log(note);

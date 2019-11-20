@@ -1,5 +1,5 @@
 import { Interval, INTERVAL, IntervalName, IntervalProps } from 'ann-music-interval';
-import { NoNote, Note, NOTE, NoteMidi, NoteName, NoteProps } from '@packages/note';
+import { NoNote, Note, NOTE, NoteMidi, NoteName, NoteProps } from 'ann-music-note';
 import { BaseArray, BaseBoolean, BaseFunctional, BaseRelations, BaseTypings } from 'ann-music-base';
 
 const { compact, range, rotate, toBinary } = BaseArray;
@@ -177,7 +177,7 @@ export const PitchClass = {
 
       const amount: NoteMidi = note.midi + interval.semitones;
 
-      return Note(amount, 'midi', sharps);
+      return Note(amount, 'midi');
     },
   },
 
