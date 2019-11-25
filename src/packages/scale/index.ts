@@ -114,7 +114,7 @@ namespace Static {
     const { isName } = NOTE.Validators;
 
     if (isName(tokens[0])) {
-      const pc = Note(tokens[0]).pc;
+      const pc = Note({ name: tokens[0] }).pc;
       const type = tokens.slice(1).join(' ');
       const octave = noteTokenize(tokens[0], NOTE.REGEX).Toct || '';
       return [pc, type, octave];
@@ -153,7 +153,7 @@ namespace Static {
    */
   export function notes(names: NoteName[]): NoteName[] {
     return names
-      .map(n => Note(n))
+      .map(n => Note({ name: n }))
       .filter(n => n.valid)
       .sort((a, b) => a.midi - b.midi)
       .map(n => n.pc)
@@ -238,7 +238,7 @@ namespace Static {
     const s = Scale(scale);
     const intervals = s.intervals;
 
-    const semitones = intervals.map(ivl => Interval(ivl).semitones);
+    const semitones = intervals.map(ivl => Interval({ name: ivl }).width);
     const scaleSteps = [];
     for (let i = 1; i < semitones.length; i++) {
       const diff = semitones[i] - semitones[i - 1];
@@ -262,10 +262,10 @@ export const SCALE = {
 };
 
 const nextScaleStep = (currentNote: NoteProps, scaleSteps: number, midi: number) => {
-  const midiTransposedNote = Note(currentNote.midi + midi, 'midi');
+  const midiTransposedNote = Note({ midi: currentNote.midi + midi });
   const newLetter = NOTE.NATURAL[(NOTE.Letter.toStep(currentNote.letter) + 1) % 7];
   const octaveOffset = newLetter === 'C' ? currentNote.octave + 1 : currentNote.octave;
-  const letterTransposedNote = Note(newLetter + octaveOffset);
+  const letterTransposedNote = Note({ name: newLetter + octaveOffset });
 
   const diff = midiTransposedNote.midi - letterTransposedNote.midi;
 
@@ -278,13 +278,13 @@ const nextScaleStep = (currentNote: NoteProps, scaleSteps: number, midi: number)
 };
 
 export const scaleNotes = (tonic: NoteName, intervals: IntervalName[]) => {
-  const note = Note(tonic);
-  const scaleDegrees = intervals.map(i => Interval(i).num);
-  const scaleFormula = intervals.map(ivl => Interval(ivl).semitones);
+  const note = Note({ name: tonic });
+  const scaleDegrees = intervals.map(i => Interval({ name: i }).inumber);
+  const scaleFormula = intervals.map(ivl => Interval({ name: ivl }).width);
 
   const notes = [note.name];
   for (let i = 1; i < scaleFormula.length; i++) {
-    const currentNote = Note(notes[i - 1]);
+    const currentNote = Note({ name: notes[i - 1] });
     const scaleSteps = scaleDegrees[i] - scaleDegrees[i - 1];
     const midi = scaleFormula[i] - scaleFormula[i - 1];
     const nextStep = nextScaleStep(currentNote, scaleSteps, midi);
@@ -295,7 +295,7 @@ export const scaleNotes = (tonic: NoteName, intervals: IntervalName[]) => {
 
 export function Scale(src: ScaleInit): ScaleProps {
   const [sname, stype, octave] = Array.isArray(src) ? src : SCALE.tokenize(src);
-  const tonic = Note((sname + octave) as NoteName);
+  const tonic = Note({ name: sname + octave });
   const scales = Dictionary.all;
   const st = (scales[stype.trim() as ScaleTypeName] || SCALE.NoScaleType) as ScaleType;
 
@@ -313,7 +313,7 @@ export function Scale(src: ScaleInit): ScaleProps {
   }
   const name = tonic.valid ? `${tonic.pc} ${type}` : type;
 
-  const formula = scType.intervals.map(ivl => Interval(ivl).semitones).join('-');
+  const formula = scType.intervals.map(ivl => Interval({ name: ivl }).width).join('-');
 
   const valid = true;
 

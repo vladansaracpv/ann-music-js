@@ -3,6 +3,7 @@
  *                 NOTE - STATIC METHODS                   *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
+
 import { BaseBoolean, BaseFunctional, BaseMaths, BaseRelations, BaseTypings } from 'ann-music-base';
 
 import {

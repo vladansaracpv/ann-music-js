@@ -177,7 +177,7 @@ namespace Static {
 
   export function formula(chord: ChordTypeName) {
     const props = Chord(chord);
-    return props.intervals.map(ivl => Interval(ivl).semitones);
+    return props.intervals.map(ivl => Interval({ name: ivl }).width);
   }
 
   /**
@@ -219,7 +219,7 @@ export function Chord(src: ChordInit): ChordProps {
     const tokens = CHORD.tokenize(chord) as ChordNameTokens;
     const [Cletter, Ctype] = tokens;
 
-    const rootNote = Note(Cletter as NoteName);
+    const rootNote = Note({ name: Cletter });
 
     const chordType = CHORD.allChords[Ctype] as ChordType;
 
@@ -237,7 +237,7 @@ export function Chord(src: ChordInit): ChordProps {
 
     const notes: string[] = rootNote.valid ? intervals.map(i => (transposeNote(rootNote.name, i) as NoteProps).pc) : [];
 
-    const formula = intervals.map(ivl => Interval(ivl).semitones).join('-');
+    const formula = intervals.map(ivl => Interval({ name: ivl }).width).join('-');
 
     const empty = eq(length, 0);
 

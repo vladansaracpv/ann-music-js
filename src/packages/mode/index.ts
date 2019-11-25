@@ -143,13 +143,13 @@ namespace Theory {
   };
 }
 
-const midiToNote = (midi: NoteMidi) => Note(midi).name;
+const midiToNote = (midi: NoteMidi) => Note({ midi: midi }).name;
 
 const transposeFormula = (formula: number[], octave: number) => formula.map(t => t + 12 * octave);
 
 export function chordNotes(root: NoteName, chord: string, octaves: number = 1) {
   // Note object for @root
-  const note = Note(root);
+  const note = Note({ name: root });
 
   // Create chord formula for @root@type
   const formula = CHORD.formula(chord);

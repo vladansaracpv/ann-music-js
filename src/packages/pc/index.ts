@@ -170,14 +170,14 @@ export const PitchClass = {
       }
       const [n, i, useSharps] = args;
       const sharps = useSharps === 'true' ? true : false;
-      const note = Note && Note(n);
-      const interval = Interval(i);
+      const note = Note && Note({ name: n, sharps });
+      const interval = Interval({ name: i });
 
       if (!both(note.valid, interval.valid)) return undefined;
 
-      const amount: NoteMidi = note.midi + interval.semitones;
+      const amount: NoteMidi = note.midi + interval.width;
 
-      return Note(amount, 'midi');
+      return Note({ midi: amount, sharps });
     },
   },
 
@@ -225,12 +225,12 @@ export const PitchClass = {
       for (let i = 0; i < set.length; i++) {
         // Is it Note?
         if (isNote(set[i])) {
-          pitch = Note(set[i]) as NoteProps;
+          pitch = Note({ name: set[i] }) as NoteProps;
         }
 
         // Is it Interval?
         if (isIvl(set[i])) {
-          pitch = Interval(set[i]) as IntervalProps;
+          pitch = Interval({ name: set[i] }) as IntervalProps;
         }
 
         // Is it neither Note or Interval?

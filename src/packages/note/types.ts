@@ -105,6 +105,27 @@ export type NoteProps = Readonly<{
   valid: boolean;
 }>;
 
+// const a = {
+//   name: 'A#4',
+//   octave: 4,
+//   tone: {
+//     letter: 'A',
+//     step: 5,
+//   },
+//   accidental: {
+//     type: '#',
+//     value: 1,
+//   },
+//   pc: {
+//     type: 'A#',
+//     value: 10,
+//   },
+//   midi: 70,
+//   frequency: 466.164,
+//   color: 'black',
+//   valid: true,
+// };
+
 /**
  * Note properties from which the Note object can be constructed
  */
