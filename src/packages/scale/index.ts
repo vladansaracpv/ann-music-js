@@ -4,7 +4,7 @@ import { CHORD, ChordTypeName } from 'ann-music-chord';
 import { Interval, IntervalName } from 'ann-music-interval';
 import { Note, NOTE, NoteLetter, NoteName, NoteProps } from 'ann-music-note';
 
-import { PC, PcChroma, PcNum, PcProperties, PitchClass as PcStatic } from '@packages/pc';
+import { PC, PcChroma, PcNum, PcProperties, PitchClass as PcStatic } from 'ann-music-pc';
 
 import SCALE_LIST from './data';
 
@@ -14,7 +14,7 @@ const { tokenize: noteTokenize } = BaseStrings;
 
 const { isSubsetOf, isSupersetOf, modes: pcmodes, transpose } = PcStatic.Methods;
 
-const EmptyPcSet = PcStatic.Empty;
+const EmptyPcSet = PcStatic.EmptyPc;
 
 export type ScaleTypeName = string;
 
@@ -88,7 +88,7 @@ namespace Dictionary {
 
   function toScaleType([ivls, name, ...aliases]: string[]): ScaleType {
     const intervals = ivls.split(' ');
-    return { ...PC(intervals), name, intervals, aliases };
+    return { ...PC({ intervals }), name, intervals, aliases };
   }
 }
 
@@ -181,7 +181,7 @@ namespace Static {
     }
 
     const tonics = s.tonic ? s.notes : s.intervals;
-    return pcmodes(s.chroma)
+    return pcmodes({ chroma: s.chroma })
       .map(
         (chroma: string, i: number): ScaleMode => {
           const modeName = Scale(chroma).name;

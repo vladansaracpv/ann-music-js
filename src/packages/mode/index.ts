@@ -1,12 +1,12 @@
 import { Note, NoteName, NoteMidi } from 'ann-music-note';
 import { Chord, CHORD } from 'ann-music-chord';
 import { Scale, ScaleTypeName, ScaleNameTokens } from 'ann-music-scale';
-import { PcProperties, PitchClass } from 'ann-music-pc';
+import { PcProperties, PitchClass, PC } from 'ann-music-pc';
 import { IntervalName } from 'ann-music-interval';
 
 const { modes: chromaModes } = PitchClass.Methods;
 const chromaToIntervals = PitchClass.Chroma.toIntervals;
-const EmptySet = PitchClass.Empty;
+const EmptySet = PitchClass.EmptyPc;
 
 export type ModeNumber = number;
 export type ModeName = string;
@@ -100,15 +100,12 @@ function toMode(mode: ModeDefinition): Mode {
   const [modeNum, setNum, alt, name, triad, seventh, alias] = mode;
   const aliases = alias ? [alias] : [];
   const chroma = Number(setNum).toString(2);
-  const intervals = chromaToIntervals(chroma);
+  const pc = PC({ chroma });
+
   return {
-    empty: false,
-    intervals,
+    ...pc,
     modeNum: +modeNum,
-    chroma,
-    normalized: chroma,
     name,
-    setNum,
     alt,
     triad,
     seventh,

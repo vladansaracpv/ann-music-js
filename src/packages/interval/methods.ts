@@ -8,6 +8,8 @@ import {
   BaseTypings,
 } from 'ann-music-base';
 
+import { NoteName, NOTE } from 'ann-music-note';
+
 import {
   IntervalAlteration,
   IntervalBuild,
@@ -29,13 +31,15 @@ import { AUG_REGEX, BASE_QUALITIES, BASE_SIZES, DIM_REGEX, INTERVAL_REGEX } from
 
 import { Interval } from './properties';
 
+const { isName: isNoteName } = NOTE.Validators;
+
 const { fillStr } = BaseArray;
 const { either } = BaseBoolean;
 const { compose } = BaseFunctional;
 const { and: both } = BaseLogical;
 const { dec, divC, inc, modC } = BaseMaths;
 const { eq, gt, isNegative, lt } = BaseRelations;
-const { isNumber } = BaseTypings;
+const { isNumber, isArray } = BaseTypings;
 
 export const Validators = {
   isIntervalName: (name: IvlInitProp): name is IntervalName => INTERVAL_REGEX.test(name as IntervalName),
@@ -44,6 +48,10 @@ export const Validators = {
   isMinor: (quality: string) => eq(quality, 'm'),
   isDiminished: (quality: string) => DIM_REGEX.test(quality),
   isAugmented: (quality: string) => AUG_REGEX.test(quality),
+  isNoteArray: (notes: NoteName[]) => {
+    const [first, second] = notes;
+    return isArray(notes) && both(isNoteName(first), isNoteName(second));
+  },
 };
 
 export const Quality = {
@@ -151,11 +159,12 @@ export const property = (name: string) => (interval: IntervalName) => {
 };
 
 export function build(params: IntervalBuild = { octave: 1, direction: 1 }): IntervalName {
-  let { step, alteration, octave, direction, inumber } = params;
+  const { step, alteration, octave, direction } = params;
+  let { inumber } = params;
   if (step !== undefined) inumber = inc(step) + 7 * dec(octave);
   if (eq(inumber, undefined)) return undefined;
   if (!isNumber(alteration)) return undefined;
-  let d = lt(direction, 0) ? '-' : '';
+  const d = lt(direction, 0) ? '-' : '';
   const itype = BASE_QUALITIES[dec(Math.abs(inumber)) % 7];
   return d + inumber + Alteration.toQuality(itype, alteration);
 }

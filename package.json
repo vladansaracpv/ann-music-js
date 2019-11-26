@@ -86,7 +86,7 @@
     "ann-music-chord": "^1.0.5",
     "ann-music-interval": "^1.0.7",
     "ann-music-note": "^1.0.11",
-    "ann-music-pc": "^1.0.6",
+    "ann-music-pc": "^1.0.7",
     "ann-music-scale": "^1.0.3",
     "nexusui": "^2.0.10",
     "ramda": "^0.25.0",

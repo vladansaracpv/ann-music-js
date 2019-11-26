@@ -1,14 +1,6 @@
-import {
-  BaseBoolean,
-  BaseErrors,
-  BaseFunctional,
-  BaseLogical,
-  BaseMaths,
-  BaseStrings,
-  BaseTypings,
-} from 'ann-music-base';
+import { BaseBoolean, BaseErrors, BaseFunctional, BaseMaths, BaseStrings, BaseTypings } from 'ann-music-base';
 
-import { InitProps, NOTE, NoteName } from 'ann-music-note';
+import { NOTE, NoteName } from 'ann-music-note';
 
 import { Num, Quality, Step, Validators } from './methods';
 
@@ -30,10 +22,9 @@ import {
 const { either } = BaseBoolean;
 const { CustomError } = BaseErrors;
 const { compose } = BaseFunctional;
-const { and: both } = BaseLogical;
 const { dec, divC, inc } = BaseMaths;
 const { tokenize } = BaseStrings;
-const { isArray, isInteger, isObject } = BaseTypings;
+const { isInteger } = BaseTypings;
 
 const IntervalError = CustomError('Interval');
 
@@ -43,22 +34,12 @@ const IntervalError = CustomError('Interval');
  * @return {IntervalProps}
  */
 export function Interval({ name, width, notes, alternate = false }: IntervalInit = {}): IntervalProps {
-  const { isIntervalName } = Validators;
-  const { isName: isNoteName } = NOTE.Validators;
+  const { isIntervalName, isNoteArray } = Validators;
   const { toAlteration, fromQualityTokens } = Quality;
   const { toStep, toOctave, toDirection, toSimpleNum, fromTokens } = Num;
   const { toType, toSemitones, toChroma } = Step;
 
-  function isNoteArray(notes: NoteName[]) {
-    const [first, second] = notes;
-    return isArray(notes) && both(isNoteName(first), isNoteName(second));
-  }
-
   function fromName(src: IntervalName): IntervalProps {
-    if (!isIntervalName(src)) {
-      return IntervalError('InvalidIvlConstructor', src, EmptyInterval) as IntervalProps;
-    }
-
     const tokens = tokenize(src, INTERVAL_REGEX);
 
     if (!tokens) {
@@ -149,14 +130,8 @@ export function Interval({ name, width, notes, alternate = false }: IntervalInit
   function fromNotes(notes: NoteName[], alternate = false): IntervalProps {
     const [firstNote, secondNote] = notes;
     const midi = NOTE.property('midi');
-    const first = (isObject(firstNote) ? firstNote.name : firstNote) as NoteName;
-    const second = (isObject(secondNote) ? secondNote.name : secondNote) as NoteName;
 
-    if (!isNoteName(first) || !isNoteName(second)) {
-      return IntervalError('InvalidIvlConstructor', first, EmptyInterval) as IntervalProps;
-    }
-
-    const distance = midi({ name: second }) - midi({ name: first });
+    const distance = midi({ name: secondNote }) - midi({ name: firstNote });
 
     return fromDistance(distance, alternate);
   }

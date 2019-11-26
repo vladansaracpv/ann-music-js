@@ -1,6 +1,7 @@
 import { Note, NOTE } from '@packages/note';
-import { Interval } from '@packages/interval';
 
-// console.log(Note({ name: 'A#4' }));
+const { Transpose, Distance, Compare } = NOTE;
 
-console.log(Interval({ name: 'm3' }));
+const dmidi = Distance('midi');
+
+console.log(dmidi({ name: 'A4' }, { name: 'C5' }));

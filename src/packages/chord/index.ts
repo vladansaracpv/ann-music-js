@@ -1,7 +1,7 @@
 import { BaseStrings, BaseTypings, BaseArray, BaseRelations } from 'ann-music-base';
 import { NoteName, Note, NoteProps } from 'ann-music-note';
 import { Interval, IntervalName } from 'ann-music-interval';
-import { PcChroma, PcNum, PcProperties, PC, PitchClass } from '@packages/pc';
+import { PcChroma, PcNum, PcProperties, PC, PitchClass } from 'ann-music-pc';
 import CHORD_LIST from './data';
 
 const { tokenize: tokenizeNote } = BaseStrings;
@@ -9,7 +9,7 @@ const { isString } = BaseTypings;
 const { rotate } = BaseArray;
 const { eq } = BaseRelations;
 const { isSubsetOf, isSupersetOf, transpose: transposeNote } = PitchClass.Methods;
-const EmptySet = PitchClass.Empty;
+const EmptySet = PitchClass.EmptyPc;
 
 export type ChordQuality = 'Major' | 'Minor' | 'Augmented' | 'Diminished' | 'Unknown' | 'Other';
 
@@ -119,7 +119,7 @@ namespace Dictionary {
     const has = (interval: IntervalName) => ivls.includes(interval);
     const aliases = abbrvs.split(' ');
     const intervals = ivls.split(' ');
-    const set = PC(intervals) as PcProperties;
+    const set = PC({ intervals }) as PcProperties;
     const quality = has('5A')
       ? 'Augmented'
       : has('3M')

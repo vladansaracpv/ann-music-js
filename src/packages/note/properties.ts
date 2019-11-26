@@ -1,27 +1,25 @@
-import { BaseBoolean, BaseErrors, BaseMaths, BaseRelations, BaseStrings } from 'ann-music-base';
+import { BaseBoolean, BaseErrors, BaseRelations, BaseStrings } from 'ann-music-base';
 
+import { Accidental, Chroma, Frequency, Letter, Midi, Octave, Validators } from './methods';
+import * as Theory from './theory';
 import {
-  NoteName,
   NoteAccidental,
-  NoteMidi,
-  NoteFreq,
-  NoteLetter,
-  NoteOctave,
+  NoteAlteration,
   NoteChroma,
+  NoteColor,
+  NoteFreq,
   NoteInit,
+  NoteLetter,
+  NoteMidi,
+  NoteName,
+  NoteOctave,
+  NotePC,
   NoteProps,
   NoteStep,
-  NoteAlteration,
-  NotePC,
-  NoteColor,
 } from './types';
-
-import * as Theory from './theory';
-import { Validators, Letter, Accidental, Octave, Midi, Frequency, Chroma } from './methods';
 
 const { either } = BaseBoolean;
 const { CustomError } = BaseErrors;
-const { dec } = BaseMaths;
 const { isNegative } = BaseRelations;
 const { capitalize, substitute, tokenize } = BaseStrings;
 
@@ -109,7 +107,7 @@ export function Note({ name, midi, frequency, sharps = true, tuning = 440 }: Not
   }
 
   function fromMidi(midi: NoteMidi, useSharps = true): NoteProps {
-    const octave = dec(toOctaves(midi)) as NoteOctave;
+    const octave = toOctaves(midi) as NoteOctave;
 
     const chroma = (midi % 12) as NoteChroma;
     const pc = either(SHARPS[chroma], FLATS[chroma], useSharps) as NotePC;
