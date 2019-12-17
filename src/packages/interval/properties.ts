@@ -1,6 +1,6 @@
 import { BaseBoolean, BaseErrors, BaseFunctional, BaseMaths, BaseStrings, BaseTypings } from 'ann-music-base';
 
-import { NOTE, NoteName } from 'ann-music-note';
+import { NOTE, NoteName } from '@packages/note';
 
 import { Num, Quality, Step, Validators } from './methods';
 
@@ -41,7 +41,6 @@ export function Interval({ name, width, notes, alternate = false }: IntervalInit
 
   function fromName(src: IntervalName): IntervalProps {
     const tokens = tokenize(src, INTERVAL_REGEX);
-
     if (!tokens) {
       return IntervalError('InvalidIvlConstructor', src, EmptyInterval) as IntervalProps;
     }

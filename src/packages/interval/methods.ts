@@ -1,14 +1,6 @@
-import {
-  BaseArray,
-  BaseBoolean,
-  BaseFunctional,
-  BaseLogical,
-  BaseMaths,
-  BaseRelations,
-  BaseTypings,
-} from 'ann-music-base';
+import { BaseArray, BaseBoolean, BaseFunctional, BaseMaths, BaseRelations, BaseTypings } from 'ann-music-base';
 
-import { NoteName, NOTE } from 'ann-music-note';
+import { NoteName, NOTE } from '@packages/note';
 
 import {
   IntervalAlteration,
@@ -36,21 +28,23 @@ const { isName: isNoteName } = NOTE.Validators;
 const { fillStr } = BaseArray;
 const { either } = BaseBoolean;
 const { compose } = BaseFunctional;
-const { and: both } = BaseLogical;
 const { dec, divC, inc, modC } = BaseMaths;
 const { eq, gt, isNegative, lt } = BaseRelations;
 const { isNumber, isArray } = BaseTypings;
 
 export const Validators = {
   isIntervalName: (name: IvlInitProp): name is IntervalName => INTERVAL_REGEX.test(name as IntervalName),
-  isPerfect: (quality: string) => eq(quality, 'P'),
-  isMajor: (quality: string) => eq(quality, 'M'),
-  isMinor: (quality: string) => eq(quality, 'm'),
+  isPerfect: (quality: IntervalQuality) => eq(quality, 'P'),
+  isMajor: (quality: IntervalQuality) => eq(quality, 'M'),
+  isMinor: (quality: IntervalQuality) => eq(quality, 'm'),
   isDiminished: (quality: string) => DIM_REGEX.test(quality),
   isAugmented: (quality: string) => AUG_REGEX.test(quality),
   isNoteArray: (notes: NoteName[]) => {
+    console.log('LOL');
+
+    if (!notes || notes.length < 2) return false;
     const [first, second] = notes;
-    return isArray(notes) && both(isNoteName(first), isNoteName(second));
+    return isArray(notes) && isNoteName(first) && isNoteName(second);
   },
 };
 
@@ -78,7 +72,7 @@ export const Alteration = {
   toQuality(itype: string, alteration: number) {
     if (eq(0, alteration)) return either('M', 'P', eq(itype, 'M'));
 
-    if (both(eq(-1, alteration), eq(itype, 'M'))) return 'm';
+    if (eq(-1, alteration) && eq(itype, 'M')) return 'm';
 
     if (gt(alteration, 0)) return fillStr('A', alteration);
 

@@ -1,12 +1,11 @@
 import { BaseBoolean, BaseErrors, BaseRelations, BaseStrings } from 'ann-music-base';
 
-import { Accidental, Chroma, Frequency, Letter, Midi, Octave, Validators } from './methods';
+import { Accidental, Frequency, Letter, Midi, Octave, Validators } from './methods';
 import * as Theory from './theory';
 import {
   NoteAccidental,
   NoteAlteration,
   NoteChroma,
-  NoteColor,
   NoteFreq,
   NoteInit,
   NoteLetter,
@@ -33,10 +32,9 @@ export function Note({ name, midi, frequency, sharps = true, tuning = 440 }: Not
   const { toSemitones, parse } = Octave;
   const { toFrequency, toOctaves } = Midi;
   const { toMidi } = Frequency;
-  const { isWhite } = Chroma;
   const { EmptyNote, SHARPS, FLATS, REGEX } = Theory;
 
-  function fromName(note: NoteName): NoteProps {
+  function fromName(note: NoteName, sharps = true, tuning = Theory.A_440, strict = true): NoteProps {
     const { Tletter, Taccidental, Toct, Trest } = {
       Tletter: '',
       Taccidental: '',
@@ -64,7 +62,7 @@ export function Note({ name, midi, frequency, sharps = true, tuning = 440 }: Not
     // Because of the alteration, note can slip into the previous/next octave
     const octavesAltered = Math.floor(semitonesAltered / 12);
 
-    const octave = (parse(Toct) + octavesAltered) as NoteOctave;
+    const octave = (parse(Toct) + (strict ? octavesAltered : 0)) as NoteOctave;
 
     const pc: NotePC = `${letter}${accidental}`;
 
@@ -82,11 +80,9 @@ export function Note({ name, midi, frequency, sharps = true, tuning = 440 }: Not
 
     const midi = (toSemitones(octave) + chroma) as NoteMidi;
 
-    const frequency = toFrequency(midi) as NoteFreq;
+    const frequency = toFrequency(midi, tuning) as NoteFreq;
 
     const name = `${pc}${octave}` as NoteName;
-
-    const color: NoteColor = isWhite(chroma) ? 'white' : 'black';
 
     const valid = true;
 
@@ -101,7 +97,6 @@ export function Note({ name, midi, frequency, sharps = true, tuning = 440 }: Not
       step,
       accidental,
       alteration,
-      color,
       valid,
     };
   }
@@ -122,7 +117,7 @@ export function Note({ name, midi, frequency, sharps = true, tuning = 440 }: Not
     return fromMidi(midi, useSharps);
   }
 
-  if (isName(name)) return fromName(name);
+  if (isName(name)) return fromName(name, sharps, tuning);
   if (isMidi(midi)) return fromMidi(midi, sharps) as NoteProps;
   if (isFrequency(frequency)) return fromFrequency(frequency, sharps, tuning) as NoteProps;
 

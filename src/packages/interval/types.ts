@@ -1,10 +1,10 @@
-import { NoteName } from 'ann-music-note';
-
 /**
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *                  INTERVAL - INTERFACES                  *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
+
+import { NoteName } from '@packages/note';
 
 /** Interval name with shape: number + quality. @example 3M */
 export type IntervalName = string;
