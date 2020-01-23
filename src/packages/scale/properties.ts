@@ -1,6 +1,6 @@
 import { BaseArray, BaseTypings } from 'ann-music-base';
 import { Interval, IntervalName } from '@packages/interval';
-import { Note, NOTE, NoteName, NoteProps, NoteLetter } from '@packages/note';
+import { Note, NOTE, NoteName, NoteProps, NoteLetter, NLetter } from '@packages/note';
 import { PC } from '@packages/pc';
 
 import { SCALES } from './dictionary';
@@ -33,7 +33,7 @@ export const NoScale: ScaleProps = {
 const nextScaleStep = (currentNote: NoteProps, midi: number) => {
   // currentNote: C#, midi: +2
   const midiTransposedNote = Note({ midi: currentNote.midi + midi });
-  const newLetter = NOTE.NATURAL[(NOTE.Letter.toStep(currentNote.letter) + 1) % 7] as NoteLetter;
+  const newLetter = NOTE.NATURAL[(NLetter.toStep(currentNote.letter) + 1) % 7] as NoteLetter;
   const ltn1 = Note({ name: newLetter + currentNote.octave });
   const ltn2 = Note({ name: newLetter + (currentNote.octave + 1) });
 

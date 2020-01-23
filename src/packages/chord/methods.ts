@@ -88,8 +88,8 @@ export function notes(names: NoteName[]): NoteName[] {
  */
 export function reduced(chordName: string): string[] {
   const s = Chord(chordName);
-  const isSubset = isSubsetOf(s.pc.chroma);
-  return CHORD_TYPES.filter(chord => isSubset(chord.pc.chroma)).map(chord => s.tonic + chord.aliases[0]);
+  const isSubset = isSubsetOf({ chroma: s.pc.chroma });
+  return CHORD_TYPES.filter(chord => isSubset({ chroma: chord.pc.chroma })).map(chord => s.tonic + chord.aliases[0]);
 }
 
 /**
@@ -103,6 +103,6 @@ export function reduced(chordName: string): string[] {
  */
 export function extended(chordName: string): string[] {
   const s = Chord(chordName);
-  const isSuperset = isSupersetOf(s.pc.chroma);
-  return CHORD_TYPES.filter(chord => isSuperset(chord.pc.chroma)).map(chord => s.tonic + chord.aliases[0]);
+  const isSuperset = isSupersetOf({ chroma: s.pc.chroma });
+  return CHORD_TYPES.filter(chord => isSuperset({ chroma: chord.pc.chroma })).map(chord => s.tonic + chord.aliases[0]);
 }

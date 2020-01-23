@@ -1,10 +1,7 @@
-import { Accidental, Letter } from './packages/note/helpers';
-import { Interval, INTERVAL } from '@packages/interval';
-import { Note, NOTE } from '@packages/note';
-import { Chord } from '@packages/chord';
-import { Pc } from '@packages/pc';
-import { Scale, SCALE } from '@packages/scale';
-// const scales = NOTE.NOTES.map(note => Scale(note + ' major')).map(scale => scale.notes.join('-'));
-// console.log(scales);
+import { Note, NOTE, note } from '@packages/note';
 
-console.log(SCALE.reduced('C major'));
+const n = note('A4');
+const n2 = Note({ name: 'A#4' });
+
+console.log(n);
+console.log(n2);

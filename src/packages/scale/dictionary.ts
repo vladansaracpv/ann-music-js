@@ -1,3 +1,4 @@
+import { map } from './../base/functional';
 import { Pc } from '@packages/pc';
 
 import SCALE_LIST from './data';
@@ -30,3 +31,6 @@ function toScales(chordTypes: ScaleType[]) {
 
 export const SCALE_TYPES: ScaleType[] = SCALE_LIST.map(toScaleType);
 export const SCALES: ScaleTypes = toScales(SCALE_TYPES);
+
+export const scaleBySize = (size: number) => SCALE_TYPES.filter(scale => scale.intervals.length === size);
+export const scaleTypeList = SCALE_TYPES.map(scale => scale.type);

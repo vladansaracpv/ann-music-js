@@ -42,9 +42,11 @@ export const inSegment = (lower: number, higher: number, num: number): boolean =
 
 export const isNegative = (a: number): boolean => a < 0;
 
+export const ltz = isNegative;
+
 export const isPositive = (a: number): boolean => a > 0;
 
-export const isNonNegative = (a: number): boolean => a >= 0;
+export const gtz = isPositive;
 
 /** Relational curried operators  */
 

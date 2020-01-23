@@ -29,7 +29,7 @@ const { fillStr } = BaseArray;
 const { either } = BaseBoolean;
 const { compose } = BaseFunctional;
 const { dec, divC, inc, modC } = BaseMaths;
-const { eq, gt, isNegative, lt } = BaseRelations;
+const { eq, gt, ltz, lt } = BaseRelations;
 const { isNumber, isArray } = BaseTypings;
 
 export const Validators = {
@@ -98,7 +98,7 @@ export const Num = {
     )(inumber) as IntervalOctave;
   },
   toDirection(inumber: IntervalNumber) {
-    return either(-1, 1, isNegative(inumber)) as IntervalDirection;
+    return either(-1, 1, ltz(inumber)) as IntervalDirection;
   },
   toSimpleNum(inumber: IntervalNumber, step: IntervalStep, dir: IntervalDirection) {
     return either(inumber, dir * inc(step), eq(inumber, 8)) as IntervalSimpleNumber;

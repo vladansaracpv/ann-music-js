@@ -3,6 +3,7 @@ import { CharCode } from './charCode';
 
 /** String methods */
 
+export const head = (s: string) => s[0];
 export const rest = (x: string, n = 1) => x.substring(n);
 
 export const glue = (...args) => args.reduce((acc, el) => acc + el);
@@ -56,7 +57,7 @@ export function format(value: string, ...args: any[]): string {
   if (args.length === 0) {
     return value;
   }
-  return value.replace(_formatRegexp, function(match, group) {
+  return value.replace(_formatRegexp, (match, group) => {
     const idx = parseInt(group, 10);
     return isNaN(idx) || idx < 0 || idx >= args.length ? match : args[idx];
   });
@@ -67,7 +68,7 @@ export function format(value: string, ...args: any[]): string {
  * being used e.g. in HTMLElement.innerHTML.
  */
 export function escape(html: string): string {
-  return html.replace(/[<>&]/g, function(match) {
+  return html.replace(/[<>&]/g, match => {
     switch (match) {
       case '<':
         return '&lt;';
@@ -640,17 +641,17 @@ export function removeAnsiEscapeCodes(str: string): string {
   return str;
 }
 
-export const removeAccents: (str: string) => string = (function() {
+export const removeAccents: (str: string) => string = (() => {
   if (typeof (String.prototype as any).normalize !== 'function') {
     // ☹️ no ES6 features...
-    return function(str: string) {
+    return (str: string) => {
       return str;
     };
   } else {
     // transform into NFD form and remove accents
     // see: https://stackoverflow.com/questions/990904/remove-accents-diacritics-in-a-string-in-javascript/37511463#37511463
     const regex = /[\u0300-\u036f]/g;
-    return function(str: string) {
+    return (str: string) => {
       return (str as any).normalize('NFD').replace(regex, empty);
     };
   }

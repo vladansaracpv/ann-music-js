@@ -131,8 +131,3 @@ export type NoteInit = Partial<{
   sharps?: boolean;
   tuning?: number;
 }>;
-
-export interface NAccidental {
-  type: string;
-  value: number;
-}
